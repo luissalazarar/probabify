@@ -66,9 +66,9 @@ export async function POST(req: Request) {
       );
     }
 
-    // Usamos hasta 20 canciones
+    // Usamos hasta 50 canciones
     const tracksText = tracks
-      .slice(0, 20)
+      .slice(0, 50)
       .map(
         (t, i) =>
           `${i + 1}. "${t.name}" – ${t.artist} (álbum: ${
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
       )
       .join("\n");
 
-      const systemPrompt =
+    const systemPrompt =
       "Eres una IA que inventa probabilidades divertidas basadas en la música de una persona. " +
       "Responde siempre en español. No toques temas sensibles (autolesión, violencia sexual, odio, etc.). " +
       "Cuando analices la música, prioriza el contenido, el mensaje y la letra conocida de las canciones " +
@@ -86,7 +86,6 @@ export async function POST(req: Request) {
       "La probabilidad que devuelves debe ser un NÚMERO ENTERO entre 0 y 100, pero procura no usar siempre múltiplos de 5 " +
       "ni repetir siempre los mismos valores (como 35, 65, 75); elige números variados (por ejemplo 42, 67, 81, etc.). " +
       "Tu tarea es, a partir de esas canciones, devolver una probabilidad divertida entre 0 y 100, más un pequeño texto que explique la lógica.";
-
 
     const userPrompt = `
 Pregunta del usuario: "${cleanedQuestion}"
@@ -102,9 +101,9 @@ Instrucciones:
 
 Responde SOLO en formato JSON válido con este formato EXACTO:
 {
-  "probability": 0-100 (número entero),
+  "probability": 0-100,
   "summary": "máx 4 líneas explicando por qué esa probabilidad encaja con la música y su letra/mensaje",
-  "shortLabel": "una versión corta de la pregunta, por ejemplo: "volver con tu ex", "superar a tu ex", etc."
+  "shortLabel": "una versión corta de la pregunta, por ejemplo: 'volver con tu ex', 'superar a tu ex', etc."
 }
 `.trim();
 

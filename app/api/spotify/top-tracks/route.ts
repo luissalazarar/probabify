@@ -1,23 +1,29 @@
+// app/api/spotify/top-tracks/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/route";
+// ⬇️ AJUSTA ESTA RUTA SEGÚN TU PROYECTO
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
 
-    // sacamos el accessToken haciendo cast a any para evitar el error de tipos
-    const accessToken = (session as any)?.accessToken as string | undefined;
-
-    if (!accessToken) {
+    if (!session || !session.user || !(session as any).accessToken) {
       return NextResponse.json(
         { error: "No autenticado con Spotify" },
         { status: 401 }
       );
     }
 
-    const res = await fetch(
-      "https://api.spotify.com/v1/me/top/tracks?limit=30&time_range=short_term",
+    const accessToken = (session as any).accessToken as string;
+
+    // 🔁 Leer periodo desde querystring
+    const { searchParams } = new URL(req.url);
+    const range = searchParams.get("range") ?? "short_term"; // short_term | medium_term | long_term
+
+    // ✅ Spotify permite hasta 50
+    const spotifyRes = await fetch(
+      `https://api.spotify.com/v1/me/top/tracks?limit=50&time_range=${range}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -25,24 +31,27 @@ export async function GET() {
       }
     );
 
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      console.error("Error Spotify top tracks:", data);
+    if (!spotifyRes.ok) {
+      const err = await spotifyRes.json().catch(() => ({}));
+      console.error("Error Spotify top tracks:", err);
       return NextResponse.json(
-        { error: "Error al obtener top tracks de Spotify" },
-        { status: 500 }
+        { error: "Error obteniendo canciones desde Spotify" },
+        { status: spotifyRes.status }
       );
     }
 
-    const data = await res.json();
+    const data = await spotifyRes.json();
 
     const tracks =
-      data.items?.map((item: any) => ({
+      (data.items || []).map((item: any) => ({
         id: item.id,
         name: item.name,
         artist: item.artists?.map((a: any) => a.name).join(", ") ?? "",
         album: item.album?.name ?? "",
-        image: item.album?.images?.[0]?.url ?? null,
+        image:
+          item.album?.images?.[0]?.url ??
+          item.album?.images?.[1]?.url ??
+          null,
         previewUrl: item.preview_url ?? null,
       })) ?? [];
 
@@ -50,7 +59,7 @@ export async function GET() {
   } catch (error: any) {
     console.error("Error en /api/spotify/top-tracks:", error);
     return NextResponse.json(
-      { error: "Error interno en top-tracks" },
+      { error: "Error interno en /api/spotify/top-tracks" },
       { status: 500 }
     );
   }
