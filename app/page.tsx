@@ -30,17 +30,44 @@ const PRESET_QUESTIONS = [
   "¿Cuál es la probabilidad de empezar a valorarme?",
 ];
 
-const PERIODS: { key: RangeKey; label: string; subtitle: string }[] = [
-  { key: "short_term", label: "Últimas semanas", subtitle: "Mood reciente" },
-  { key: "medium_term", label: "Últimos 6 meses", subtitle: "Tendencia media" },
-  { key: "long_term", label: "Todo el tiempo", subtitle: "Tu esencia musical" },
+const PERIODS: { key: RangeKey; label: string }[] = [
+  { key: "short_term", label: "Últimas semanas" },
+  { key: "medium_term", label: "Últimos 6 meses" },
+  { key: "long_term", label: "Todo el tiempo" },
 ];
+
+// Detalle extendido por periodo (para el texto tipo Receiptify)
+const PERIOD_DETAILS: Record<
+  RangeKey,
+  { label: string; subtitle: string; description: string }
+> = {
+  short_term: {
+    label: "Últimas semanas",
+    subtitle: "Mood reciente",
+    description:
+      "Este periodo refleja tus escuchas más recientes. Se enfoca en tu estado emocional actual y tus tendencias inmediatas.",
+  },
+  medium_term: {
+    label: "Últimos 6 meses",
+    subtitle: "Tendencia media",
+    description:
+      "Este periodo muestra tus gustos sostenidos en el tiempo. Es un balance entre lo nuevo y lo que realmente mantienes.",
+  },
+  long_term: {
+    label: "Todo el tiempo",
+    subtitle: "Tu esencia musical",
+    description:
+      "Este rango captura tu ADN musical: lo que más te ha gustado en general y define mejor tu esencia como oyente.",
+  },
+};
 
 export default function Home() {
   const { data: session, status } = useSession();
 
-  // Top tracks del periodo seleccionado (vista principal)
+  // Periodo principal seleccionado
   const [selectedRange, setSelectedRange] = useState<RangeKey>("short_term");
+
+  // Top tracks del periodo principal
   const [tracks, setTracks] = useState<Track[]>([]);
   const [loadingTracks, setLoadingTracks] = useState(false);
   const [errorTracks, setErrorTracks] = useState<string | null>(null);
@@ -50,7 +77,7 @@ export default function Home() {
     PRESET_QUESTIONS[0]
   );
 
-  // Resultado principal
+  // Resultado principal (periodo seleccionado)
   const [probLoading, setProbLoading] = useState(false);
   const [probError, setProbError] = useState<string | null>(null);
   const [probResult, setProbResult] = useState<ProbabilityResult | null>(null);
@@ -59,10 +86,10 @@ export default function Home() {
   const [comparisonLoading, setComparisonLoading] = useState(false);
   const [comparisonError, setComparisonError] = useState<string | null>(null);
   const [comparisonResults, setComparisonResults] = useState<
-    { key: RangeKey; label: string; probability: number | null }[] | null
+    { key: RangeKey; probability: number | null }[] | null
   >(null);
 
-  // 🔁 Obtener top tracks cuando el usuario se autentica o cambia el rango
+  // 🔁 Cargar top tracks del periodo principal cuando cambie el rango o la sesión
   useEffect(() => {
     if (status !== "authenticated") return;
 
@@ -71,7 +98,9 @@ export default function Home() {
         setLoadingTracks(true);
         setErrorTracks(null);
 
-        const res = await fetch(`/api/spotify/top-tracks?range=${selectedRange}`);
+        const res = await fetch(
+          `/api/spotify/top-tracks?range=${selectedRange}`
+        );
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Error obteniendo canciones");
@@ -90,110 +119,59 @@ export default function Home() {
     fetchTopTracks();
   }, [status, selectedRange]);
 
-  // 🧮 Probabilidad + comparación por periodos (todo con un solo click)
-  async function handleCalculateProbability() {
+  // 🧮 ÚNICO BOTÓN:
+  // Calcula probabilidad del periodo seleccionado + las 3 probabilidades por periodo
+  async function handleCalculateAll() {
     try {
       if (!session) {
         setProbError("Primero conecta tu Spotify.");
-        return;
-      }
-
-      if (tracks.length === 0) {
-        setProbError("Necesitamos algunas canciones para analizar.");
+        setComparisonError("Primero conecta tu Spotify.");
         return;
       }
 
       const question = selectedPreset.trim();
       if (!question) {
         setProbError("Selecciona una pregunta.");
+        setComparisonError("Selecciona una pregunta.");
         return;
       }
 
-      // Limpiezas previas
       setProbLoading(true);
-      setProbError(null);
-      setProbResult(null);
-
       setComparisonLoading(true);
+      setProbError(null);
       setComparisonError(null);
+      setProbResult(null);
       setComparisonResults(null);
 
-      // 1) Probabilidad para el periodo actualmente seleccionado (usando los tracks ya cargados)
-      const mainRes = await fetch("/api/probability", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          question,
-          tracks: tracks.map((t) => ({
-            id: t.id,
-            name: t.name,
-            artist: t.artist,
-            album: t.album,
-          })),
-        }),
-      });
+      const results: { key: RangeKey; probability: number | null }[] = [];
+      let mainResult: ProbabilityResult | null = null;
 
-      if (!mainRes.ok) {
-        const data = await mainRes.json().catch(() => ({}));
-        throw new Error(data.error || "Error calculando probabilidad");
-      }
-
-      const mainData = await mainRes.json();
-      const mainProbability: number | null = mainData.probability ?? null;
-
-      setProbResult({
-        question: mainData.question,
-        probability: mainProbability ?? 0,
-        summary: mainData.summary,
-        shortLabel: mainData.shortLabel,
-      });
-
-      // 2) Construir resultados de comparación para los 3 periodos
-      const results: {
-        key: RangeKey;
-        label: string;
-        probability: number | null;
-      }[] = [];
-
+      // Recorremos los 3 periodos.
+      // Para el periodo seleccionado reutilizamos los tracks ya cargados.
       for (const period of PERIODS) {
-        // Para el periodo actualmente seleccionado, reutilizamos el mismo resultado
-        if (period.key === selectedRange) {
-          results.push({
-            key: period.key,
-            label: period.label,
-            probability: mainProbability,
-          });
-          continue;
-        }
-
         try {
-          // 2.1) Obtener tracks de ese periodo
-          const tracksRes = await fetch(
-            `/api/spotify/top-tracks?range=${period.key}`
-          );
-          if (!tracksRes.ok) {
-            console.error(`Error obteniendo tracks de ${period.key}`);
-            results.push({
-              key: period.key,
-              label: period.label,
-              probability: null,
-            });
-            continue;
-          }
+          let periodTracks: Track[] = [];
 
-          const tracksData = await tracksRes.json();
-          const periodTracks: Track[] = tracksData.tracks || [];
+          if (period.key === selectedRange && tracks.length > 0) {
+            periodTracks = tracks;
+          } else {
+            const tracksRes = await fetch(
+              `/api/spotify/top-tracks?range=${period.key}`
+            );
+            if (!tracksRes.ok) {
+              console.error(`Error obteniendo tracks de ${period.key}`);
+              results.push({ key: period.key, probability: null });
+              continue;
+            }
+            const tracksData = await tracksRes.json();
+            periodTracks = tracksData.tracks || [];
+          }
 
           if (!periodTracks.length) {
-            results.push({
-              key: period.key,
-              label: period.label,
-              probability: null,
-            });
+            results.push({ key: period.key, probability: null });
             continue;
           }
 
-          // 2.2) Calcular probabilidad para ese periodo
           const probRes = await fetch("/api/probability", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -210,34 +188,45 @@ export default function Home() {
 
           if (!probRes.ok) {
             console.error(`Error calculando probabilidad para ${period.key}`);
-            results.push({
-              key: period.key,
-              label: period.label,
-              probability: null,
-            });
+            results.push({ key: period.key, probability: null });
             continue;
           }
 
           const probData = await probRes.json();
-          results.push({
-            key: period.key,
-            label: period.label,
-            probability: probData.probability ?? null,
-          });
+          const probability: number | null =
+            typeof probData.probability === "number"
+              ? probData.probability
+              : null;
+
+          results.push({ key: period.key, probability });
+
+          // Si es el periodo seleccionado, ese es el resultado principal
+          if (period.key === selectedRange && probability !== null) {
+            mainResult = {
+              question: probData.question,
+              probability,
+              summary: probData.summary,
+              shortLabel: probData.shortLabel,
+            };
+          }
         } catch (innerErr) {
           console.error(`Error en periodo ${period.key}:`, innerErr);
-          results.push({
-            key: period.key,
-            label: period.label,
-            probability: null,
-          });
+          results.push({ key: period.key, probability: null });
         }
       }
 
       setComparisonResults(results);
+
+      if (!mainResult) {
+        setProbError(
+          "No se pudo calcular la probabilidad para el periodo seleccionado."
+        );
+      } else {
+        setProbResult(mainResult);
+      }
     } catch (err: any) {
       console.error(err);
-      setProbError(err.message || "Error inesperado");
+      setProbError(err.message || "Error inesperado.");
       setComparisonError(err.message || "Error inesperado en la comparación.");
     } finally {
       setProbLoading(false);
@@ -296,27 +285,32 @@ export default function Home() {
           )}
         </section>
 
-        {/* Selector de periodo principal */}
+        {/* Selector de periodo principal – estilo Receiptify */}
         {session && (
-          <section className="flex flex-col gap-2">
+          <section className="flex flex-col gap-3">
             <p className="text-xs uppercase tracking-wide text-slate-400">
-              Periodo para el análisis principal
+              Selecciona el periodo de análisis
             </p>
-            <div className="flex flex-wrap gap-2">
+
+            <div className="flex flex-wrap gap-3">
               {PERIODS.map((p) => (
                 <button
                   key={p.key}
                   onClick={() => setSelectedRange(p.key)}
-                  className={`px-3 py-1.5 text-xs rounded-full border ${
+                  className={`px-4 py-2 rounded-xl text-sm font-medium border transition ${
                     selectedRange === p.key
                       ? "bg-emerald-500 text-slate-950 border-emerald-400"
-                      : "border-slate-600 text-slate-200 hover:bg-slate-800"
-                  } transition`}
+                      : "border-slate-700 text-slate-200 hover:bg-slate-800"
+                  }`}
                 >
-                  {p.label}
+                  {PERIOD_DETAILS[p.key].label}
                 </button>
               ))}
             </div>
+
+            <p className="text-sm text-slate-400 leading-relaxed mt-1">
+              {PERIOD_DETAILS[selectedRange].description}
+            </p>
           </section>
         )}
 
@@ -324,8 +318,7 @@ export default function Home() {
         {session && (
           <section className="bg-slate-900/60 rounded-2xl p-4 md:p-5">
             <h2 className="text-lg font-semibold mb-2">
-              Tus canciones top (
-              {PERIODS.find((p) => p.key === selectedRange)?.label})
+              Tus canciones top ({PERIOD_DETAILS[selectedRange].label})
             </h2>
 
             {loadingTracks && (
@@ -370,7 +363,7 @@ export default function Home() {
           </section>
         )}
 
-        {/* Probabilidad principal */}
+        {/* Probabilidad principal + botón único */}
         {session && (
           <section className="bg-slate-900/60 rounded-2xl p-4 md:p-5 flex flex-col gap-4">
             <h2 className="text-lg font-semibold">Calcula tu probabilidad</h2>
@@ -394,13 +387,13 @@ export default function Home() {
               </div>
 
               <button
-                onClick={handleCalculateProbability}
+                onClick={handleCalculateAll}
                 disabled={probLoading || comparisonLoading}
                 className="mt-2 px-6 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold transition disabled:opacity-60 disabled:cursor-not-allowed self-start"
               >
                 {probLoading || comparisonLoading
-                  ? "Calculando..."
-                  : "Calcular probabilidad"}
+                  ? "Calculando probabilidades..."
+                  : "Calcular probabilidad y ver por periodos"}
               </button>
 
               {probError && (
@@ -412,8 +405,10 @@ export default function Home() {
               <div className="mt-4 border-t border-slate-800 pt-4 flex flex-col gap-4">
                 <div>
                   <p className="text-xs uppercase tracking-wide text-slate-400 mb-1">
-                    Resultado (
-                    {PERIODS.find((p) => p.key === selectedRange)?.label})
+                    Resultado – {PERIOD_DETAILS[selectedRange].label}
+                  </p>
+                  <p className="text-xs text-slate-500 mb-1">
+                    {PERIOD_DETAILS[selectedRange].subtitle}
                   </p>
                   <p className="text-sm text-slate-300 mb-1">
                     {probResult.question}
@@ -465,27 +460,26 @@ export default function Home() {
           </section>
         )}
 
-        {/* Vista 2: comparación por periodos */}
+        {/* Comparación por periodos – siempre visible */}
         {session && (
           <section className="bg-slate-900/60 rounded-2xl p-4 md:p-5 flex flex-col gap-4">
             <h2 className="text-lg font-semibold">
               Comparar esta pregunta por periodos
             </h2>
             <p className="text-sm text-slate-300">
-              Cada vez que calculas la probabilidad, también estimamos cómo
-              cambia usando tu música de las últimas semanas, los últimos 6
-              meses y todo el tiempo.
+              Calculamos la misma pregunta usando tu música de las últimas
+              semanas, los últimos 6 meses y todo el tiempo.
             </p>
-
-            {comparisonLoading && (
-              <p className="text-xs text-slate-400">
-                Calculando probabilidades para todos los periodos...
-              </p>
-            )}
 
             {comparisonError && (
               <p className="text-red-400 text-sm mt-1">
                 {comparisonError}
+              </p>
+            )}
+
+            {comparisonLoading && (
+              <p className="text-slate-300 text-sm">
+                Calculando probabilidades para cada periodo...
               </p>
             )}
 
@@ -497,10 +491,10 @@ export default function Home() {
                     className="rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-3 flex flex-col gap-1"
                   >
                     <p className="text-xs uppercase tracking-wide text-slate-400">
-                      {PERIODS.find((p) => p.key === r.key)?.label}
+                      {PERIOD_DETAILS[r.key].label}
                     </p>
                     <p className="text-[11px] text-slate-500 mb-1">
-                      {PERIODS.find((p) => p.key === r.key)?.subtitle}
+                      {PERIOD_DETAILS[r.key].subtitle}
                     </p>
                     {r.probability === null ? (
                       <p className="text-xs text-slate-500">
