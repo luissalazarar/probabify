@@ -8,6 +8,7 @@ const scopes = [
 ].join(" ");
 
 export const authOptions: NextAuthOptions = {
+  debug: true, // 🔍 importante para ver el error real en Vercel
   providers: [
     SpotifyProvider({
       clientId: process.env.SPOTIFY_CLIENT_ID!,
@@ -22,7 +23,6 @@ export const authOptions: NextAuthOptions = {
     // Guarda el access token de Spotify en el JWT
     async jwt({ token, account }) {
       if (account) {
-        // primer login
         (token as any).accessToken = account.access_token;
       }
       return token;
