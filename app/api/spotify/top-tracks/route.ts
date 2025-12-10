@@ -6,14 +6,15 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user || !session.accessToken) {
+    // sacamos el accessToken haciendo cast a any para evitar el error de tipos
+    const accessToken = (session as any)?.accessToken as string | undefined;
+
+    if (!accessToken) {
       return NextResponse.json(
         { error: "No autenticado con Spotify" },
         { status: 401 }
       );
     }
-
-    const accessToken = (session as any).accessToken as string;
 
     const res = await fetch(
       "https://api.spotify.com/v1/me/top/tracks?limit=30&time_range=short_term",
