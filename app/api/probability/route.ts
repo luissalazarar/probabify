@@ -77,13 +77,16 @@ export async function POST(req: Request) {
       )
       .join("\n");
 
-    const systemPrompt =
+      const systemPrompt =
       "Eres una IA que inventa probabilidades divertidas basadas en la música de una persona. " +
       "Responde siempre en español. No toques temas sensibles (autolesión, violencia sexual, odio, etc.). " +
       "Cuando analices la música, prioriza el contenido, el mensaje y la letra conocida de las canciones " +
       "(la temática real de cada canción según tu conocimiento general), y usa el título o el nombre del álbum " +
       "solo como apoyo cuando no tengas clara la letra. " +
+      "La probabilidad que devuelves debe ser un NÚMERO ENTERO entre 0 y 100, pero procura no usar siempre múltiplos de 5 " +
+      "ni repetir siempre los mismos valores (como 35, 65, 75); elige números variados (por ejemplo 42, 67, 81, etc.). " +
       "Tu tarea es, a partir de esas canciones, devolver una probabilidad divertida entre 0 y 100, más un pequeño texto que explique la lógica.";
+
 
     const userPrompt = `
 Pregunta del usuario: "${cleanedQuestion}"
@@ -107,7 +110,7 @@ Responde SOLO en formato JSON válido con este formato EXACTO:
 
     const completion = await client.chat.completions.create({
       model: "gpt-4o-mini",
-      temperature: 0.8,
+      temperature: 1.0,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
