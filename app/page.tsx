@@ -3,7 +3,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
-import html2canvas from "html2canvas";
+import html2canvas from "html-to-image";
 
 type Track = {
   id: string;
