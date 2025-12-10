@@ -1,8 +1,9 @@
+// app/page.tsx
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
-import * as htmlToImage from "html-to-image";
+import html2canvas from "html2canvas";
 
 type Track = {
   id: string;
@@ -84,36 +85,11 @@ export default function Home() {
     { key: RangeKey; probability: number | null }[] | null
   >(null);
 
-  // 🔗 refs para las cards shareables
-  const mainShareRef = useRef<HTMLDivElement | null>(null);
-  const periodsShareRef = useRef<HTMLDivElement | null>(null);
+  // 🔗 refs para las tarjetas exportables
+  const postCardRef = useRef<HTMLDivElement | null>(null);
+  const periodsCardRef = useRef<HTMLDivElement | null>(null);
 
-  // Helper para exportar un nodo como PNG
-  async function exportNodeAsPng(
-    node: HTMLDivElement | null,
-    filename: string,
-    opts?: { width?: number; height?: number }
-  ) {
-    if (!node) return;
-    try {
-      const dataUrl = await htmlToImage.toPng(node, {
-        cacheBust: true,
-        pixelRatio: 2,
-        width: opts?.width,
-        height: opts?.height,
-      });
-
-      const link = document.createElement("a");
-      link.href = dataUrl;
-      link.download = filename;
-      link.click();
-    } catch (err) {
-      console.error("Error exportando imagen:", err);
-      alert("No se pudo generar la imagen. Intenta de nuevo.");
-    }
-  }
-
-  // 🔁 Cargar top tracks del periodo principal
+  // 1) Cargar canciones del periodo principal
   useEffect(() => {
     if (status !== "authenticated") return;
 
@@ -143,7 +119,7 @@ export default function Home() {
     fetchTopTracks();
   }, [status, selectedRange]);
 
-  // 🔢 Calcula prob principal + 3 periodos
+  // 2) Botón único: calcula resultado principal + 3 periodos
   async function handleCalculateAll() {
     try {
       if (!session) {
@@ -254,24 +230,29 @@ export default function Home() {
     }
   }
 
-  // ⏬ Exportar imagen de resultado principal (cuadrada estilo IG)
-  function handleDownloadMainCard() {
-    // 1080x1080 sugerido para IG
-    exportNodeAsPng(mainShareRef.current, "probabify_resultado.png", {
-      width: 1080,
-      height: 1080,
-    });
+  // 3) Utilidad para exportar como imagen (historia 9:16)
+  async function handleDownloadCard(
+    ref: React.RefObject<HTMLDivElement>,
+    filename: string
+  ) {
+    if (!ref.current) return;
+    try {
+      const canvas = await html2canvas(ref.current, {
+        backgroundColor: "#020617", // slate-950
+        scale: 3,
+        useCORS: true,
+      });
+      const dataUrl = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = filename;
+      link.click();
+    } catch (err) {
+      console.error("Error exportando imagen:", err);
+    }
   }
 
-  // ⏬ Exportar imagen de resumen 3 periodos (vertical)
-  function handleDownloadPeriodsCard() {
-    // 1080x1920 tipo story / vertical
-    exportNodeAsPng(periodsShareRef.current, "probabify_3_periodos.png", {
-      width: 1080,
-      height: 1920,
-    });
-  }
-
+  // 4) Loading de sesión
   if (status === "loading") {
     return (
       <main className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-100">
@@ -438,161 +419,178 @@ export default function Home() {
               )}
             </div>
 
+            {/* Resultado principal */}
             {probResult && (
-              <div className="mt-4 border-t border-slate-800 pt-4 flex flex-col gap-4">
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-slate-400 mb-1">
-                    Resultado – {PERIOD_DETAILS[selectedRange].label}
-                  </p>
-                  <p className="text-xs text-slate-500 mb-1">
-                    {PERIOD_DETAILS[selectedRange].subtitle}
-                  </p>
-                  <p className="text-sm text-slate-300 mb-1">
-                    {probResult.question}
-                  </p>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold">
-                      {probResult.probability}%
-                    </span>
-                    <span className="text-slate-400 text-sm">
-                      probabilidad según tu Spotify
-                    </span>
+              <>
+                <div className="mt-4 border-t border-slate-800 pt-4 flex flex-col gap-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-slate-400 mb-1">
+                      Resultado – {PERIOD_DETAILS[selectedRange].label}
+                    </p>
+                    <p className="text-xs text-slate-500 mb-1">
+                      {PERIOD_DETAILS[selectedRange].subtitle}
+                    </p>
+                    <p className="text-sm text-slate-300 mb-1">
+                      {probResult.question}
+                    </p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-bold">
+                        {probResult.probability}%
+                      </span>
+                      <span className="text-slate-400 text-sm">
+                        probabilidad según tu Spotify
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-300 mt-2">
+                      {probResult.summary}
+                    </p>
                   </div>
-                  <p className="text-sm text-slate-300 mt-2">
-                    {probResult.summary}
-                  </p>
+
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">
+                      Canciones que más lo avalan (ejemplo)
+                    </p>
+                    <ul className="space-y-2">
+                      {tracks.slice(0, 3).map((track) => (
+                        <li
+                          key={track.id}
+                          className="flex items-center gap-3 text-sm"
+                        >
+                          {track.image && (
+                            <img
+                              src={track.image}
+                              alt={track.name}
+                              className="w-8 h-8 rounded-md object-cover"
+                            />
+                          )}
+                          <div className="flex flex-col">
+                            <span className="font-semibold">
+                              {track.name}
+                            </span>
+                            <span className="text-xs text-slate-400">
+                              {track.artist}
+                            </span>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
 
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">
-                    Canciones que más lo avalan (ejemplo)
-                  </p>
-                  <ul className="space-y-2">
-                    {tracks.slice(0, 3).map((track) => (
-                      <li
-                        key={track.id}
-                        className="flex items-center gap-3 text-sm"
-                      >
-                        {track.image && (
-                          <img
-                            src={track.image}
-                            alt={track.name}
-                            className="w-8 h-8 rounded-md object-cover"
-                          />
-                        )}
-                        <div className="flex flex-col">
-                          <span className="font-semibold">
-                            {track.name}
-                          </span>
-                          <span className="text-xs text-slate-400">
-                            {track.artist}
-                          </span>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
+                {/* Tarjeta shareable 9:16 para este periodo */}
+                <div className="mt-6 border-t border-slate-800 pt-4 flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs uppercase tracking-wide text-slate-400">
+                      Vista para post
+                    </p>
+                    <button
+                      onClick={() =>
+                        handleDownloadCard(
+                          postCardRef,
+                          "probabify_historia_periodo.png"
+                        )
+                      }
+                      className="px-3 py-1.5 rounded-full bg-sky-500 hover:bg-sky-400 text-xs font-semibold text-slate-950 transition"
+                    >
+                      Exportar historia de este periodo
+                    </button>
+                  </div>
+
+                  {/* Card IG story 9:16 */}
+                  <div
+                    ref={postCardRef}
+                    className="mx-auto w-[360px] h-[640px] rounded-[32px] bg-slate-950 shadow-2xl overflow-hidden flex flex-col px-6 py-6 gap-4"
+                  >
+                    <div className="text-[10px] uppercase tracking-wide text-slate-400">
+                      {PERIOD_DETAILS[selectedRange].label} ·{" "}
+                      {PERIOD_DETAILS[selectedRange].subtitle}
+                    </div>
+
+                    <div className="flex flex-col gap-3">
+                      <p className="text-xs text-slate-300">
+                        {probResult.question}
+                      </p>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-5xl font-extrabold text-slate-50">
+                          {probResult.probability}%
+                        </span>
+                        <span className="text-xs text-slate-300">
+                          según tu Spotify
+                        </span>
+                      </div>
+                      <p className="text-xs leading-relaxed text-slate-200 mt-2 line-clamp-7">
+                        {probResult.summary}
+                      </p>
+                    </div>
+
+                    <div className="mt-4">
+                      <p className="text-[10px] uppercase tracking-wide text-slate-400 mb-2">
+                        Canciones que más lo avalan
+                      </p>
+                      <div className="flex flex-col gap-2">
+                        {tracks.slice(0, 3).map((track) => (
+                          <div
+                            key={track.id}
+                            className="flex items-center gap-3 text-xs"
+                          >
+                            {track.image && (
+                              <img
+                                src={track.image}
+                                alt={track.name}
+                                className="w-8 h-8 rounded-md object-cover"
+                              />
+                            )}
+                            <div className="flex flex-col">
+                              <span className="font-semibold text-slate-100">
+                                {track.name}
+                              </span>
+                              <span className="text-[11px] text-slate-400">
+                                {track.artist}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mt-auto pt-4 text-[9px] text-slate-500 border-t border-slate-800">
+                      Generado con <span className="font-semibold">Probabify</span>{" "}
+                      usando tu música top de Spotify.
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </>
             )}
           </section>
         )}
 
-        {/* Shareable 1: card cuadrada del resultado */}
-        {session && probResult && (
-          <section className="bg-slate-900/80 rounded-2xl border border-slate-700 p-4 md:p-5 flex flex-col gap-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-wide text-slate-400">
-                  Vista para post (resultado)
-                </p>
-                <p className="text-[11px] text-slate-500">
-                  Exporta una imagen cuadrada lista para subir a IG.
-                </p>
-              </div>
-              <button
-                onClick={handleDownloadMainCard}
-                className="px-3 py-1.5 rounded-full bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-semibold transition"
-              >
-                Descargar imagen
-              </button>
-            </div>
-
-            <div
-              ref={mainShareRef}
-              className="mx-auto w-full max-w-sm aspect-square rounded-3xl bg-slate-950 px-6 py-6 flex flex-col gap-4 shadow-xl shadow-black/40"
-            >
-              <p className="text-[11px] uppercase tracking-wide text-slate-500">
-                {PERIOD_DETAILS[selectedRange].label} ·{" "}
-                {PERIOD_DETAILS[selectedRange].subtitle}
-              </p>
-
-              <p className="text-sm text-slate-200">
-                {probResult.question}
-              </p>
-
-              <div className="flex items-baseline gap-3">
-                <span className="text-6xl font-extrabold">
-                  {probResult.probability}%
-                </span>
-                <span className="text-slate-400 text-sm">
-                  según tu Spotify
-                </span>
-              </div>
-
-              <p className="text-sm text-slate-300 leading-relaxed line-clamp-5">
-                {probResult.summary}
-              </p>
-
-              <div className="mt-auto">
-                <p className="text-[11px] text-slate-500 mb-1">
-                  Canciones que más lo avalan
-                </p>
-                <ul className="space-y-1">
-                  {tracks.slice(0, 3).map((track) => (
-                    <li
-                      key={track.id}
-                      className="flex items-center gap-2 text-[11px]"
-                    >
-                      {track.image && (
-                        <img
-                          src={track.image}
-                          alt={track.name}
-                          className="w-7 h-7 rounded-md object-cover"
-                        />
-                      )}
-                      <div className="flex flex-col">
-                        <span className="font-semibold text-slate-200">
-                          {track.name}
-                        </span>
-                        <span className="text-[10px] text-slate-400">
-                          {track.artist}
-                        </span>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="pt-2 mt-1 border-t border-slate-800">
-                <p className="text-[10px] text-slate-500">
-                  Generado con <span className="font-semibold">Probabify</span>{" "}
-                  usando tu música top de Spotify.
-                </p>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Comparación por periodos – siempre visible */}
+        {/* Comparación por periodos */}
         {session && (
           <section className="bg-slate-900/60 rounded-2xl p-4 md:p-5 flex flex-col gap-4">
-            <h2 className="text-lg font-semibold">
-              Comparar esta pregunta por periodos
-            </h2>
-            <p className="text-sm text-slate-300">
-              Calculamos la misma pregunta usando tu música de las últimas
-              semanas, los últimos 6 meses y todo el tiempo.
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold">
+                  Comparar esta pregunta por periodos
+                </h2>
+                <p className="text-sm text-slate-300">
+                  Calculamos la misma pregunta usando tu música de las últimas
+                  semanas, los últimos 6 meses y todo el tiempo.
+                </p>
+              </div>
+              {comparisonResults && (
+                <button
+                  onClick={() =>
+                    handleDownloadCard(
+                      periodsCardRef,
+                      "probabify_historia_periodos.png"
+                    )
+                  }
+                  className="px-3 py-1.5 rounded-full bg-sky-500 hover:bg-sky-400 text-xs font-semibold text-slate-950 transition"
+                >
+                  Exportar resumen por periodos
+                </button>
+              )}
+            </div>
 
             {comparisonError && (
               <p className="text-red-400 text-sm mt-1">
@@ -607,92 +605,72 @@ export default function Home() {
             )}
 
             {comparisonResults && (
-              <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-                {comparisonResults.map((r) => (
-                  <div
-                    key={r.key}
-                    className="rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-3 flex flex-col gap-1"
-                  >
-                    <p className="text-xs uppercase tracking-wide text-slate-400">
-                      {PERIOD_DETAILS[r.key].label}
-                    </p>
-                    <p className="text-[11px] text-slate-500 mb-1">
-                      {PERIOD_DETAILS[r.key].subtitle}
-                    </p>
-                    {r.probability === null ? (
-                      <p className="text-xs text-slate-500">
-                        Sin datos suficientes para este periodo.
-                      </p>
-                    ) : (
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-bold">
-                          {r.probability}%
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* Shareable 2: resumen vertical 3 periodos */}
-        {session && comparisonResults && (
-          <section className="bg-slate-900/80 rounded-2xl border border-slate-700 p-4 md:p-5 flex flex-col gap-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-wide text-slate-400">
-                  Vista para post (3 periodos)
-                </p>
-                <p className="text-[11px] text-slate-500">
-                  Imagen vertical con la probabilidad en cada periodo.
-                </p>
-              </div>
-              <button
-                onClick={handleDownloadPeriodsCard}
-                className="px-3 py-1.5 rounded-full bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-semibold transition"
-              >
-                Descargar imagen
-              </button>
-            </div>
-
-            <div
-              ref={periodsShareRef}
-              className="mx-auto w-full max-w-xs aspect-[9/16] rounded-3xl bg-slate-950 px-6 py-6 flex flex-col justify-between shadow-xl shadow-black/40"
-            >
-              <div className="flex flex-col gap-3">
-                <p className="text-[11px] uppercase tracking-wide text-slate-500">
-                  Probabify · Resumen por periodos
-                </p>
-                <p className="text-xs text-slate-400">
-                  {selectedPreset}
-                </p>
-
-                <div className="mt-2 flex flex-col gap-4">
+              <>
+                <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
                   {comparisonResults.map((r) => (
-                    <div key={r.key} className="flex flex-col gap-1">
-                      <p className="text-[11px] uppercase tracking-wide text-slate-500">
+                    <div
+                      key={r.key}
+                      className="rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-3 flex flex-col gap-1"
+                    >
+                      <p className="text-xs uppercase tracking-wide text-slate-400">
                         {PERIOD_DETAILS[r.key].label}
                       </p>
-                      <p className="text-[11px] text-slate-500">
+                      <p className="text-[11px] text-slate-500 mb-1">
                         {PERIOD_DETAILS[r.key].subtitle}
                       </p>
-                      <p className="text-3xl font-bold text-slate-50">
-                        {r.probability === null ? "--" : `${r.probability}%`}
-                      </p>
+                      {r.probability === null ? (
+                        <p className="text-xs text-slate-500">
+                          Sin datos suficientes para este periodo.
+                        </p>
+                      ) : (
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-3xl font-bold">
+                            {r.probability}%
+                          </span>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
-              </div>
 
-              <div className="pt-3 border-t border-slate-800 mt-4">
-                <p className="text-[10px] text-slate-500">
-                  Generado con <span className="font-semibold">Probabify</span>{" "}
-                  usando tu música de Spotify.
-                </p>
-              </div>
-            </div>
+                {/* Card IG story con los 3 periodos */}
+                <div
+                  ref={periodsCardRef}
+                  className="mt-6 mx-auto w-[360px] h-[640px] rounded-[32px] bg-slate-950 shadow-2xl overflow-hidden flex flex-col px-6 py-6 gap-4"
+                >
+                  <div className="text-[10px] uppercase tracking-wide text-slate-400">
+                    Probabify · Resumen por periodos
+                  </div>
+
+                  <div className="mt-2 flex flex-col gap-4">
+                    {comparisonResults.map((r) => (
+                      <div key={r.key} className="flex flex-col gap-1">
+                        <p className="text-[11px] uppercase tracking-wide text-slate-400">
+                          {PERIOD_DETAILS[r.key].label}
+                        </p>
+                        <p className="text-[11px] text-slate-500">
+                          {PERIOD_DETAILS[r.key].subtitle}
+                        </p>
+                        {r.probability === null ? (
+                          <p className="text-xs text-slate-500">
+                            Sin datos suficientes para este periodo.
+                          </p>
+                        ) : (
+                          <span className="text-3xl font-bold text-slate-50">
+                            {r.probability}%
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-auto pt-4 text-[9px] text-slate-500 border-t border-slate-800">
+                    Generado con <span className="font-semibold">Probabify</span>{" "}
+                    usando tu música top de Spotify.
+                  </div>
+                </div>
+              </>
+            )}
           </section>
         )}
       </div>
