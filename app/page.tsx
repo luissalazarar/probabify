@@ -234,6 +234,30 @@ export default function Home() {
     }
   }
 
+  // 📝 Copiar texto listo para post
+  async function handleCopyPost() {
+    if (!probResult) return;
+
+    const periodInfo = PERIOD_DETAILS[selectedRange];
+
+    const text = `Pregunta: ${probResult.question}
+Periodo: ${periodInfo.label} (${periodInfo.subtitle})
+Probabilidad: ${probResult.probability}%
+
+Resumen:
+${probResult.summary}
+
+Generado con Probabify usando mi música de Spotify.`;
+
+    try {
+      await navigator.clipboard.writeText(text);
+      alert("Texto para el post copiado al portapapeles ✅");
+    } catch (err) {
+      console.error("Error copiando al portapapeles:", err);
+      alert("No se pudo copiar el texto. Intenta de nuevo.");
+    }
+  }
+
   // Cargando sesión
   if (status === "loading") {
     return (
@@ -457,6 +481,59 @@ export default function Home() {
                 </div>
               </div>
             )}
+          </section>
+        )}
+
+        {/* Vista para post / shareable */}
+        {session && probResult && (
+          <section className="bg-slate-900/80 rounded-2xl border border-slate-700 p-4 md:p-5 flex flex-col gap-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-slate-400">
+                  Vista para post
+                </p>
+                <p className="text-[11px] text-slate-500">
+                  Tarjeta pensada para pantallazo o copiar el texto.
+                </p>
+              </div>
+              <button
+                onClick={handleCopyPost}
+                className="px-3 py-1.5 rounded-full bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-semibold transition"
+              >
+                Copiar texto para post
+              </button>
+            </div>
+
+            <div className="rounded-2xl bg-slate-950 px-4 py-4 flex flex-col gap-3 shadow-lg shadow-black/40">
+              <p className="text-xs uppercase tracking-wide text-slate-500">
+                {PERIOD_DETAILS[selectedRange].label} ·{" "}
+                {PERIOD_DETAILS[selectedRange].subtitle}
+              </p>
+
+              <p className="text-sm text-slate-300">
+                {probResult.question}
+              </p>
+
+              <div className="flex items-baseline gap-2">
+                <span className="text-5xl font-extrabold">
+                  {probResult.probability}%
+                </span>
+                <span className="text-slate-400 text-sm">
+                  según tu Spotify
+                </span>
+              </div>
+
+              <p className="text-sm text-slate-300 leading-relaxed">
+                {probResult.summary}
+              </p>
+
+              <div className="mt-2 border-t border-slate-800 pt-2">
+                <p className="text-[11px] text-slate-500">
+                  Generado con <span className="font-semibold">Probabify</span>{" "}
+                  usando tu música top de Spotify.
+                </p>
+              </div>
+            </div>
           </section>
         )}
 
