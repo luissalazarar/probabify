@@ -31,9 +31,9 @@ const PRESET_QUESTIONS = [
 ];
 
 const PERIODS: { key: RangeKey; label: string; subtitle: string }[] = [
-  { key: "short_term",  label: "Últimas semanas",   subtitle: "Mood reciente" },
-  { key: "medium_term", label: "Últimos 6 meses",   subtitle: "Tendencia media" },
-  { key: "long_term",   label: "Todo el tiempo",    subtitle: "Tu esencia musical" },
+  { key: "short_term", label: "Últimas semanas", subtitle: "Mood reciente" },
+  { key: "medium_term", label: "Últimos 6 meses", subtitle: "Tendencia media" },
+  { key: "long_term", label: "Todo el tiempo", subtitle: "Tu esencia musical" },
 ];
 
 export default function Home() {
@@ -90,7 +90,7 @@ export default function Home() {
     fetchTopTracks();
   }, [status, selectedRange]);
 
-  // 🧮 Probabilidad del periodo actual
+  // 🧮 Probabilidad + comparación por periodos (todo con un solo click)
   async function handleCalculateProbability() {
     try {
       if (!session) {
@@ -109,11 +109,17 @@ export default function Home() {
         return;
       }
 
+      // Limpiezas previas
       setProbLoading(true);
       setProbError(null);
       setProbResult(null);
 
-      const res = await fetch("/api/probability", {
+      setComparisonLoading(true);
+      setComparisonError(null);
+      setComparisonResults(null);
+
+      // 1) Probabilidad para el periodo actualmente seleccionado (usando los tracks ya cargados)
+      const mainRes = await fetch("/api/probability", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -127,56 +133,51 @@ export default function Home() {
         }),
       });
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
+      if (!mainRes.ok) {
+        const data = await mainRes.json().catch(() => ({}));
         throw new Error(data.error || "Error calculando probabilidad");
       }
 
-      const data = await res.json();
+      const mainData = await mainRes.json();
+      const mainProbability: number | null = mainData.probability ?? null;
+
       setProbResult({
-        question: data.question,
-        probability: data.probability,
-        summary: data.summary,
-        shortLabel: data.shortLabel,
+        question: mainData.question,
+        probability: mainProbability ?? 0,
+        summary: mainData.summary,
+        shortLabel: mainData.shortLabel,
       });
-    } catch (err: any) {
-      console.error(err);
-      setProbError(err.message || "Error inesperado");
-    } finally {
-      setProbLoading(false);
-    }
-  }
 
-  // 📊 Comparación por periodos (3 %)
-  async function handleCompareAllRanges() {
-    try {
-      if (!session) {
-        setComparisonError("Primero conecta tu Spotify.");
-        return;
-      }
+      // 2) Construir resultados de comparación para los 3 periodos
+      const results: {
+        key: RangeKey;
+        label: string;
+        probability: number | null;
+      }[] = [];
 
-      const question = selectedPreset.trim();
-      if (!question) {
-        setComparisonError("Selecciona una pregunta.");
-        return;
-      }
-
-      setComparisonLoading(true);
-      setComparisonError(null);
-      setComparisonResults(null);
-
-      const results: { key: RangeKey; label: string; probability: number | null }[] = [];
-
-      // Hacemos las 3 llamadas secuenciales
       for (const period of PERIODS) {
+        // Para el periodo actualmente seleccionado, reutilizamos el mismo resultado
+        if (period.key === selectedRange) {
+          results.push({
+            key: period.key,
+            label: period.label,
+            probability: mainProbability,
+          });
+          continue;
+        }
+
         try {
-          // 1) Top tracks de ese periodo
+          // 2.1) Obtener tracks de ese periodo
           const tracksRes = await fetch(
             `/api/spotify/top-tracks?range=${period.key}`
           );
           if (!tracksRes.ok) {
             console.error(`Error obteniendo tracks de ${period.key}`);
-            results.push({ key: period.key, label: period.label, probability: null });
+            results.push({
+              key: period.key,
+              label: period.label,
+              probability: null,
+            });
             continue;
           }
 
@@ -184,11 +185,15 @@ export default function Home() {
           const periodTracks: Track[] = tracksData.tracks || [];
 
           if (!periodTracks.length) {
-            results.push({ key: period.key, label: period.label, probability: null });
+            results.push({
+              key: period.key,
+              label: period.label,
+              probability: null,
+            });
             continue;
           }
 
-          // 2) Calcular probabilidad para ese periodo
+          // 2.2) Calcular probabilidad para ese periodo
           const probRes = await fetch("/api/probability", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -205,7 +210,11 @@ export default function Home() {
 
           if (!probRes.ok) {
             console.error(`Error calculando probabilidad para ${period.key}`);
-            results.push({ key: period.key, label: period.label, probability: null });
+            results.push({
+              key: period.key,
+              label: period.label,
+              probability: null,
+            });
             continue;
           }
 
@@ -217,15 +226,21 @@ export default function Home() {
           });
         } catch (innerErr) {
           console.error(`Error en periodo ${period.key}:`, innerErr);
-          results.push({ key: period.key, label: period.label, probability: null });
+          results.push({
+            key: period.key,
+            label: period.label,
+            probability: null,
+          });
         }
       }
 
       setComparisonResults(results);
     } catch (err: any) {
       console.error(err);
+      setProbError(err.message || "Error inesperado");
       setComparisonError(err.message || "Error inesperado en la comparación.");
     } finally {
+      setProbLoading(false);
       setComparisonLoading(false);
     }
   }
@@ -309,7 +324,8 @@ export default function Home() {
         {session && (
           <section className="bg-slate-900/60 rounded-2xl p-4 md:p-5">
             <h2 className="text-lg font-semibold mb-2">
-              Tus canciones top ({PERIODS.find(p => p.key === selectedRange)?.label})
+              Tus canciones top (
+              {PERIODS.find((p) => p.key === selectedRange)?.label})
             </h2>
 
             {loadingTracks && (
@@ -379,10 +395,12 @@ export default function Home() {
 
               <button
                 onClick={handleCalculateProbability}
-                disabled={probLoading}
+                disabled={probLoading || comparisonLoading}
                 className="mt-2 px-6 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold transition disabled:opacity-60 disabled:cursor-not-allowed self-start"
               >
-                {probLoading ? "Calculando..." : "Calcular probabilidad"}
+                {probLoading || comparisonLoading
+                  ? "Calculando..."
+                  : "Calcular probabilidad"}
               </button>
 
               {probError && (
@@ -394,7 +412,8 @@ export default function Home() {
               <div className="mt-4 border-t border-slate-800 pt-4 flex flex-col gap-4">
                 <div>
                   <p className="text-xs uppercase tracking-wide text-slate-400 mb-1">
-                    Resultado ({PERIODS.find(p => p.key === selectedRange)?.label})
+                    Resultado (
+                    {PERIODS.find((p) => p.key === selectedRange)?.label})
                   </p>
                   <p className="text-sm text-slate-300 mb-1">
                     {probResult.question}
@@ -453,22 +472,21 @@ export default function Home() {
               Comparar esta pregunta por periodos
             </h2>
             <p className="text-sm text-slate-300">
-              Calculamos la misma pregunta usando tu música de las últimas
-              semanas, los últimos 6 meses y todo el tiempo.
+              Cada vez que calculas la probabilidad, también estimamos cómo
+              cambia usando tu música de las últimas semanas, los últimos 6
+              meses y todo el tiempo.
             </p>
 
-            <button
-              onClick={handleCompareAllRanges}
-              disabled={comparisonLoading}
-              className="px-6 py-2 rounded-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold transition disabled:opacity-60 disabled:cursor-not-allowed self-start"
-            >
-              {comparisonLoading
-                ? "Calculando para todos los periodos..."
-                : "Ver 3 probabilidades por periodo"}
-            </button>
+            {comparisonLoading && (
+              <p className="text-xs text-slate-400">
+                Calculando probabilidades para todos los periodos...
+              </p>
+            )}
 
             {comparisonError && (
-              <p className="text-red-400 text-sm mt-1">{comparisonError}</p>
+              <p className="text-red-400 text-sm mt-1">
+                {comparisonError}
+              </p>
             )}
 
             {comparisonResults && (
