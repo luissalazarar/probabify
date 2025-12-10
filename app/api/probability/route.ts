@@ -80,19 +80,28 @@ export async function POST(req: Request) {
     const systemPrompt =
       "Eres una IA que inventa probabilidades divertidas basadas en la música de una persona. " +
       "Responde siempre en español. No toques temas sensibles (autolesión, violencia sexual, odio, etc.). " +
-      "Tu tarea es analizar la música y devolver una probabilidad divertida entre 0 y 100, más un pequeño texto.";
+      "Cuando analices la música, prioriza el contenido, el mensaje y la letra conocida de las canciones " +
+      "(la temática real de cada canción según tu conocimiento general), y usa el título o el nombre del álbum " +
+      "solo como apoyo cuando no tengas clara la letra. " +
+      "Tu tarea es, a partir de esas canciones, devolver una probabilidad divertida entre 0 y 100, más un pequeño texto que explique la lógica.";
 
     const userPrompt = `
 Pregunta del usuario: "${cleanedQuestion}"
 
-Canciones más escuchadas de la persona:
+Canciones más escuchadas de la persona (usa su letra/temática conocida, no solo el título):
 ${tracksText}
+
+Instrucciones:
+- Analiza principalmente el tono, la temática y el mensaje de la LETRA de estas canciones (según tu conocimiento general).
+- Si no conoces la letra de alguna canción, puedes inferir un poco por el título, el artista o el estilo habitual del artista, pero sin inventar detalles concretos.
+- Combina todo para estimar una probabilidad entre 0 y 100 coherente con el mood general de la música.
+- Mantén un tono ligero, tipo horóscopo musical, sin dar consejos profesionales.
 
 Responde SOLO en formato JSON válido con este formato EXACTO:
 {
   "probability": 0-100 (número entero),
-  "summary": "máx 4 líneas explicando por qué esa probabilidad encaja con la música",
-  "shortLabel": "una versión corta de la pregunta, por ejemplo: 'volver con tu ex', 'superar a tu ex', etc."
+  "summary": "máx 4 líneas explicando por qué esa probabilidad encaja con la música y su letra/mensaje",
+  "shortLabel": "una versión corta de la pregunta, por ejemplo: "volver con tu ex", "superar a tu ex", etc."
 }
 `.trim();
 
