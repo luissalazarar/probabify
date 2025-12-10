@@ -28,11 +28,23 @@ const PRESET_QUESTIONS = [
   "¿Cuál es la probabilidad de empezar a valorarme?",
 ];
 
+// Periodos de Spotify
+const TIME_RANGES = {
+  short_term: "Último mes",
+  medium_term: "Últimos 6 meses",
+  long_term: "Todo el tiempo",
+} as const;
+
+type TimeRangeKey = keyof typeof TIME_RANGES;
+
 export default function Home() {
   const { data: session, status } = useSession();
+
   const [tracks, setTracks] = useState<Track[]>([]);
   const [loadingTracks, setLoadingTracks] = useState(false);
   const [errorTracks, setErrorTracks] = useState<string | null>(null);
+
+  const [timeRange, setTimeRange] = useState<TimeRangeKey>("short_term");
 
   const [selectedPreset, setSelectedPreset] = useState<string>(
     PRESET_QUESTIONS[0]
@@ -42,7 +54,9 @@ export default function Home() {
   const [probError, setProbError] = useState<string | null>(null);
   const [probResult, setProbResult] = useState<ProbabilityResult | null>(null);
 
-  // Obtener top tracks al autenticar
+  // 🔁 Obtener top tracks cuando:
+  // - el usuario se autentica
+  // - cambia el periodo (Último mes / 6 meses / todo el tiempo)
   useEffect(() => {
     if (status !== "authenticated") return;
 
@@ -51,7 +65,7 @@ export default function Home() {
         setLoadingTracks(true);
         setErrorTracks(null);
 
-        const res = await fetch("/api/spotify/top-tracks");
+        const res = await fetch(`/api/spotify/top-tracks?range=${timeRange}`);
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Error obteniendo canciones");
@@ -62,13 +76,14 @@ export default function Home() {
       } catch (err: any) {
         console.error(err);
         setErrorTracks(err.message || "Error inesperado");
+        setTracks([]);
       } finally {
         setLoadingTracks(false);
       }
     };
 
     fetchTopTracks();
-  }, [status]);
+  }, [status, timeRange]);
 
   async function handleCalculateProbability() {
     try {
@@ -78,11 +93,17 @@ export default function Home() {
       }
 
       if (tracks.length === 0) {
-        setProbError("Necesitamos algunas canciones para analizar.");
+        setProbError(
+          "Necesitamos algunas canciones para analizar en el periodo seleccionado."
+        );
         return;
       }
 
       const question = selectedPreset.trim();
+      if (!question) {
+        setProbError("Selecciona una pregunta.");
+        return;
+      }
 
       setProbLoading(true);
       setProbError(null);
@@ -102,12 +123,12 @@ export default function Home() {
         }),
       });
 
-      const data = await res.json().catch(() => ({}));
-
       if (!res.ok) {
-        throw new Error(data.safeMessage || data.error || "Error calculando probabilidad");
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Error calculando probabilidad");
       }
 
+      const data = await res.json();
       setProbResult({
         question: data.question,
         probability: data.probability,
@@ -135,13 +156,11 @@ export default function Home() {
       <div className="w-full max-w-3xl flex flex-col gap-8">
         {/* Header */}
         <header className="text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-3">
-            Probabify
-          </h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-3">Probabify</h1>
           <p className="text-slate-300 max-w-xl mx-auto">
-            Conecta tu Spotify, elige una pregunta y te devolvemos
-            una probabilidad inventada (pero coherente con tu música)
-            lista para pantallazo y post.
+            Conecta tu Spotify, elige una pregunta y te devolvemos una
+            probabilidad inventada (pero coherente con tu música) lista para
+            pantallazo y post.
           </p>
         </header>
 
@@ -174,16 +193,41 @@ export default function Home() {
           )}
         </section>
 
-        {/* Top tracks */}
+        {/* Top tracks + periodo */}
         {session && (
           <section className="bg-slate-900/60 rounded-2xl p-4 md:p-5">
-            <h2 className="text-lg font-semibold mb-2">
-              Tus canciones top (últimas semanas)
-            </h2>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
+              <h2 className="text-lg font-semibold">
+                Tus canciones top
+                <span className="block text-xs text-slate-400 font-normal md:inline md:ml-2">
+                  ({TIME_RANGES[timeRange]})
+                </span>
+              </h2>
+
+              {/* Botones de periodo */}
+              <div className="flex flex-wrap gap-2 text-xs md:text-sm">
+                {(Object.entries(TIME_RANGES) as [TimeRangeKey, string][]).map(
+                  ([key, label]) => (
+                    <button
+                      key={key}
+                      onClick={() => setTimeRange(key)}
+                      disabled={loadingTracks && timeRange === key}
+                      className={`px-3 py-1 rounded-full border transition ${
+                        timeRange === key
+                          ? "bg-emerald-500 text-slate-950 border-emerald-500"
+                          : "border-slate-600 text-slate-300 hover:bg-slate-800"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  )
+                )}
+              </div>
+            </div>
 
             {loadingTracks && (
               <p className="text-slate-300 text-sm">
-                Cargando canciones...
+                Cargando canciones del periodo seleccionado...
               </p>
             )}
 
@@ -193,8 +237,8 @@ export default function Home() {
 
             {!loadingTracks && !errorTracks && tracks.length === 0 && (
               <p className="text-slate-400 text-sm">
-                No encontramos canciones top. Escucha algo en Spotify
-                y vuelve a intentar.
+                No encontramos canciones top en este periodo. Escucha algo en
+                Spotify y vuelve a intentar.
               </p>
             )}
 
@@ -228,9 +272,7 @@ export default function Home() {
         {/* Probabilidad */}
         {session && (
           <section className="bg-slate-900/60 rounded-2xl p-4 md:p-5 flex flex-col gap-4">
-            <h2 className="text-lg font-semibold">
-              Calcula tu probabilidad
-            </h2>
+            <h2 className="text-lg font-semibold">Calcula tu probabilidad</h2>
 
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-2">
@@ -255,15 +297,11 @@ export default function Home() {
                 disabled={probLoading}
                 className="mt-2 px-6 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold transition disabled:opacity-60 disabled:cursor-not-allowed self-start"
               >
-                {probLoading
-                  ? "Calculando..."
-                  : "Calcular probabilidad"}
+                {probLoading ? "Calculando..." : "Calcular probabilidad"}
               </button>
 
               {probError && (
-                <p className="text-red-400 text-sm mt-1">
-                  {probError}
-                </p>
+                <p className="text-red-400 text-sm mt-1">{probError}</p>
               )}
             </div>
 
@@ -307,9 +345,7 @@ export default function Home() {
                           />
                         )}
                         <div className="flex flex-col">
-                          <span className="font-semibold">
-                            {track.name}
-                          </span>
+                          <span className="font-semibold">{track.name}</span>
                           <span className="text-xs text-slate-400">
                             {track.artist}
                           </span>

@@ -1,29 +1,32 @@
 // app/api/spotify/top-tracks/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-// ⬇️ AJUSTA ESTA RUTA SEGÚN TU PROYECTO
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user || !(session as any).accessToken) {
+    // 🛑 Verificar sesión Spotify
+    if (!session || !(session as any).accessToken) {
       return NextResponse.json(
         { error: "No autenticado con Spotify" },
         { status: 401 }
       );
     }
 
-    const accessToken = (session as any).accessToken as string;
+    const accessToken = (session as any).accessToken;
 
     // 🔁 Leer periodo desde querystring
-    const { searchParams } = new URL(req.url);
-    const range = searchParams.get("range") ?? "short_term"; // short_term | medium_term | long_term
+    const url = new URL(req.url);
+    const range = url.searchParams.get("range") ?? "short_term"; // default
 
-    // ✅ Spotify permite hasta 50
+    const validRanges = ["short_term", "medium_term", "long_term"];
+    const timeRange = validRanges.includes(range) ? range : "short_term";
+
+    // 🎯 Obtener top tracks (hasta 50 permitidas)
     const spotifyRes = await fetch(
-      `https://api.spotify.com/v1/me/top/tracks?limit=50&time_range=${range}`,
+      `https://api.spotify.com/v1/me/top/tracks?limit=50&time_range=${timeRange}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -31,9 +34,22 @@ export async function GET(req: Request) {
       }
     );
 
+    // 🚨 Token expirado → error 401
+    if (spotifyRes.status === 401) {
+      console.error("⚠️ Spotify: token expirado");
+      return NextResponse.json(
+        {
+          error:
+            "Tu sesión de Spotify expiró. Cierra sesión y vuelve a iniciar.",
+        },
+        { status: 401 }
+      );
+    }
+
     if (!spotifyRes.ok) {
       const err = await spotifyRes.json().catch(() => ({}));
-      console.error("Error Spotify top tracks:", err);
+      console.error("⚠️ Error Spotify top tracks:", err);
+
       return NextResponse.json(
         { error: "Error obteniendo canciones desde Spotify" },
         { status: spotifyRes.status }
@@ -42,6 +58,7 @@ export async function GET(req: Request) {
 
     const data = await spotifyRes.json();
 
+    // 🎵 Normalizar tracks
     const tracks =
       (data.items || []).map((item: any) => ({
         id: item.id,
@@ -57,7 +74,8 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ tracks });
   } catch (error: any) {
-    console.error("Error en /api/spotify/top-tracks:", error);
+    console.error("❌ Error en /api/spotify/top-tracks:", error);
+
     return NextResponse.json(
       { error: "Error interno en /api/spotify/top-tracks" },
       { status: 500 }
