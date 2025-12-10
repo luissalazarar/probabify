@@ -17,7 +17,7 @@ export async function GET() {
     }
 
     const res = await fetch(
-      "https://api.spotify.com/v1/me/top/tracks?limit=100&time_range=short_term",
+      "https://api.spotify.com/v1/me/top/tracks?limit=30&time_range=short_term",
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
