@@ -240,8 +240,12 @@ export default function Home() {
       const canvas = await html2canvas(element, {
         backgroundColor: "#020617", // slate-950
         scale: 3, // 360x640 -> 1080x1920
-        useCORS: true,
+        useCORS: false,
+        ignoreElements: (el) =>
+          el instanceof HTMLElement &&
+          el.classList.contains("html2canvas-ignore"),
       });
+
       const dataUrl = canvas.toDataURL("image/png");
       const link = document.createElement("a");
       link.href = dataUrl;
@@ -537,7 +541,7 @@ export default function Home() {
                               <img
                                 src={track.image}
                                 alt={track.name}
-                                className="w-8 h-8 rounded-md object-cover"
+                                className="w-8 h-8 rounded-md object-cover html2canvas-ignore"
                               />
                             )}
                             <div className="flex flex-col">
