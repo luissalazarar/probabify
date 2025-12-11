@@ -85,7 +85,7 @@ export default function Home() {
     { key: RangeKey; probability: number | null }[] | null
   >(null);
 
-  // 🔗 refs para las tarjetas exportables
+  // refs para las tarjetas exportables
   const postCardRef = useRef<HTMLDivElement | null>(null);
   const periodsCardRef = useRef<HTMLDivElement | null>(null);
 
@@ -232,14 +232,14 @@ export default function Home() {
 
   // 3) Utilidad para exportar como imagen (historia 9:16)
   async function handleDownloadCard(
-    ref: React.RefObject<HTMLDivElement>,
+    element: HTMLDivElement | null,
     filename: string
   ) {
-    if (!ref.current) return;
+    if (!element) return;
     try {
-      const canvas = await html2canvas(ref.current, {
+      const canvas = await html2canvas(element, {
         backgroundColor: "#020617", // slate-950
-        scale: 3,
+        scale: 3, // 360x640 -> 1080x1920
         useCORS: true,
       });
       const dataUrl = canvas.toDataURL("image/png");
@@ -252,7 +252,7 @@ export default function Home() {
     }
   }
 
-  // 4) Loading de sesión
+  // Loading de sesión
   if (status === "loading") {
     return (
       <main className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-100">
@@ -486,7 +486,7 @@ export default function Home() {
                     <button
                       onClick={() =>
                         handleDownloadCard(
-                          postCardRef,
+                          postCardRef.current,
                           "probabify_historia_periodo.png"
                         )
                       }
@@ -581,7 +581,7 @@ export default function Home() {
                 <button
                   onClick={() =>
                     handleDownloadCard(
-                      periodsCardRef,
+                      periodsCardRef.current,
                       "probabify_historia_periodos.png"
                     )
                   }
