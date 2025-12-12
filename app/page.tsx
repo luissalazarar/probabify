@@ -1,7 +1,7 @@
 // app/page.tsx
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import html2canvas from "html2canvas";
 
@@ -71,6 +71,30 @@ function downloadDataUrl(dataUrl: string, filename: string) {
   link.remove();
 }
 
+function safeSummary(text: string, maxChars: number) {
+  const t = (text || "").trim();
+  if (!t) return "";
+  if (t.length <= maxChars) return t;
+  return t.slice(0, maxChars).trimEnd() + "…";
+}
+
+function initialsFromArtist(artist: string) {
+  const a = (artist || "").trim();
+  if (!a) return "♪";
+  const parts = a.split(/\s+/).filter(Boolean);
+  const first = parts[0]?.[0] ?? "";
+  const second = parts.length > 1 ? parts[1]?.[0] ?? "" : "";
+  const out = (first + second).toUpperCase();
+  return out || "♪";
+}
+
+// hash simple para gradientes consistentes por track (sin librerías)
+function hashStr(s: string) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h;
+}
+
 export default function Home() {
   const { data: session, status } = useSession();
 
@@ -110,7 +134,9 @@ export default function Home() {
         setLoadingTracks(true);
         setErrorTracks(null);
 
-        const res = await fetch(`/api/spotify/top-tracks?range=${selectedRange}`);
+        const res = await fetch(
+          `/api/spotify/top-tracks?range=${selectedRange}`
+        );
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Error obteniendo canciones");
@@ -163,7 +189,9 @@ export default function Home() {
           if (period.key === selectedRange && tracks.length > 0) {
             periodTracks = tracks;
           } else {
-            const tracksRes = await fetch(`/api/spotify/top-tracks?range=${period.key}`);
+            const tracksRes = await fetch(
+              `/api/spotify/top-tracks?range=${period.key}`
+            );
             if (!tracksRes.ok) {
               results.push({ key: period.key, probability: null });
               continue;
@@ -218,7 +246,9 @@ export default function Home() {
       setComparisonResults(results);
 
       if (!mainResult) {
-        setProbError("No se pudo calcular la probabilidad para el periodo seleccionado.");
+        setProbError(
+          "No se pudo calcular la probabilidad para el periodo seleccionado."
+        );
       } else {
         setProbResult(mainResult);
       }
@@ -232,8 +262,11 @@ export default function Home() {
     }
   }
 
-  // 3) Exportar como PNG (sin Tailwind colors dentro del card para evitar lab()/oklch())
-  async function handleDownloadCard(element: HTMLDivElement | null, filename: string) {
+  // 3) Exportar como PNG (sin Tailwind colors dentro del card; y sin IMG externas)
+  async function handleDownloadCard(
+    element: HTMLDivElement | null,
+    filename: string
+  ) {
     setExportError(null);
 
     if (!element) {
@@ -241,14 +274,15 @@ export default function Home() {
       return;
     }
 
-    // Espera 1 frame para asegurar layout estable (important en Vercel/Next)
+    // layout estable
     await new Promise<void>((r) => requestAnimationFrame(() => r()));
 
     try {
       const canvas = await html2canvas(element, {
         backgroundColor: "#020617",
-        scale: 3, // 360x640 -> 1080x1920
+        scale: 3,
         useCORS: false,
+        allowTaint: false,
         logging: false,
       });
 
@@ -272,19 +306,38 @@ export default function Home() {
     );
   }
 
-  // Styles “safe” (HEX/RGB) para html2canvas
+  // --------- ESTÉTICA (safe para html2canvas: HEX + inline styles) ----------
   const storyOuterStyle: React.CSSProperties = {
     width: 360,
     height: 640,
     borderRadius: 32,
-    background: "#020617", // slate-950
-    color: "#F8FAFC", // slate-50
+    background: "#020617",
+    color: "#F8FAFC",
     overflow: "hidden",
     display: "flex",
     flexDirection: "column",
-    padding: 24,
-    gap: 16,
-    boxShadow: "0 25px 50px -12px rgba(0,0,0,0.6)",
+    padding: 26,
+    gap: 14,
+    boxShadow: "0 25px 50px -12px rgba(0,0,0,0.60)",
+    position: "relative",
+  };
+
+  // Glow / grid sutil (solo CSS básico)
+  const storyBgLayer: React.CSSProperties = {
+    position: "absolute",
+    inset: 0,
+    pointerEvents: "none",
+    background:
+      "radial-gradient(600px 400px at 20% 15%, rgba(56,189,248,0.12), transparent 55%), radial-gradient(700px 500px at 90% 25%, rgba(16,185,129,0.10), transparent 55%), radial-gradient(900px 600px at 50% 110%, rgba(99,102,241,0.10), transparent 60%)",
+  };
+
+  const storyContent: React.CSSProperties = {
+    position: "relative",
+    zIndex: 1,
+    display: "flex",
+    flexDirection: "column",
+    height: "100%",
+    gap: 14,
   };
 
   const mutedText: React.CSSProperties = { color: "#94A3B8" }; // slate-400
@@ -292,11 +345,83 @@ export default function Home() {
   const borderTop: React.CSSProperties = { borderTop: "1px solid #1E293B" }; // slate-800
 
   const pillTop: React.CSSProperties = {
-    fontSize: 10,
+    fontSize: 11,
     textTransform: "uppercase",
-    letterSpacing: "0.12em",
+    letterSpacing: "0.16em",
     color: "#94A3B8",
   };
+
+  // IMPORTANTE: para que “se vea todo”, limitamos por chars + clamp fijo
+  const storySummary = useMemo(() => {
+    if (!probResult) return "";
+    // ajusta a tu gusto (320–420 funciona bien en 360x640 con la sección de canciones)
+    return safeSummary(probResult.summary, 360);
+  }, [probResult]);
+
+  // Solo 2 canciones en story (para que no corte texto)
+  const storyTracks = useMemo(() => tracks.slice(0, 2), [tracks]);
+
+  function artBlockStyle(seed: string): React.CSSProperties {
+    const h = hashStr(seed);
+    const a = (h % 360);
+    const b = ((h >>> 8) % 360);
+    // usaremos hsl en string (html2canvas lo soporta bien)
+    return {
+      width: 38,
+      height: 38,
+      borderRadius: 12,
+      border: "1px solid #1E293B",
+      background: `linear-gradient(135deg, hsl(${a} 70% 35% / 0.45), hsl(${b} 70% 30% / 0.30))`,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0,
+      boxShadow: "0 10px 20px -12px rgba(0,0,0,0.7)",
+    };
+  }
+
+  const cardTitle: React.CSSProperties = {
+    fontSize: 16,
+    lineHeight: "20px",
+    color: "#E2E8F0",
+    fontWeight: 600,
+  };
+
+  const bigPct: React.CSSProperties = {
+    fontSize: 64,
+    fontWeight: 900,
+    letterSpacing: "-0.02em",
+    lineHeight: "64px",
+    color: "#F8FAFC",
+  };
+
+  const smallAccording: React.CSSProperties = {
+    fontSize: 13,
+    color: "#E2E8F0",
+    fontWeight: 600,
+    opacity: 0.92,
+  };
+
+  const summaryStyle: React.CSSProperties = {
+    fontSize: 13,
+    lineHeight: "19px",
+    color: "#E2E8F0",
+    marginTop: 4,
+    display: "-webkit-box",
+    WebkitLineClamp: 7,
+    WebkitBoxOrient: "vertical",
+    overflow: "hidden",
+  };
+
+  const sectionLabel: React.CSSProperties = {
+    fontSize: 11,
+    textTransform: "uppercase",
+    letterSpacing: "0.16em",
+    ...mutedText,
+    marginBottom: 8,
+  };
+
+  // -----------------------------------------------------------------------
 
   return (
     <main className="min-h-screen flex flex-col items-center bg-slate-950 text-slate-100 px-4 py-10">
@@ -304,8 +429,8 @@ export default function Home() {
         <header className="text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-3">Probabify</h1>
           <p className="text-slate-300 max-w-xl mx-auto">
-            Conecta tu Spotify, elige una pregunta y te devolvemos una probabilidad inventada
-            (pero coherente con tu música) lista para post.
+            Conecta tu Spotify, elige una pregunta y te devolvemos una probabilidad
+            inventada (pero coherente con tu música) lista para post.
           </p>
         </header>
 
@@ -323,7 +448,9 @@ export default function Home() {
             <>
               <p className="text-sm text-slate-300">
                 Sesión iniciada como{" "}
-                <span className="font-semibold">{session.user?.name ?? session.user?.email}</span>
+                <span className="font-semibold">
+                  {session.user?.name ?? session.user?.email}
+                </span>
               </p>
               <button
                 onClick={() => signOut()}
@@ -369,7 +496,9 @@ export default function Home() {
               Tus canciones top ({PERIOD_DETAILS[selectedRange].label})
             </h2>
 
-            {loadingTracks && <p className="text-slate-300 text-sm">Cargando canciones...</p>}
+            {loadingTracks && (
+              <p className="text-slate-300 text-sm">Cargando canciones...</p>
+            )}
             {errorTracks && <p className="text-red-400 text-sm">{errorTracks}</p>}
 
             {!loadingTracks && !errorTracks && tracks.length === 0 && (
@@ -450,7 +579,9 @@ export default function Home() {
                     <p className="text-sm text-slate-300 mb-1">{probResult.question}</p>
                     <div className="flex items-baseline gap-2">
                       <span className="text-4xl font-bold">{probResult.probability}%</span>
-                      <span className="text-slate-400 text-sm">probabilidad según tu Spotify</span>
+                      <span className="text-slate-400 text-sm">
+                        probabilidad según tu Spotify
+                      </span>
                     </div>
                     <p className="text-sm text-slate-300 mt-2">{probResult.summary}</p>
                   </div>
@@ -482,13 +613,18 @@ export default function Home() {
                 {/* VISTA PARA POST */}
                 <div className="mt-6 border-t border-slate-800 pt-4 flex flex-col gap-3">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs uppercase tracking-wide text-slate-400">Vista para post</p>
+                    <p className="text-xs uppercase tracking-wide text-slate-400">
+                      Vista para post
+                    </p>
 
                     <button
                       type="button"
                       onClick={async () => {
                         setExportingPost(true);
-                        await handleDownloadCard(postCardRef.current, "probabify_historia_periodo.png");
+                        await handleDownloadCard(
+                          postCardRef.current,
+                          "probabify_historia_periodo.png"
+                        );
                         setExportingPost(false);
                       }}
                       disabled={exportingPost}
@@ -500,82 +636,87 @@ export default function Home() {
 
                   {exportError && <p className="text-red-400 text-sm">{exportError}</p>}
 
-                  {/* CARD EXPORTABLE (sin Tailwind colors) */}
+                  {/* CARD EXPORTABLE (NO usa IMG externas; usa placeholders) */}
                   <div ref={postCardRef} style={storyOuterStyle}>
-                    <div style={pillTop}>
-                      {PERIOD_DETAILS[selectedRange].label} · {PERIOD_DETAILS[selectedRange].subtitle}
-                    </div>
-
-                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                      <p style={{ fontSize: 12, color: "#E2E8F0" }}>{probResult.question}</p>
-
-                      <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                        <span style={{ fontSize: 56, fontWeight: 800, lineHeight: "56px" }}>
-                          {probResult.probability}%
-                        </span>
-                        <span style={{ fontSize: 12, color: "#E2E8F0" }}>según tu Spotify</span>
+                    <div style={storyBgLayer} />
+                    <div style={storyContent}>
+                      <div style={pillTop}>
+                        {PERIOD_DETAILS[selectedRange].label} ·{" "}
+                        {PERIOD_DETAILS[selectedRange].subtitle}
                       </div>
 
-                      <p
+                      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                        <p style={cardTitle}>{probResult.question}</p>
+
+                        <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
+                          <span style={bigPct}>{probResult.probability}%</span>
+                          <span style={smallAccording}>según tu Spotify</span>
+                        </div>
+
+                        <p style={summaryStyle}>{storySummary}</p>
+                      </div>
+
+                      <div style={{ marginTop: 10 }}>
+                        <p style={sectionLabel}>Canciones que más lo avalan</p>
+
+                        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                          {storyTracks.map((track) => {
+                            const seed = `${track.artist}-${track.album}-${track.name}`;
+                            const chip = initialsFromArtist(track.artist);
+                            return (
+                              <div
+                                key={track.id}
+                                style={{ display: "flex", alignItems: "center", gap: 12 }}
+                              >
+                                <div style={artBlockStyle(seed)}>
+                                  <span
+                                    style={{
+                                      fontSize: 12,
+                                      fontWeight: 800,
+                                      color: "#E2E8F0",
+                                      letterSpacing: "0.02em",
+                                    }}
+                                  >
+                                    {chip}
+                                  </span>
+                                </div>
+
+                                <div style={{ display: "flex", flexDirection: "column" }}>
+                                  <span
+                                    style={{
+                                      fontSize: 14,
+                                      fontWeight: 800,
+                                      color: "#F8FAFC",
+                                      lineHeight: "16px",
+                                    }}
+                                  >
+                                    {track.name}
+                                  </span>
+                                  <span style={{ fontSize: 12, ...mutedText }}>
+                                    {track.artist}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div
                         style={{
-                          fontSize: 12,
-                          lineHeight: "18px",
-                          color: "#E2E8F0",
-                          marginTop: 6,
-                          display: "-webkit-box",
-                          WebkitLineClamp: 8,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
+                          marginTop: "auto",
+                          paddingTop: 14,
+                          ...borderTop,
+                          fontSize: 10,
+                          ...mutedText2,
                         }}
                       >
-                        {probResult.summary}
-                      </p>
-                    </div>
-
-                    <div style={{ marginTop: 8 }}>
-                      <p style={{ fontSize: 10, ...mutedText, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 8 }}>
-                        Canciones que más lo avalan
-                      </p>
-
-                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                        {tracks.slice(0, 3).map((track) => (
-                          <div key={track.id} style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                            {/* OJO: imágenes pueden fallar por CORS; si quieres 100% estable, quítalas del export */}
-                            <div
-                              style={{
-                                width: 32,
-                                height: 32,
-                                borderRadius: 8,
-                                background: "#0B1220",
-                                border: "1px solid #1E293B",
-                                overflow: "hidden",
-                                flexShrink: 0,
-                              }}
-                            >
-                              {track.image ? (
-                                // Si esto te causa CORS, reemplaza por un div vacío
-                                <img
-                                  src={track.image}
-                                  alt={track.name}
-                                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                                />
-                              ) : null}
-                            </div>
-
-                            <div style={{ display: "flex", flexDirection: "column" }}>
-                              <span style={{ fontSize: 13, fontWeight: 700, color: "#F8FAFC" }}>
-                                {track.name}
-                              </span>
-                              <span style={{ fontSize: 11, ...mutedText }}>{track.artist}</span>
-                            </div>
-                          </div>
-                        ))}
+                        Generado con{" "}
+                        <span style={{ fontWeight: 800, color: "#CBD5E1" }}>
+                          Probabify
+                        </span>{" "}
+                        usando tu música top de Spotify.
                       </div>
-                    </div>
-
-                    <div style={{ marginTop: "auto", paddingTop: 14, ...borderTop, fontSize: 9, ...mutedText2 }}>
-                      Generado con <span style={{ fontWeight: 700, color: "#CBD5E1" }}>Probabify</span>{" "}
-                      usando tu música top de Spotify.
                     </div>
                   </div>
                 </div>
@@ -584,13 +725,15 @@ export default function Home() {
           </section>
         )}
 
+        {/* Comparación por periodos */}
         {session && (
           <section className="bg-slate-900/60 rounded-2xl p-4 md:p-5 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold">Comparar esta pregunta por periodos</h2>
                 <p className="text-sm text-slate-300">
-                  Calculamos la misma pregunta usando tu música de las últimas semanas, los últimos 6 meses y todo el tiempo.
+                  Calculamos la misma pregunta usando tu música de las últimas semanas, los
+                  últimos 6 meses y todo el tiempo.
                 </p>
               </div>
 
@@ -599,7 +742,10 @@ export default function Home() {
                   type="button"
                   onClick={async () => {
                     setExportingPeriods(true);
-                    await handleDownloadCard(periodsCardRef.current, "probabify_historia_periodos.png");
+                    await handleDownloadCard(
+                      periodsCardRef.current,
+                      "probabify_historia_periodos.png"
+                    );
                     setExportingPeriods(false);
                   }}
                   disabled={exportingPeriods}
@@ -611,7 +757,11 @@ export default function Home() {
             </div>
 
             {comparisonError && <p className="text-red-400 text-sm mt-1">{comparisonError}</p>}
-            {comparisonLoading && <p className="text-slate-300 text-sm">Calculando probabilidades para cada periodo...</p>}
+            {comparisonLoading && (
+              <p className="text-slate-300 text-sm">
+                Calculando probabilidades para cada periodo...
+              </p>
+            )}
 
             {comparisonResults && (
               <>
@@ -624,9 +774,13 @@ export default function Home() {
                       <p className="text-xs uppercase tracking-wide text-slate-400">
                         {PERIOD_DETAILS[r.key].label}
                       </p>
-                      <p className="text-[11px] text-slate-500 mb-1">{PERIOD_DETAILS[r.key].subtitle}</p>
+                      <p className="text-[11px] text-slate-500 mb-1">
+                        {PERIOD_DETAILS[r.key].subtitle}
+                      </p>
                       {r.probability === null ? (
-                        <p className="text-xs text-slate-500">Sin datos suficientes para este periodo.</p>
+                        <p className="text-xs text-slate-500">
+                          Sin datos suficientes para este periodo.
+                        </p>
                       ) : (
                         <span className="text-3xl font-bold">{r.probability}%</span>
                       )}
@@ -636,33 +790,73 @@ export default function Home() {
 
                 {exportError && <p className="text-red-400 text-sm">{exportError}</p>}
 
-                {/* CARD EXPORTABLE PERIODOS (sin Tailwind colors) */}
+                {/* CARD EXPORTABLE PERIODOS */}
                 <div ref={periodsCardRef} style={storyOuterStyle}>
-                  <div style={pillTop}>Probabify · Resumen por periodos</div>
+                  <div style={storyBgLayer} />
+                  <div style={storyContent}>
+                    <div style={pillTop}>Probabify · Resumen por periodos</div>
 
-                  <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 18 }}>
-                    {comparisonResults.map((r) => (
-                      <div key={r.key} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                        <div style={{ fontSize: 11, ...mutedText, textTransform: "uppercase", letterSpacing: "0.12em" }}>
-                          {PERIOD_DETAILS[r.key].label}
-                        </div>
-                        <div style={{ fontSize: 11, ...mutedText2 }}>
-                          {PERIOD_DETAILS[r.key].subtitle}
-                        </div>
-                        {r.probability === null ? (
-                          <div style={{ fontSize: 12, ...mutedText2 }}>Sin datos suficientes para este periodo.</div>
-                        ) : (
-                          <div style={{ fontSize: 42, fontWeight: 800, lineHeight: "44px" }}>
-                            {r.probability}%
+                    <div
+                      style={{
+                        marginTop: 6,
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 18,
+                      }}
+                    >
+                      {comparisonResults.map((r) => (
+                        <div
+                          key={r.key}
+                          style={{ display: "flex", flexDirection: "column", gap: 4 }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 11,
+                              ...mutedText,
+                              textTransform: "uppercase",
+                              letterSpacing: "0.16em",
+                            }}
+                          >
+                            {PERIOD_DETAILS[r.key].label}
                           </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                          <div style={{ fontSize: 12, ...mutedText2 }}>
+                            {PERIOD_DETAILS[r.key].subtitle}
+                          </div>
+                          {r.probability === null ? (
+                            <div style={{ fontSize: 12, ...mutedText2 }}>
+                              Sin datos suficientes para este periodo.
+                            </div>
+                          ) : (
+                            <div
+                              style={{
+                                fontSize: 46,
+                                fontWeight: 900,
+                                lineHeight: "48px",
+                                color: "#F8FAFC",
+                              }}
+                            >
+                              {r.probability}%
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
 
-                  <div style={{ marginTop: "auto", paddingTop: 14, ...borderTop, fontSize: 9, ...mutedText2 }}>
-                    Generado con <span style={{ fontWeight: 700, color: "#CBD5E1" }}>Probabify</span>{" "}
-                    usando tu música top de Spotify.
+                    <div
+                      style={{
+                        marginTop: "auto",
+                        paddingTop: 14,
+                        ...borderTop,
+                        fontSize: 10,
+                        ...mutedText2,
+                      }}
+                    >
+                      Generado con{" "}
+                      <span style={{ fontWeight: 800, color: "#CBD5E1" }}>
+                        Probabify
+                      </span>{" "}
+                      usando tu música top de Spotify.
+                    </div>
                   </div>
                 </div>
               </>
