@@ -29,8 +29,8 @@ const PRESET_QUESTIONS = [
   "¿Cuál es la probabilidad de volver con mi ex?",
   "¿Cuál es la probabilidad de superar a mi ex?",
   "¿Cuál es la probabilidad de renunciar a mi trabajo?",
-  "¿Cuál es la probabilidad de ser toxico?",
-  "¿Cuál es la probabilidad de entrar en una relacion toxica?",
+  "¿Cuál es la probabilidad de ser tóxico?",
+  "¿Cuál es la probabilidad de entrar en una relación tóxica?",
   "¿Cuál es la probabilidad de empezar a valorarme?",
 ];
 
@@ -54,13 +54,13 @@ const PERIOD_DETAILS: Record<
     label: "Últimos 6 meses",
     subtitle: "Tendencia media",
     description:
-      "Este periodo muestra tus gustos sostenidos en el tiempo. Es un balance entre lo nuevo y lo que realmente mantienes.",
+      "Este periodo muestra tus gustos sostenidos en el tiempo. Es un balance entre lo nuevo y lo que realmente sigues escuchando.",
   },
   long_term: {
     label: "Todo el tiempo",
     subtitle: "Tu esencia musical",
     description:
-      "Este rango captura tu ADN musical: lo que más te ha gustado en general y define mejor tu esencia como oyente.",
+      "Este rango captura tu ADN musical: lo que más te ha gustado en general y lo que mejor define tu esencia como oyente.",
   },
 };
 
@@ -274,7 +274,7 @@ export default function Home() {
         backgroundColor: undefined,
         width: 360,
         height: 640,
-        pixelRatio: 3, // 360x640 * 3 = 1080x1920 (IG story)
+        pixelRatio: 3, // 360x640 * 3 = 1080x1920 (Historia IG)
       });
 
       downloadDataUrl(dataUrl, filename);
@@ -464,7 +464,7 @@ export default function Home() {
               >
                 {probLoading || comparisonLoading
                   ? "Calculando probabilidades..."
-                  : "Calcular probabilidad y ver por periodos"}
+                  : "Calcular probabilidad y comparar periodos"}
               </button>
 
               {probError && (
