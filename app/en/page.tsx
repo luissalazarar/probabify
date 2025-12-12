@@ -73,6 +73,11 @@ function downloadDataUrl(dataUrl: string, filename: string) {
   link.remove();
 }
 
+async function nextPaintTwice() {
+  await new Promise<void>((r) => requestAnimationFrame(() => r()));
+  await new Promise<void>((r) => requestAnimationFrame(() => r()));
+}
+
 async function waitForImages(root: HTMLElement) {
   const imgs = Array.from(root.querySelectorAll("img"));
 
@@ -141,6 +146,38 @@ export default function Home() {
   const [exportingPost, setExportingPost] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
+  // ✅ cache para preloads
+  const preloadCacheRef = useRef<Map<string, Promise<void>>>(new Map());
+
+  function preloadImage(url: string) {
+    const cache = preloadCacheRef.current;
+    if (cache.has(url)) return cache.get(url)!;
+
+    const p = new Promise<void>((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = async () => {
+        if ("decode" in img) {
+          try {
+            // @ts-ignore
+            await img.decode();
+          } catch {}
+        }
+        resolve();
+      };
+      img.onerror = () => resolve();
+      img.src = url;
+    });
+
+    cache.set(url, p);
+    return p;
+  }
+
+  async function preloadUrls(urls: string[]) {
+    const unique = Array.from(new Set(urls.filter(Boolean)));
+    await Promise.all(unique.map((u) => preloadImage(u)));
+  }
+
   // ✅ Derivar canciones “que más lo avalan” desde representativeTrackIds
   const supportingTracks = useMemo(() => {
     if (!probResult) return tracks.slice(0, 3);
@@ -154,6 +191,15 @@ export default function Home() {
     // fallback si algo falla
     return picked.length ? picked : tracks.slice(0, 3);
   }, [probResult, tracks]);
+
+  // ✅ Preload de portadas que se usan en la card exportable
+  useEffect(() => {
+    const urls = supportingTracks.map((t) => t.image).filter(Boolean) as string[];
+    if (urls.length) {
+      preloadUrls(urls).catch(() => {});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [supportingTracks]);
 
   // 1) Cargar canciones del periodo principal
   useEffect(() => {
@@ -308,8 +354,19 @@ export default function Home() {
     }
 
     try {
+      // ✅ 1) preload explícito (especialmente primera vez)
+      const urls = supportingTracks.map((t) => t.image).filter(Boolean) as string[];
+      if (urls.length) {
+        await preloadUrls(urls);
+      }
+
+      // ✅ 2) esperar a que el DOM pinte las imágenes ya cargadas
+      await nextPaintTwice();
+
+      // ✅ 3) asegurar que los <img> del nodo estén completos
       await waitForImages(element);
 
+      // ✅ 4) export
       const dataUrl = await htmlToImage.toPng(element, {
         cacheBust: true,
         backgroundColor: undefined,
@@ -455,6 +512,7 @@ export default function Home() {
                 >
                   {track.image && (
                     <img
+                      crossOrigin="anonymous"
                       src={track.image}
                       alt={track.name}
                       className="w-10 h-10 rounded-md object-cover"
@@ -543,6 +601,7 @@ export default function Home() {
                         >
                           {track.image && (
                             <img
+                              crossOrigin="anonymous"
                               src={track.image}
                               alt={track.name}
                               className="w-8 h-8 rounded-md object-cover"
@@ -690,6 +749,7 @@ export default function Home() {
                             >
                               {track.image ? (
                                 <img
+                                  crossOrigin="anonymous"
                                   src={track.image}
                                   alt={track.name}
                                   style={{
