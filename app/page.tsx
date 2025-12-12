@@ -96,7 +96,7 @@ export default function Home() {
   >(null);
 
   const postCardRef = useRef<HTMLDivElement | null>(null);
-  const periodsCardRef = useRef<HTMLDivElement | null>(null);
+  const periodsCardRef = useRef<HTMLDivElement | null>(null); // ya no se usa en el UI, pero lo dejamos por compatibilidad
 
   const [exportingPost, setExportingPost] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
@@ -560,20 +560,7 @@ export default function Home() {
                         minHeight: 0,
                       }}
                     >
-                      {/* Resumen completo */}
-                      <p
-                        style={{
-                          fontSize: 12,
-                          lineHeight: "18px",
-                          color: "#E2E8F0",
-                          marginTop: 2,
-                          whiteSpace: "pre-line",
-                        }}
-                      >
-                        {probResult.summary}
-                      </p>
-
-                      {/* Pregunta + % */}
+                      {/* Pregunta + % arriba */}
                       <div
                         style={{
                           flexShrink: 0,
@@ -612,6 +599,19 @@ export default function Home() {
                           </span>
                         </div>
                       </div>
+
+                      {/* Resumen debajo de la probabilidad */}
+                      <p
+                        style={{
+                          fontSize: 12,
+                          lineHeight: "18px",
+                          color: "#E2E8F0",
+                          marginTop: 6,
+                          whiteSpace: "pre-line",
+                        }}
+                      >
+                        {probResult.summary}
+                      </p>
                     </div>
 
                     {/* Canciones que más lo avalan */}
@@ -798,7 +798,7 @@ export default function Home() {
                   semanas, los últimos 6 meses y todo el tiempo.
                 </p>
               </div>
-              {/* 👈 ya no hay botón de exportar aquí */}
+              {/* ya no hay botón de exportar aquí */}
             </div>
 
             {comparisonError && (
@@ -811,102 +811,30 @@ export default function Home() {
             )}
 
             {comparisonResults && (
-              <>
-                <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {comparisonResults.map((r) => (
-                    <div
-                      key={r.key}
-                      className="rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-3 flex flex-col gap-1"
-                    >
-                      <p className="text-xs uppercase tracking-wide text-slate-400">
-                        {PERIOD_DETAILS[r.key].label}
-                      </p>
-                      <p className="text-[11px] text-slate-500 mb-1">
-                        {PERIOD_DETAILS[r.key].subtitle}
-                      </p>
-                      {r.probability === null ? (
-                        <p className="text-xs text-slate-500">
-                          Sin datos suficientes para este periodo.
-                        </p>
-                      ) : (
-                        <span className="text-3xl font-bold">
-                          {r.probability}%
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Card grande de resumen por periodos solo como vista previa */}
-                <div ref={periodsCardRef} style={storyOuterStyle}>
-                  <div style={pillTop}>Probabify · Resumen por periodos</div>
-
+              <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+                {comparisonResults.map((r) => (
                   <div
-                    style={{
-                      marginTop: 6,
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 18,
-                    }}
+                    key={r.key}
+                    className="rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-3 flex flex-col gap-1"
                   >
-                    {comparisonResults.map((r) => (
-                      <div
-                        key={r.key}
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 4,
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontSize: 11,
-                            ...mutedText,
-                            textTransform: "uppercase",
-                            letterSpacing: "0.12em",
-                          }}
-                        >
-                          {PERIOD_DETAILS[r.key].label}
-                        </div>
-                        <div style={{ fontSize: 11, ...mutedText2 }}>
-                          {PERIOD_DETAILS[r.key].subtitle}
-                        </div>
-                        {r.probability === null ? (
-                          <div style={{ fontSize: 12, ...mutedText2 }}>
-                            Sin datos suficientes para este periodo.
-                          </div>
-                        ) : (
-                          <div
-                            style={{
-                              fontSize: 42,
-                              fontWeight: 800,
-                              lineHeight: "44px",
-                            }}
-                          >
-                            {r.probability}%
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                    <p className="text-xs uppercase tracking-wide text-slate-400">
+                      {PERIOD_DETAILS[r.key].label}
+                    </p>
+                    <p className="text-[11px] text-slate-500 mb-1">
+                      {PERIOD_DETAILS[r.key].subtitle}
+                    </p>
+                    {r.probability === null ? (
+                      <p className="text-xs text-slate-500">
+                        Sin datos suficientes para este periodo.
+                      </p>
+                    ) : (
+                      <span className="text-3xl font-bold">
+                        {r.probability}%
+                      </span>
+                    )}
                   </div>
-
-                  <div
-                    style={{
-                      marginTop: "auto",
-                      paddingTop: 14,
-                      ...borderTop,
-                      fontSize: 9,
-                      ...mutedText2,
-                    }}
-                  >
-                    Generado con{" "}
-                    <span style={{ fontWeight: 700, color: "#CBD5E1" }}>
-                      Probabify
-                    </span>{" "}
-                    usando tu música top de Spotify.
-                  </div>
-                </div>
-              </>
+                ))}
+              </div>
             )}
           </section>
         )}
