@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type React from "react"; // 👈 para usar React.CSSProperties
 import { signIn, signOut, useSession } from "next-auth/react";
 import html2canvas from "html2canvas";
 
@@ -232,7 +233,7 @@ export default function Home() {
     }
   }
 
-  // 3) Exportar como PNG (sin Tailwind colors dentro del card para evitar lab()/oklch())
+  // 3) Exportar como PNG (con imágenes y sin recortar texto)
   async function handleDownloadCard(element: HTMLDivElement | null, filename: string) {
     setExportError(null);
 
@@ -241,14 +242,14 @@ export default function Home() {
       return;
     }
 
-    // Espera 1 frame para asegurar layout estable (important en Vercel/Next)
+    // Espera 1 frame para asegurar layout estable
     await new Promise<void>((r) => requestAnimationFrame(() => r()));
 
     try {
       const canvas = await html2canvas(element, {
         backgroundColor: "#020617",
         scale: 3, // 360x640 -> 1080x1920
-        useCORS: false,
+        useCORS: true, // 👈 importante para que html2canvas intente cargar imágenes remotas
         logging: false,
       });
 
@@ -301,374 +302,144 @@ export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center bg-slate-950 text-slate-100 px-4 py-10">
       <div className="w-full max-w-3xl flex flex-col gap-8">
-        <header className="text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-3">Probabify</h1>
-          <p className="text-slate-300 max-w-xl mx-auto">
-            Conecta tu Spotify, elige una pregunta y te devolvemos una probabilidad inventada
-            (pero coherente con tu música) lista para post.
-          </p>
-        </header>
+        {/* … TODO LO DEMÁS IGUAL QUE TU CÓDIGO, HASTA LLEGAR A LA CARD EXPORTABLE … */}
 
-        <section className="flex flex-col items-center gap-3">
-          {!session && (
-            <button
-              onClick={() => signIn("spotify")}
-              className="px-6 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold transition"
-            >
-              Conectar con Spotify
-            </button>
-          )}
+        {/* Solo te pego la parte de la CARD para el post con los cambios pedidos */}
 
-          {session && (
-            <>
-              <p className="text-sm text-slate-300">
-                Sesión iniciada como{" "}
-                <span className="font-semibold">{session.user?.name ?? session.user?.email}</span>
-              </p>
-              <button
-                onClick={() => signOut()}
-                className="px-4 py-2 rounded-full border border-slate-500 text-slate-200 hover:bg-slate-800 transition text-xs"
-              >
-                Cerrar sesión
-              </button>
-            </>
-          )}
-        </section>
-
-        {session && (
-          <section className="flex flex-col gap-3">
-            <p className="text-xs uppercase tracking-wide text-slate-400">
-              Selecciona el periodo de análisis
-            </p>
-
-            <div className="flex flex-wrap gap-3">
-              {PERIODS.map((p) => (
-                <button
-                  key={p.key}
-                  onClick={() => setSelectedRange(p.key)}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium border transition ${
-                    selectedRange === p.key
-                      ? "bg-emerald-500 text-slate-950 border-emerald-400"
-                      : "border-slate-700 text-slate-200 hover:bg-slate-800"
-                  }`}
-                >
-                  {PERIOD_DETAILS[p.key].label}
-                </button>
-              ))}
-            </div>
-
-            <p className="text-sm text-slate-400 leading-relaxed mt-1">
-              {PERIOD_DETAILS[selectedRange].description}
-            </p>
-          </section>
-        )}
-
-        {session && (
-          <section className="bg-slate-900/60 rounded-2xl p-4 md:p-5">
-            <h2 className="text-lg font-semibold mb-2">
-              Tus canciones top ({PERIOD_DETAILS[selectedRange].label})
-            </h2>
-
-            {loadingTracks && <p className="text-slate-300 text-sm">Cargando canciones...</p>}
-            {errorTracks && <p className="text-red-400 text-sm">{errorTracks}</p>}
-
-            {!loadingTracks && !errorTracks && tracks.length === 0 && (
-              <p className="text-slate-400 text-sm">
-                No encontramos canciones top para este periodo. Escucha algo en Spotify y vuelve
-                a intentar.
-              </p>
-            )}
-
-            <ul className="space-y-2 mt-2 max-h-80 overflow-y-auto pr-1">
-              {tracks.slice(0, 50).map((track) => (
-                <li
-                  key={track.id}
-                  className="flex items-center gap-3 bg-slate-900 rounded-xl px-3 py-2"
-                >
-                  {track.image && (
-                    <img
-                      src={track.image}
-                      alt={track.name}
-                      className="w-10 h-10 rounded-md object-cover"
-                    />
-                  )}
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-sm">{track.name}</span>
-                    <span className="text-xs text-slate-400">
-                      {track.artist} · {track.album}
-                    </span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {session && (
+        {session && probResult && (
           <section className="bg-slate-900/60 rounded-2xl p-4 md:p-5 flex flex-col gap-4">
-            <h2 className="text-lg font-semibold">Calcula tu probabilidad</h2>
+            {/* … encabezado, resumen y lista previa igual que ya lo tienes … */}
 
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">Pregunta predefinida</label>
-                <select
-                  value={selectedPreset}
-                  onChange={(e) => setSelectedPreset(e.target.value)}
-                  className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-500"
+            {/* VISTA PARA POST */}
+            <div className="mt-6 border-t border-slate-800 pt-4 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs uppercase tracking-wide text-slate-400">Vista para post</p>
+
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setExportingPost(true);
+                    await handleDownloadCard(
+                      postCardRef.current,
+                      "probabify_historia_periodo.png"
+                    );
+                    setExportingPost(false);
+                  }}
+                  disabled={exportingPost}
+                  className="px-3 py-1.5 rounded-full bg-sky-500 hover:bg-sky-400 text-xs font-semibold text-slate-950 transition disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {PRESET_QUESTIONS.map((q) => (
-                    <option key={q} value={q}>
-                      {q}
-                    </option>
-                  ))}
-                </select>
+                  {exportingPost ? "Exportando..." : "Exportar historia de este periodo"}
+                </button>
               </div>
 
-              <button
-                onClick={handleCalculateAll}
-                disabled={probLoading || comparisonLoading}
-                className="mt-2 px-6 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold transition disabled:opacity-60 disabled:cursor-not-allowed self-start"
-              >
-                {probLoading || comparisonLoading
-                  ? "Calculando probabilidades..."
-                  : "Calcular probabilidad y ver por periodos"}
-              </button>
+              {exportError && <p className="text-red-400 text-sm">{exportError}</p>}
 
-              {probError && <p className="text-red-400 text-sm mt-1">{probError}</p>}
-            </div>
+              {/* CARD EXPORTABLE (sin Tailwind colors) */}
+              <div ref={postCardRef} style={storyOuterStyle}>
+                <div style={pillTop}>
+                  {PERIOD_DETAILS[selectedRange].label} · {PERIOD_DETAILS[selectedRange].subtitle}
+                </div>
 
-            {probResult && (
-              <>
-                <div className="mt-4 border-t border-slate-800 pt-4 flex flex-col gap-4">
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-slate-400 mb-1">
-                      Resultado – {PERIOD_DETAILS[selectedRange].label}
-                    </p>
-                    <p className="text-xs text-slate-500 mb-1">
-                      {PERIOD_DETAILS[selectedRange].subtitle}
-                    </p>
-                    <p className="text-sm text-slate-300 mb-1">{probResult.question}</p>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-4xl font-bold">{probResult.probability}%</span>
-                      <span className="text-slate-400 text-sm">probabilidad según tu Spotify</span>
-                    </div>
-                    <p className="text-sm text-slate-300 mt-2">{probResult.summary}</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <p style={{ fontSize: 12, color: "#E2E8F0" }}>{probResult.question}</p>
+
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+                    <span style={{ fontSize: 56, fontWeight: 800, lineHeight: "56px" }}>
+                      {probResult.probability}%
+                    </span>
+                    <span style={{ fontSize: 12, color: "#E2E8F0" }}>según tu Spotify</span>
                   </div>
 
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">
-                      Canciones que más lo avalan (ejemplo)
-                    </p>
-                    <ul className="space-y-2">
-                      {tracks.slice(0, 3).map((track) => (
-                        <li key={track.id} className="flex items-center gap-3 text-sm">
+                  {/* 👇 YA NO RECORTAMOS EL TEXTO, SE VE COMPLETO */}
+                  <p
+                    style={{
+                      fontSize: 11,
+                      lineHeight: "17px",
+                      color: "#E2E8F0",
+                      marginTop: 6,
+                    }}
+                  >
+                    {probResult.summary}
+                  </p>
+                </div>
+
+                <div style={{ marginTop: 8 }}>
+                  <p
+                    style={{
+                      fontSize: 10,
+                      ...mutedText,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.12em",
+                      marginBottom: 8,
+                    }}
+                  >
+                    Canciones que más lo avalan
+                  </p>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {tracks.slice(0, 3).map((track) => (
+                      <div
+                        key={track.id}
+                        style={{ display: "flex", alignItems: "center", gap: 12 }}
+                      >
+                        <div
+                          style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: 8,
+                            background: "#0B1220",
+                            border: "1px solid #1E293B",
+                            overflow: "hidden",
+                            flexShrink: 0,
+                          }}
+                        >
                           {track.image && (
                             <img
                               src={track.image}
                               alt={track.name}
-                              className="w-8 h-8 rounded-md object-cover"
+                              crossOrigin="anonymous" // 👈 para que html2canvas pueda usar la imagen
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                              }}
                             />
                           )}
-                          <div className="flex flex-col">
-                            <span className="font-semibold">{track.name}</span>
-                            <span className="text-xs text-slate-400">{track.artist}</span>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                {/* VISTA PARA POST */}
-                <div className="mt-6 border-t border-slate-800 pt-4 flex flex-col gap-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs uppercase tracking-wide text-slate-400">Vista para post</p>
-
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        setExportingPost(true);
-                        await handleDownloadCard(postCardRef.current, "probabify_historia_periodo.png");
-                        setExportingPost(false);
-                      }}
-                      disabled={exportingPost}
-                      className="px-3 py-1.5 rounded-full bg-sky-500 hover:bg-sky-400 text-xs font-semibold text-slate-950 transition disabled:opacity-60 disabled:cursor-not-allowed"
-                    >
-                      {exportingPost ? "Exportando..." : "Exportar historia de este periodo"}
-                    </button>
-                  </div>
-
-                  {exportError && <p className="text-red-400 text-sm">{exportError}</p>}
-
-                  {/* CARD EXPORTABLE (sin Tailwind colors) */}
-                  <div ref={postCardRef} style={storyOuterStyle}>
-                    <div style={pillTop}>
-                      {PERIOD_DETAILS[selectedRange].label} · {PERIOD_DETAILS[selectedRange].subtitle}
-                    </div>
-
-                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                      <p style={{ fontSize: 12, color: "#E2E8F0" }}>{probResult.question}</p>
-
-                      <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                        <span style={{ fontSize: 56, fontWeight: 800, lineHeight: "56px" }}>
-                          {probResult.probability}%
-                        </span>
-                        <span style={{ fontSize: 12, color: "#E2E8F0" }}>según tu Spotify</span>
-                      </div>
-
-                      <p
-                        style={{
-                          fontSize: 12,
-                          lineHeight: "18px",
-                          color: "#E2E8F0",
-                          marginTop: 6,
-                          display: "-webkit-box",
-                          WebkitLineClamp: 8,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
-                        }}
-                      >
-                        {probResult.summary}
-                      </p>
-                    </div>
-
-                    <div style={{ marginTop: 8 }}>
-                      <p style={{ fontSize: 10, ...mutedText, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 8 }}>
-                        Canciones que más lo avalan
-                      </p>
-
-                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                        {tracks.slice(0, 3).map((track) => (
-                          <div key={track.id} style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                            {/* OJO: imágenes pueden fallar por CORS; si quieres 100% estable, quítalas del export */}
-                            <div
-                              style={{
-                                width: 32,
-                                height: 32,
-                                borderRadius: 8,
-                                background: "#0B1220",
-                                border: "1px solid #1E293B",
-                                overflow: "hidden",
-                                flexShrink: 0,
-                              }}
-                            >
-                              {track.image ? (
-                                // Si esto te causa CORS, reemplaza por un div vacío
-                                <img
-                                  src={track.image}
-                                  alt={track.name}
-                                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                                />
-                              ) : null}
-                            </div>
-
-                            <div style={{ display: "flex", flexDirection: "column" }}>
-                              <span style={{ fontSize: 13, fontWeight: 700, color: "#F8FAFC" }}>
-                                {track.name}
-                              </span>
-                              <span style={{ fontSize: 11, ...mutedText }}>{track.artist}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div style={{ marginTop: "auto", paddingTop: 14, ...borderTop, fontSize: 9, ...mutedText2 }}>
-                      Generado con <span style={{ fontWeight: 700, color: "#CBD5E1" }}>Probabify</span>{" "}
-                      usando tu música top de Spotify.
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-          </section>
-        )}
-
-        {session && (
-          <section className="bg-slate-900/60 rounded-2xl p-4 md:p-5 flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold">Comparar esta pregunta por periodos</h2>
-                <p className="text-sm text-slate-300">
-                  Calculamos la misma pregunta usando tu música de las últimas semanas, los últimos 6 meses y todo el tiempo.
-                </p>
-              </div>
-
-              {comparisonResults && (
-                <button
-                  type="button"
-                  onClick={async () => {
-                    setExportingPeriods(true);
-                    await handleDownloadCard(periodsCardRef.current, "probabify_historia_periodos.png");
-                    setExportingPeriods(false);
-                  }}
-                  disabled={exportingPeriods}
-                  className="px-3 py-1.5 rounded-full bg-sky-500 hover:bg-sky-400 text-xs font-semibold text-slate-950 transition disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {exportingPeriods ? "Exportando..." : "Exportar resumen por periodos"}
-                </button>
-              )}
-            </div>
-
-            {comparisonError && <p className="text-red-400 text-sm mt-1">{comparisonError}</p>}
-            {comparisonLoading && <p className="text-slate-300 text-sm">Calculando probabilidades para cada periodo...</p>}
-
-            {comparisonResults && (
-              <>
-                <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {comparisonResults.map((r) => (
-                    <div
-                      key={r.key}
-                      className="rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-3 flex flex-col gap-1"
-                    >
-                      <p className="text-xs uppercase tracking-wide text-slate-400">
-                        {PERIOD_DETAILS[r.key].label}
-                      </p>
-                      <p className="text-[11px] text-slate-500 mb-1">{PERIOD_DETAILS[r.key].subtitle}</p>
-                      {r.probability === null ? (
-                        <p className="text-xs text-slate-500">Sin datos suficientes para este periodo.</p>
-                      ) : (
-                        <span className="text-3xl font-bold">{r.probability}%</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                {exportError && <p className="text-red-400 text-sm">{exportError}</p>}
-
-                {/* CARD EXPORTABLE PERIODOS (sin Tailwind colors) */}
-                <div ref={periodsCardRef} style={storyOuterStyle}>
-                  <div style={pillTop}>Probabify · Resumen por periodos</div>
-
-                  <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 18 }}>
-                    {comparisonResults.map((r) => (
-                      <div key={r.key} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                        <div style={{ fontSize: 11, ...mutedText, textTransform: "uppercase", letterSpacing: "0.12em" }}>
-                          {PERIOD_DETAILS[r.key].label}
                         </div>
-                        <div style={{ fontSize: 11, ...mutedText2 }}>
-                          {PERIOD_DETAILS[r.key].subtitle}
+
+                        <div style={{ display: "flex", flexDirection: "column" }}>
+                          <span
+                            style={{ fontSize: 13, fontWeight: 700, color: "#F8FAFC" }}
+                          >
+                            {track.name}
+                          </span>
+                          <span style={{ fontSize: 11, ...mutedText }}>{track.artist}</span>
                         </div>
-                        {r.probability === null ? (
-                          <div style={{ fontSize: 12, ...mutedText2 }}>Sin datos suficientes para este periodo.</div>
-                        ) : (
-                          <div style={{ fontSize: 42, fontWeight: 800, lineHeight: "44px" }}>
-                            {r.probability}%
-                          </div>
-                        )}
                       </div>
                     ))}
                   </div>
-
-                  <div style={{ marginTop: "auto", paddingTop: 14, ...borderTop, fontSize: 9, ...mutedText2 }}>
-                    Generado con <span style={{ fontWeight: 700, color: "#CBD5E1" }}>Probabify</span>{" "}
-                    usando tu música top de Spotify.
-                  </div>
                 </div>
-              </>
-            )}
+
+                <div
+                  style={{
+                    marginTop: "auto",
+                    paddingTop: 14,
+                    ...borderTop,
+                    fontSize: 9,
+                    ...mutedText2,
+                  }}
+                >
+                  Generado con{" "}
+                  <span style={{ fontWeight: 700, color: "#CBD5E1" }}>Probabify</span>{" "}
+                  usando tu música top de Spotify.
+                </div>
+              </div>
+            </div>
           </section>
         )}
+
+        {/* … la parte de comparación por periodos se mantiene igual,
+            solo usa el nuevo handleDownloadCard y storyOuterStyle … */}
       </div>
     </main>
   );
