@@ -4,7 +4,7 @@
 import { useEffect, useRef, useState } from "react";
 import type React from "react"; // para React.CSSProperties
 import { signIn, signOut, useSession } from "next-auth/react";
-import html2canvas from "html2canvas";
+import * as htmlToImage from "html-to-image";
 
 type Track = {
   id: string;
@@ -96,7 +96,7 @@ export default function Home() {
   >(null);
 
   const postCardRef = useRef<HTMLDivElement | null>(null);
-  const periodsCardRef = useRef<HTMLDivElement | null>(null); // ya no se usa en el UI, pero lo dejamos por compatibilidad
+  const periodsCardRef = useRef<HTMLDivElement | null>(null); // compatibilidad
 
   const [exportingPost, setExportingPost] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
@@ -240,7 +240,7 @@ export default function Home() {
     }
   }
 
-  // 3) Exportar como PNG
+  // 3) Exportar como PNG usando html-to-image (ratio 360x640 → 1080x1920)
   async function handleDownloadCard(
     element: HTMLDivElement | null,
     filename: string
@@ -252,18 +252,15 @@ export default function Home() {
       return;
     }
 
-    // Espera 1 frame para asegurar layout estable
-    await new Promise<void>((r) => requestAnimationFrame(() => r()));
-
     try {
-      const canvas = await html2canvas(element, {
+      const dataUrl = await htmlToImage.toPng(element, {
+        cacheBust: true,
         backgroundColor: "#020617",
-        scale: 3, // 360x640 -> 1080x1920
-        useCORS: true, // necesario para intentar cargar imágenes remotas
-        logging: false,
+        width: 360,
+        height: 640,
+        pixelRatio: 3, // 360x640 * 3 = 1080x1920 (IG story)
       });
 
-      const dataUrl = canvas.toDataURL("image/png");
       downloadDataUrl(dataUrl, filename);
     } catch (err: any) {
       console.error("Error exportando imagen:", err);
@@ -283,7 +280,7 @@ export default function Home() {
     );
   }
 
-  // Styles “safe” (HEX/RGB) para html2canvas
+  // Styles “safe” (HEX/RGB) para html-to-image
   const storyOuterStyle: React.CSSProperties = {
     width: 360,
     height: 640,
@@ -659,7 +656,6 @@ export default function Home() {
                                 <img
                                   src={track.image}
                                   alt={track.name}
-                                  crossOrigin="anonymous"
                                   style={{
                                     width: "100%",
                                     height: "100%",
@@ -798,7 +794,7 @@ export default function Home() {
                   semanas, los últimos 6 meses y todo el tiempo.
                 </p>
               </div>
-              {/* ya no hay botón de exportar aquí */}
+              {/* sin botón de exportar aquí */}
             </div>
 
             {comparisonError && (
