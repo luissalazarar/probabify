@@ -1,7 +1,7 @@
 // app/page.tsx
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import type React from "react"; // para React.CSSProperties
 import { signIn, signOut, useSession } from "next-auth/react";
 import * as htmlToImage from "html-to-image";
@@ -20,6 +20,7 @@ type ProbabilityResult = {
   probability: number;
   summary: string;
   shortLabel: string;
+  representativeTrackIds?: string[]; // 👈 nuevo
 };
 
 type RangeKey = "short_term" | "medium_term" | "long_term";
@@ -101,6 +102,20 @@ export default function Home() {
   const [exportingPost, setExportingPost] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
+  // ✅ Derivar canciones “que más lo avalan” desde representativeTrackIds
+  const supportingTracks = useMemo(() => {
+    if (!probResult) return tracks.slice(0, 3);
+
+    const ids = probResult.representativeTrackIds ?? [];
+    if (!ids.length) return tracks.slice(0, 3);
+
+    const map = new Map(tracks.map((t) => [t.id, t] as const));
+    const picked = ids.map((id) => map.get(id)).filter(Boolean) as Track[];
+
+    // fallback si algo falla
+    return picked.length ? picked : tracks.slice(0, 3);
+  }, [probResult, tracks]);
+
   // 1) Cargar canciones del periodo principal
   useEffect(() => {
     if (status !== "authenticated") return;
@@ -110,9 +125,7 @@ export default function Home() {
         setLoadingTracks(true);
         setErrorTracks(null);
 
-        const res = await fetch(
-          `/api/spotify/top-tracks?range=${selectedRange}`
-        );
+        const res = await fetch(`/api/spotify/top-tracks?range=${selectedRange}`);
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Error obteniendo canciones");
@@ -214,6 +227,9 @@ export default function Home() {
               probability,
               summary: probData.summary,
               shortLabel: probData.shortLabel,
+              representativeTrackIds: Array.isArray(probData.representativeTrackIds)
+                ? probData.representativeTrackIds
+                : [],
             };
           }
         } catch {
@@ -255,7 +271,6 @@ export default function Home() {
     try {
       const dataUrl = await htmlToImage.toPng(element, {
         cacheBust: true,
-        // importante: dejamos que tome el gradiente del propio elemento
         backgroundColor: undefined,
         width: 360,
         height: 640,
@@ -286,9 +301,8 @@ export default function Home() {
     width: 360,
     height: 640,
     borderRadius: 32,
-    // degradado exportable
     background: "linear-gradient(135deg, #054d61, #049990)",
-    color: "#F8FAFC", // slate-50
+    color: "#F8FAFC",
     overflow: "hidden",
     display: "flex",
     flexDirection: "column",
@@ -297,9 +311,9 @@ export default function Home() {
     boxShadow: "0 25px 50px -12px rgba(0,0,0,0.6)",
   };
 
-  const mutedText: React.CSSProperties = { color: "#D1E5F0" }; // ajustado para verde/azul
+  const mutedText: React.CSSProperties = { color: "#D1E5F0" };
   const mutedText2: React.CSSProperties = { color: "#A8C6D8" };
-  const borderTop: React.CSSProperties = { borderTop: "1px solid #1E293B" }; // slate-800
+  const borderTop: React.CSSProperties = { borderTop: "1px solid #1E293B" };
 
   const pillTop: React.CSSProperties = {
     fontSize: 10,
@@ -486,10 +500,10 @@ export default function Home() {
 
                   <div>
                     <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">
-                      Canciones que más lo avalan (ejemplo)
+                      Canciones que más lo avalan (representativas)
                     </p>
                     <ul className="space-y-2">
-                      {tracks.slice(0, 3).map((track) => (
+                      {supportingTracks.map((track) => (
                         <li
                           key={track.id}
                           className="flex items-center gap-3 text-sm"
@@ -543,9 +557,9 @@ export default function Home() {
                     <p className="text-red-300 text-sm">{exportError}</p>
                   )}
 
-                  {/* CARD EXPORTABLE (una sola imagen con todo) */}
+                  {/* CARD EXPORTABLE */}
                   <div ref={postCardRef} style={storyOuterStyle}>
-                    {/* CAMBIO AQUÍ */}
+                    {/* 👇 cambio pedido */}
                     <div style={pillTop}>Probabify.com</div>
 
                     <div
@@ -557,13 +571,7 @@ export default function Home() {
                         minHeight: 0,
                       }}
                     >
-                      {/* Pregunta + % arriba */}
-                      <div
-                        style={{
-                          flexShrink: 0,
-                          paddingTop: 2,
-                        }}
-                      >
+                      <div style={{ flexShrink: 0, paddingTop: 2 }}>
                         <p
                           style={{
                             fontSize: 12,
@@ -597,7 +605,6 @@ export default function Home() {
                         </div>
                       </div>
 
-                      {/* Resumen debajo de la probabilidad */}
                       <p
                         style={{
                           fontSize: 12,
@@ -611,7 +618,7 @@ export default function Home() {
                       </p>
                     </div>
 
-                    {/* Canciones que más lo avalan */}
+                    {/* Canciones representativas */}
                     <div style={{ marginTop: 0 }}>
                       <p
                         style={{
@@ -632,7 +639,7 @@ export default function Home() {
                           gap: 10,
                         }}
                       >
-                        {tracks.slice(0, 3).map((track) => (
+                        {supportingTracks.map((track) => (
                           <div
                             key={track.id}
                             style={{
@@ -689,7 +696,7 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Resumen por periodos dentro de la misma imagen */}
+                    {/* Resumen por periodos */}
                     {comparisonResults && (
                       <div style={{ marginTop: 12 }}>
                         <p
@@ -792,7 +799,6 @@ export default function Home() {
                   semanas, los últimos 6 meses y todo el tiempo.
                 </p>
               </div>
-              {/* sin botón de exportar aquí */}
             </div>
 
             {comparisonError && (
