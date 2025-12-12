@@ -507,14 +507,43 @@ export default function Home() {
                     </div>
 
                     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                      <p style={{ fontSize: 12, color: "#E2E8F0" }}>{probResult.question}</p>
+  {/* Descripción primero */}
+  <p
+    style={{
+      fontSize: 12,
+      lineHeight: "18px",
+      color: "#E2E8F0",
+      marginTop: 2,
+      display: "-webkit-box",
+      WebkitLineClamp: 10,
+      WebkitBoxOrient: "vertical",
+      overflow: "hidden",
+    }}
+  >
+    {probResult.summary}
+  </p>
 
-                      <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                        <span style={{ fontSize: 56, fontWeight: 800, lineHeight: "56px" }}>
-                          {probResult.probability}%
-                        </span>
-                        <span style={{ fontSize: 12, color: "#E2E8F0" }}>según tu Spotify</span>
-                      </div>
+  {/* Pregunta + % grande */}
+  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+    <p
+      style={{
+        fontSize: 12,
+        color: "#E2E8F0",
+        opacity: 0.9,
+      }}
+    >
+      {probResult.question}
+    </p>
+
+    <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+      <span style={{ fontSize: 56, fontWeight: 800, lineHeight: "56px" }}>
+        {probResult.probability}%
+      </span>
+      <span style={{ fontSize: 12, color: "#E2E8F0" }}>según tu Spotify</span>
+    </div>
+  </div>
+</div>
+
 
                       <p
   style={{
@@ -534,7 +563,6 @@ export default function Home() {
                     </div>
 
                     {/* ✅ NUEVO: empuja el listado hacia abajo */}
-                    <div style={{ flex: 1, minHeight: 18 }} />
 
                     <div style={{ marginTop: 0 }}>
                       <p
@@ -583,7 +611,8 @@ export default function Home() {
                       </div>
                     </div>
 
-                    <div style={{ marginTop: 14, paddingTop: 14, ...borderTop, fontSize: 9, ...mutedText2 }}>
+                    <div style={{ marginTop: "auto", paddingTop: 14, ...borderTop, fontSize: 9, ...mutedText2 }}>
+
                       Generado con <span style={{ fontWeight: 700, color: "#CBD5E1" }}>Probabify</span>{" "}
                       usando tu música top de Spotify.
                     </div>
