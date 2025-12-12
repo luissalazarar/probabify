@@ -73,6 +73,45 @@ function downloadDataUrl(dataUrl: string, filename: string) {
   link.remove();
 }
 
+async function waitForImages(root: HTMLElement) {
+  const imgs = Array.from(root.querySelectorAll("img"));
+
+  await Promise.all(
+    imgs.map(async (img) => {
+      if (!img.src) return;
+
+      if (img.complete && img.naturalWidth > 0) {
+        if ("decode" in img) {
+          try {
+            // @ts-ignore
+            await img.decode();
+          } catch {}
+        }
+        return;
+      }
+
+      await new Promise<void>((resolve) => {
+        const done = async () => {
+          img.removeEventListener("load", done);
+          img.removeEventListener("error", done);
+
+          if ("decode" in img) {
+            try {
+              // @ts-ignore
+              await img.decode();
+            } catch {}
+          }
+
+          resolve();
+        };
+
+        img.addEventListener("load", done);
+        img.addEventListener("error", done);
+      });
+    })
+  );
+}
+
 export default function Home() {
   const { data: session, status } = useSession();
 
@@ -269,6 +308,8 @@ export default function Home() {
     }
 
     try {
+      await waitForImages(element);
+
       const dataUrl = await htmlToImage.toPng(element, {
         cacheBust: true,
         backgroundColor: undefined,
