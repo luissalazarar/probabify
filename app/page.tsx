@@ -255,11 +255,10 @@ export default function Home() {
     try {
       const dataUrl = await htmlToImage.toPng(element, {
         cacheBust: true,
-        // importante: dejamos que tome el gradiente del propio elemento
-        backgroundColor: undefined,
+        backgroundColor: undefined, // que respete el gradiente del elemento
         width: 360,
         height: 640,
-        pixelRatio: 3, // 360x640 * 3 = 1080x1920 (IG story)
+        pixelRatio: 3, // 1080x1920 (IG story)
       });
 
       downloadDataUrl(dataUrl, filename);
@@ -286,9 +285,8 @@ export default function Home() {
     width: 360,
     height: 640,
     borderRadius: 32,
-    // degradado exportable
     background: "linear-gradient(135deg, #054d61, #049990)",
-    color: "#F8FAFC", // slate-50
+    color: "#F8FAFC",
     overflow: "hidden",
     display: "flex",
     flexDirection: "column",
@@ -297,9 +295,9 @@ export default function Home() {
     boxShadow: "0 25px 50px -12px rgba(0,0,0,0.6)",
   };
 
-  const mutedText: React.CSSProperties = { color: "#D1E5F0" }; // ajustado para verde/azul
+  const mutedText: React.CSSProperties = { color: "#D1E5F0" };
   const mutedText2: React.CSSProperties = { color: "#A8C6D8" };
-  const borderTop: React.CSSProperties = { borderTop: "1px solid #1E293B" }; // slate-800
+  const borderTop: React.CSSProperties = { borderTop: "1px solid #1E293B" };
 
   const pillTop: React.CSSProperties = {
     fontSize: 10,
@@ -543,12 +541,10 @@ export default function Home() {
                     <p className="text-red-300 text-sm">{exportError}</p>
                   )}
 
-                  {/* CARD EXPORTABLE (una sola imagen con todo) */}
+                  {/* CARD EXPORTABLE */}
                   <div ref={postCardRef} style={storyOuterStyle}>
-                    <div style={pillTop}>
-                      {PERIOD_DETAILS[selectedRange].label} ·{" "}
-                      {PERIOD_DETAILS[selectedRange].subtitle}
-                    </div>
+                    {/* CAMBIO: antes era label · subtitle */}
+                    <div style={pillTop}>Probabify.com</div>
 
                     <div
                       style={{
@@ -560,12 +556,7 @@ export default function Home() {
                       }}
                     >
                       {/* Pregunta + % arriba */}
-                      <div
-                        style={{
-                          flexShrink: 0,
-                          paddingTop: 2,
-                        }}
-                      >
+                      <div style={{ flexShrink: 0, paddingTop: 2 }}>
                         <p
                           style={{
                             fontSize: 12,
@@ -599,7 +590,7 @@ export default function Home() {
                         </div>
                       </div>
 
-                      {/* Resumen debajo de la probabilidad */}
+                      {/* Resumen */}
                       <p
                         style={{
                           fontSize: 12,
@@ -613,7 +604,7 @@ export default function Home() {
                       </p>
                     </div>
 
-                    {/* Canciones que más lo avalan */}
+                    {/* Canciones */}
                     <div style={{ marginTop: 0 }}>
                       <p
                         style={{
@@ -667,12 +658,7 @@ export default function Home() {
                               ) : null}
                             </div>
 
-                            <div
-                              style={{
-                                display: "flex",
-                                flexDirection: "column",
-                              }}
-                            >
+                            <div style={{ display: "flex", flexDirection: "column" }}>
                               <span
                                 style={{
                                   fontSize: 13,
@@ -691,7 +677,7 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Resumen por periodos dentro de la misma imagen */}
+                    {/* Resumen por periodos */}
                     {comparisonResults && (
                       <div style={{ marginTop: 12 }}>
                         <p
@@ -739,9 +725,7 @@ export default function Home() {
                                 >
                                   {PERIOD_DETAILS[r.key].label}
                                 </span>
-                                <span
-                                  style={{ fontSize: 11, ...mutedText2 }}
-                                >
+                                <span style={{ fontSize: 11, ...mutedText2 }}>
                                   {PERIOD_DETAILS[r.key].subtitle}
                                 </span>
                               </div>
@@ -752,9 +736,7 @@ export default function Home() {
                                   color: "#F8FAFC",
                                 }}
                               >
-                                {r.probability === null
-                                  ? "—"
-                                  : `${r.probability}%`}
+                                {r.probability === null ? "—" : `${r.probability}%`}
                               </span>
                             </div>
                           ))}
@@ -796,7 +778,6 @@ export default function Home() {
                   semanas, los últimos 6 meses y todo el tiempo.
                 </p>
               </div>
-              {/* sin botón de exportar aquí */}
             </div>
 
             {comparisonError && (
