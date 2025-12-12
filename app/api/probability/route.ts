@@ -47,7 +47,7 @@ export async function POST(req: Request) {
 
     const cleanedQuestion = question.trim();
 
-    // 🔒 Validar que la pregunta esté en la lista blanca
+    // 🔒 Validar whitelist
     if (!allowedQuestions.includes(cleanedQuestion)) {
       return NextResponse.json(
         {
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Usamos hasta 50 canciones
+    // 🔹 Hasta 50 canciones
     const tracksText = tracks
       .slice(0, 50)
       .map(
@@ -77,39 +77,47 @@ export async function POST(req: Request) {
       )
       .join("\n");
 
-    const systemPrompt =
-      "Eres una IA que inventa probabilidades divertidas basadas en la música de una persona. " +
-      "Responde siempre en español. No toques temas sensibles (autolesión, violencia sexual, odio, etc.). " +
-      "Cuando analices la música, prioriza el contenido, el mensaje y la letra conocida de las canciones " +
-      "(la temática real de cada canción según tu conocimiento general), y usa el título o el nombre del álbum " +
-      "solo como apoyo cuando no tengas clara la letra. " +
-      "La probabilidad que devuelves debe ser un NÚMERO ENTERO entre 0 y 100, pero procura no usar siempre múltiplos de 5 " +
-      "ni repetir siempre los mismos valores (como 35, 65, 75); elige números variados (por ejemplo 42, 67, 81, etc.). " +
-      "Tu tarea es, a partir de esas canciones, devolver una probabilidad divertida entre 0 y 100, más un pequeño texto que explique la lógica.";
+    const systemPrompt = `
+Eres una IA que analiza perfiles musicales y genera probabilidades ficticias pero coherentes.
+Responde siempre en español.
+
+Reglas importantes:
+- Analiza TODAS las canciones proporcionadas.
+- Identifica primero cuáles canciones representan MEJOR el mood dominante del usuario.
+- No asumas que las primeras canciones son las más importantes.
+- Basa tu probabilidad principalmente en las canciones más representativas del conjunto.
+- Las demás canciones solo sirven como contexto secundario.
+- Prioriza la temática y mensaje real de las letras (según tu conocimiento general).
+- Evita temas sensibles (autolesión, violencia, odio, etc.).
+- Devuelve un porcentaje ENTERO entre 0 y 100.
+- Evita repetir siempre los mismos números (no abusar de 50, 75, 80).
+- Tono ligero, tipo horóscopo musical. No des consejos profesionales.
+`.trim();
 
     const userPrompt = `
-Pregunta del usuario: "${cleanedQuestion}"
+Pregunta:
+"${cleanedQuestion}"
 
-Canciones más escuchadas de la persona (usa su letra/temática conocida, no solo el título):
+Canciones más escuchadas (lista completa, no orden de importancia):
 ${tracksText}
 
-Instrucciones:
-- Analiza principalmente el tono, la temática y el mensaje de la LETRA de estas canciones (según tu conocimiento general).
-- Si no conoces la letra de alguna canción, puedes inferir un poco por el título, el artista o el estilo habitual del artista, pero sin inventar detalles concretos.
-- Combina todo para estimar una probabilidad entre 0 y 100 coherente con el mood general de la música.
-- Mantén un tono ligero, tipo horóscopo musical, sin dar consejos profesionales.
+Proceso obligatorio (interno):
+1. Analiza TODAS las canciones.
+2. Determina cuáles reflejan mejor el mood emocional dominante.
+3. Basa la probabilidad principalmente en ese subconjunto representativo.
+4. Usa el resto solo como apoyo contextual.
 
-Responde SOLO en formato JSON válido con este formato EXACTO:
+Responde SOLO en JSON válido con este formato EXACTO:
 {
   "probability": 0-100,
-  "summary": "máx 1.5 líneas explicando por qué esa probabilidad encaja con la música y su letra/mensaje",
-  "shortLabel": "una versión corta de la pregunta, por ejemplo: 'volver con tu ex', 'superar a tu ex', etc."
+  "summary": "máx 1.5 líneas explicando la lógica basada en el mood general",
+  "shortLabel": "versión corta de la pregunta"
 }
 `.trim();
 
     const completion = await client.chat.completions.create({
       model: "gpt-4o-mini",
-      temperature: 1.0,
+      temperature: 1.05,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
