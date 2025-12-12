@@ -523,7 +523,7 @@ export default function Home() {
                           color: "#E2E8F0",
                           marginTop: 6,
                           display: "-webkit-box",
-                          WebkitLineClamp: 8,
+                          WebkitLineClamp: 9,
                           WebkitBoxOrient: "vertical",
                           overflow: "hidden",
                         }}
@@ -532,15 +532,25 @@ export default function Home() {
                       </p>
                     </div>
 
-                    <div style={{ marginTop: 8 }}>
-                      <p style={{ fontSize: 10, ...mutedText, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 8 }}>
+                    {/* ✅ NUEVO: empuja el listado hacia abajo */}
+                    <div style={{ flex: 1, minHeight: 18 }} />
+
+                    <div style={{ marginTop: 0 }}>
+                      <p
+                        style={{
+                          fontSize: 10,
+                          ...mutedText,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.12em",
+                          marginBottom: 8,
+                        }}
+                      >
                         Canciones que más lo avalan
                       </p>
 
                       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                         {tracks.slice(0, 3).map((track) => (
                           <div key={track.id} style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                            {/* OJO: imágenes pueden fallar por CORS; si quieres 100% estable, quítalas del export */}
                             <div
                               style={{
                                 width: 32,
@@ -553,7 +563,6 @@ export default function Home() {
                               }}
                             >
                               {track.image ? (
-                                // Si esto te causa CORS, reemplaza por un div vacío
                                 <img
                                   src={track.image}
                                   alt={track.name}
@@ -573,7 +582,7 @@ export default function Home() {
                       </div>
                     </div>
 
-                    <div style={{ marginTop: "auto", paddingTop: 14, ...borderTop, fontSize: 9, ...mutedText2 }}>
+                    <div style={{ marginTop: 14, paddingTop: 14, ...borderTop, fontSize: 9, ...mutedText2 }}>
                       Generado con <span style={{ fontWeight: 700, color: "#CBD5E1" }}>Probabify</span>{" "}
                       usando tu música top de Spotify.
                     </div>
