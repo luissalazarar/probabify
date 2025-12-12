@@ -4,12 +4,12 @@ import "../globals.css";
 import { SessionProvider } from "@/components/SessionProvider";
 import Link from "next/link";
 
-type Locale = "es" | "en";
-
 export const metadata: Metadata = {
   title: "Probabify",
   description: "Probabilidades según tu Spotify",
 };
+
+type Locale = "es" | "en";
 
 export default function LocaleLayout({
   children,
@@ -45,6 +45,7 @@ export default function LocaleLayout({
             {safeLocale === "es" ? "Privacidad" : "Privacy"}
           </Link>
 
+          {/* switch idioma */}
           <Link
             href={safeLocale === "es" ? "/en" : "/es"}
             style={{
