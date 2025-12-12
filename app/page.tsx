@@ -517,19 +517,20 @@ export default function Home() {
                       </div>
 
                       <p
-                        style={{
-                          fontSize: 12,
-                          lineHeight: "18px",
-                          color: "#E2E8F0",
-                          marginTop: 6,
-                          display: "-webkit-box",
-                          WebkitLineClamp: 9,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
-                        }}
-                      >
-                        {probResult.summary}
-                      </p>
+  style={{
+    fontSize: 12,
+    lineHeight: "17px",          // antes 18px
+    color: "#E2E8F0",
+    marginTop: 6,
+    display: "-webkit-box",
+    WebkitLineClamp: 8,          // antes 9
+    WebkitBoxOrient: "vertical",
+    overflow: "hidden",
+  }}
+>
+  {probResult.summary}
+</p>
+
                     </div>
 
                     {/* ✅ NUEVO: empuja el listado hacia abajo */}
