@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type React from "react"; // 👈 para React.CSSProperties
+import type React from "react"; // para React.CSSProperties
 import { signIn, signOut, useSession } from "next-auth/react";
 import html2canvas from "html2canvas";
 
@@ -99,7 +99,6 @@ export default function Home() {
   const periodsCardRef = useRef<HTMLDivElement | null>(null);
 
   const [exportingPost, setExportingPost] = useState(false);
-  const [exportingPeriods, setExportingPeriods] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
   // 1) Cargar canciones del periodo principal
@@ -260,7 +259,7 @@ export default function Home() {
       const canvas = await html2canvas(element, {
         backgroundColor: "#020617",
         scale: 3, // 360x640 -> 1080x1920
-        useCORS: true, // 👈 necesario para intentar cargar imágenes remotas
+        useCORS: true, // necesario para intentar cargar imágenes remotas
         logging: false,
       });
 
@@ -545,7 +544,7 @@ export default function Home() {
                     <p className="text-red-400 text-sm">{exportError}</p>
                   )}
 
-                  {/* CARD EXPORTABLE (sin Tailwind colors) */}
+                  {/* CARD EXPORTABLE (una sola imagen con todo) */}
                   <div ref={postCardRef} style={storyOuterStyle}>
                     <div style={pillTop}>
                       {PERIOD_DETAILS[selectedRange].label} ·{" "}
@@ -561,7 +560,7 @@ export default function Home() {
                         minHeight: 0,
                       }}
                     >
-                      {/* ✅ Resumen SIN cortar líneas */}
+                      {/* Resumen completo */}
                       <p
                         style={{
                           fontSize: 12,
@@ -574,6 +573,7 @@ export default function Home() {
                         {probResult.summary}
                       </p>
 
+                      {/* Pregunta + % */}
                       <div
                         style={{
                           flexShrink: 0,
@@ -614,6 +614,7 @@ export default function Home() {
                       </div>
                     </div>
 
+                    {/* Canciones que más lo avalan */}
                     <div style={{ marginTop: 0 }}>
                       <p
                         style={{
@@ -658,7 +659,7 @@ export default function Home() {
                                 <img
                                   src={track.image}
                                   alt={track.name}
-                                  crossOrigin="anonymous" // 👈 para html2canvas
+                                  crossOrigin="anonymous"
                                   style={{
                                     width: "100%",
                                     height: "100%",
@@ -691,6 +692,77 @@ export default function Home() {
                         ))}
                       </div>
                     </div>
+
+                    {/* Resumen por periodos dentro de la misma imagen */}
+                    {comparisonResults && (
+                      <div style={{ marginTop: 12 }}>
+                        <p
+                          style={{
+                            fontSize: 10,
+                            ...mutedText,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.12em",
+                            marginBottom: 6,
+                          }}
+                        >
+                          Resumen por periodos
+                        </p>
+
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 6,
+                          }}
+                        >
+                          {comparisonResults.map((r) => (
+                            <div
+                              key={r.key}
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "baseline",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  gap: 2,
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    fontSize: 11,
+                                    ...mutedText,
+                                    textTransform: "uppercase",
+                                    letterSpacing: "0.12em",
+                                  }}
+                                >
+                                  {PERIOD_DETAILS[r.key].label}
+                                </span>
+                                <span
+                                  style={{ fontSize: 11, ...mutedText2 }}
+                                >
+                                  {PERIOD_DETAILS[r.key].subtitle}
+                                </span>
+                              </div>
+                              <span
+                                style={{
+                                  fontSize: 20,
+                                  fontWeight: 700,
+                                  color: "#F8FAFC",
+                                }}
+                              >
+                                {r.probability === null
+                                  ? "—"
+                                  : `${r.probability}%`}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     <div
                       style={{
@@ -726,26 +798,7 @@ export default function Home() {
                   semanas, los últimos 6 meses y todo el tiempo.
                 </p>
               </div>
-
-              {comparisonResults && (
-                <button
-                  type="button"
-                  onClick={async () => {
-                    setExportingPeriods(true);
-                    await handleDownloadCard(
-                      periodsCardRef.current,
-                      "probabify_historia_periodos.png"
-                    );
-                    setExportingPeriods(false);
-                  }}
-                  disabled={exportingPeriods}
-                  className="px-3 py-1.5 rounded-full bg-sky-500 hover:bg-sky-400 text-xs font-semibold text-slate-950 transition disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {exportingPeriods
-                    ? "Exportando..."
-                    : "Exportar resumen por periodos"}
-                </button>
-              )}
+              {/* 👈 ya no hay botón de exportar aquí */}
             </div>
 
             {comparisonError && (
@@ -784,11 +837,7 @@ export default function Home() {
                   ))}
                 </div>
 
-                {exportError && (
-                  <p className="text-red-400 text-sm">{exportError}</p>
-                )}
-
-                {/* CARD EXPORTABLE PERIODOS */}
+                {/* Card grande de resumen por periodos solo como vista previa */}
                 <div ref={periodsCardRef} style={storyOuterStyle}>
                   <div style={pillTop}>Probabify · Resumen por periodos</div>
 
