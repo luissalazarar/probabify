@@ -45,7 +45,6 @@ export default function LocaleLayout({
             {safeLocale === "es" ? "Privacidad" : "Privacy"}
           </Link>
 
-          {/* switch idioma */}
           <Link
             href={safeLocale === "es" ? "/en" : "/es"}
             style={{
