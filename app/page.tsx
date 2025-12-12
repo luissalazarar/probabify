@@ -3,6 +3,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
+import html2canvas from "html2canvas";
 
 type Track = {
   id: string;
@@ -61,11 +62,14 @@ const PERIOD_DETAILS: Record<
   },
 };
 
-type ExportStatus = {
-  state: "idle" | "generating" | "success" | "error";
-  message?: string;
-  dataUrl?: string; // para abrir manual si el navegador bloquea downloads
-};
+function downloadDataUrl(dataUrl: string, filename: string) {
+  const link = document.createElement("a");
+  link.href = dataUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -90,17 +94,12 @@ export default function Home() {
     { key: RangeKey; probability: number | null }[] | null
   >(null);
 
-  // refs
   const postCardRef = useRef<HTMLDivElement | null>(null);
   const periodsCardRef = useRef<HTMLDivElement | null>(null);
 
-  // estados visibles en UI
-  const [exportPeriodStatus, setExportPeriodStatus] = useState<ExportStatus>({
-    state: "idle",
-  });
-  const [exportPeriodsStatus, setExportPeriodsStatus] = useState<ExportStatus>({
-    state: "idle",
-  });
+  const [exportingPost, setExportingPost] = useState(false);
+  const [exportingPeriods, setExportingPeriods] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   // 1) Cargar canciones del periodo principal
   useEffect(() => {
@@ -111,9 +110,7 @@ export default function Home() {
         setLoadingTracks(true);
         setErrorTracks(null);
 
-        const res = await fetch(
-          `/api/spotify/top-tracks?range=${selectedRange}`
-        );
+        const res = await fetch(`/api/spotify/top-tracks?range=${selectedRange}`);
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Error obteniendo canciones");
@@ -122,6 +119,7 @@ export default function Home() {
         const data = await res.json();
         setTracks(data.tracks || []);
       } catch (err: any) {
+        console.error(err);
         setErrorTracks(err.message || "Error inesperado");
       } finally {
         setLoadingTracks(false);
@@ -131,7 +129,7 @@ export default function Home() {
     fetchTopTracks();
   }, [status, selectedRange]);
 
-  // 2) Calcular principal + 3 periodos
+  // 2) Botón único: calcula resultado principal + 3 periodos
   async function handleCalculateAll() {
     try {
       if (!session) {
@@ -153,10 +151,7 @@ export default function Home() {
       setComparisonError(null);
       setProbResult(null);
       setComparisonResults(null);
-
-      // reset UI export statuses
-      setExportPeriodStatus({ state: "idle" });
-      setExportPeriodsStatus({ state: "idle" });
+      setExportError(null);
 
       const results: { key: RangeKey; probability: number | null }[] = [];
       let mainResult: ProbabilityResult | null = null;
@@ -168,9 +163,7 @@ export default function Home() {
           if (period.key === selectedRange && tracks.length > 0) {
             periodTracks = tracks;
           } else {
-            const tracksRes = await fetch(
-              `/api/spotify/top-tracks?range=${period.key}`
-            );
+            const tracksRes = await fetch(`/api/spotify/top-tracks?range=${period.key}`);
             if (!tracksRes.ok) {
               results.push({ key: period.key, probability: null });
               continue;
@@ -205,9 +198,7 @@ export default function Home() {
 
           const probData = await probRes.json();
           const probability: number | null =
-            typeof probData.probability === "number"
-              ? probData.probability
-              : null;
+            typeof probData.probability === "number" ? probData.probability : null;
 
           results.push({ key: period.key, probability });
 
@@ -227,13 +218,12 @@ export default function Home() {
       setComparisonResults(results);
 
       if (!mainResult) {
-        setProbError(
-          "No se pudo calcular la probabilidad para el periodo seleccionado."
-        );
+        setProbError("No se pudo calcular la probabilidad para el periodo seleccionado.");
       } else {
         setProbResult(mainResult);
       }
     } catch (err: any) {
+      console.error(err);
       setProbError(err.message || "Error inesperado.");
       setComparisonError(err.message || "Error inesperado en la comparación.");
     } finally {
@@ -242,56 +232,35 @@ export default function Home() {
     }
   }
 
-  // 3) Export helper (sin logs; con estado visible)
-  async function exportCardToPng(
-    element: HTMLDivElement | null,
-    filename: string,
-    setStatus: React.Dispatch<React.SetStateAction<ExportStatus>>
-  ) {
+  // 3) Exportar como PNG (sin Tailwind colors dentro del card para evitar lab()/oklch())
+  async function handleDownloadCard(element: HTMLDivElement | null, filename: string) {
+    setExportError(null);
+
     if (!element) {
-      setStatus({ state: "error", message: "No se encontró el card a exportar." });
+      setExportError("No se encontró la tarjeta para exportar.");
       return;
     }
 
+    // Espera 1 frame para asegurar layout estable (important en Vercel/Next)
+    await new Promise<void>((r) => requestAnimationFrame(() => r()));
+
     try {
-      setStatus({ state: "generating", message: "Generando imagen..." });
-
-      const html2canvasModule = await import("html2canvas");
-      const html2canvas = html2canvasModule.default;
-
       const canvas = await html2canvas(element, {
         backgroundColor: "#020617",
-        scale: 3,
+        scale: 3, // 360x640 -> 1080x1920
         useCORS: false,
-        ignoreElements: (el) =>
-          el instanceof HTMLElement &&
-          el.classList.contains("html2canvas-ignore"),
+        logging: false,
       });
 
       const dataUrl = canvas.toDataURL("image/png");
-
-      // Intento descarga
-      const a = document.createElement("a");
-      a.href = dataUrl;
-      a.download = filename;
-
-      // Algunos browsers bloquean downloads programáticos.
-      // Si bloquea, te dejamos el dataUrl en UI para abrir manual.
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-
-      setStatus({
-        state: "success",
-        message:
-          "Listo. Si tu navegador bloqueó la descarga, abre el link de abajo y guarda la imagen.",
-        dataUrl,
-      });
+      downloadDataUrl(dataUrl, filename);
     } catch (err: any) {
-      setStatus({
-        state: "error",
-        message: err?.message || "Error exportando imagen (html2canvas).",
-      });
+      console.error("Error exportando imagen:", err);
+      setExportError(
+        err?.message
+          ? `No se pudo exportar: ${err.message}`
+          : "No se pudo exportar la imagen."
+      );
     }
   }
 
@@ -303,19 +272,43 @@ export default function Home() {
     );
   }
 
+  // Styles “safe” (HEX/RGB) para html2canvas
+  const storyOuterStyle: React.CSSProperties = {
+    width: 360,
+    height: 640,
+    borderRadius: 32,
+    background: "#020617", // slate-950
+    color: "#F8FAFC", // slate-50
+    overflow: "hidden",
+    display: "flex",
+    flexDirection: "column",
+    padding: 24,
+    gap: 16,
+    boxShadow: "0 25px 50px -12px rgba(0,0,0,0.6)",
+  };
+
+  const mutedText: React.CSSProperties = { color: "#94A3B8" }; // slate-400
+  const mutedText2: React.CSSProperties = { color: "#64748B" }; // slate-500
+  const borderTop: React.CSSProperties = { borderTop: "1px solid #1E293B" }; // slate-800
+
+  const pillTop: React.CSSProperties = {
+    fontSize: 10,
+    textTransform: "uppercase",
+    letterSpacing: "0.12em",
+    color: "#94A3B8",
+  };
+
   return (
     <main className="min-h-screen flex flex-col items-center bg-slate-950 text-slate-100 px-4 py-10">
       <div className="w-full max-w-3xl flex flex-col gap-8">
         <header className="text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-3">Probabify</h1>
           <p className="text-slate-300 max-w-xl mx-auto">
-            Conecta tu Spotify, elige una pregunta y te devolvemos una
-            probabilidad inventada (pero coherente con tu música) lista para
-            pantallazo y post.
+            Conecta tu Spotify, elige una pregunta y te devolvemos una probabilidad inventada
+            (pero coherente con tu música) lista para post.
           </p>
         </header>
 
-        {/* Auth */}
         <section className="flex flex-col items-center gap-3">
           {!session && (
             <button
@@ -330,9 +323,7 @@ export default function Home() {
             <>
               <p className="text-sm text-slate-300">
                 Sesión iniciada como{" "}
-                <span className="font-semibold">
-                  {session.user?.name ?? session.user?.email}
-                </span>
+                <span className="font-semibold">{session.user?.name ?? session.user?.email}</span>
               </p>
               <button
                 onClick={() => signOut()}
@@ -344,7 +335,6 @@ export default function Home() {
           )}
         </section>
 
-        {/* Selector periodo */}
         {session && (
           <section className="flex flex-col gap-3">
             <p className="text-xs uppercase tracking-wide text-slate-400">
@@ -373,23 +363,19 @@ export default function Home() {
           </section>
         )}
 
-        {/* Tracks */}
         {session && (
           <section className="bg-slate-900/60 rounded-2xl p-4 md:p-5">
             <h2 className="text-lg font-semibold mb-2">
               Tus canciones top ({PERIOD_DETAILS[selectedRange].label})
             </h2>
 
-            {loadingTracks && (
-              <p className="text-slate-300 text-sm">Cargando canciones...</p>
-            )}
-
+            {loadingTracks && <p className="text-slate-300 text-sm">Cargando canciones...</p>}
             {errorTracks && <p className="text-red-400 text-sm">{errorTracks}</p>}
 
             {!loadingTracks && !errorTracks && tracks.length === 0 && (
               <p className="text-slate-400 text-sm">
-                No encontramos canciones top para este periodo. Escucha algo en
-                Spotify y vuelve a intentar.
+                No encontramos canciones top para este periodo. Escucha algo en Spotify y vuelve
+                a intentar.
               </p>
             )}
 
@@ -418,7 +404,6 @@ export default function Home() {
           </section>
         )}
 
-        {/* Probabilidad */}
         {session && (
           <section className="bg-slate-900/60 rounded-2xl p-4 md:p-5 flex flex-col gap-4">
             <h2 className="text-lg font-semibold">Calcula tu probabilidad</h2>
@@ -452,7 +437,6 @@ export default function Home() {
               {probError && <p className="text-red-400 text-sm mt-1">{probError}</p>}
             </div>
 
-            {/* Resultado principal */}
             {probResult && (
               <>
                 <div className="mt-4 border-t border-slate-800 pt-4 flex flex-col gap-4">
@@ -470,76 +454,127 @@ export default function Home() {
                     </div>
                     <p className="text-sm text-slate-300 mt-2">{probResult.summary}</p>
                   </div>
+
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">
+                      Canciones que más lo avalan (ejemplo)
+                    </p>
+                    <ul className="space-y-2">
+                      {tracks.slice(0, 3).map((track) => (
+                        <li key={track.id} className="flex items-center gap-3 text-sm">
+                          {track.image && (
+                            <img
+                              src={track.image}
+                              alt={track.name}
+                              className="w-8 h-8 rounded-md object-cover"
+                            />
+                          )}
+                          <div className="flex flex-col">
+                            <span className="font-semibold">{track.name}</span>
+                            <span className="text-xs text-slate-400">{track.artist}</span>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
 
-                {/* Export periodo */}
+                {/* VISTA PARA POST */}
                 <div className="mt-6 border-t border-slate-800 pt-4 flex flex-col gap-3">
-                  <div className="flex items-center justify-between gap-3 flex-wrap">
-                    <p className="text-xs uppercase tracking-wide text-slate-400">
-                      Vista para post
-                    </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs uppercase tracking-wide text-slate-400">Vista para post</p>
 
                     <button
-                      onClick={() =>
-                        exportCardToPng(
-                          postCardRef.current,
-                          "probabify_historia_periodo.png",
-                          setExportPeriodStatus
-                        )
-                      }
-                      disabled={exportPeriodStatus.state === "generating"}
-                      className="px-3 py-1.5 rounded-full bg-sky-500 hover:bg-sky-400 text-xs font-semibold text-slate-950 transition disabled:opacity-60"
+                      type="button"
+                      onClick={async () => {
+                        setExportingPost(true);
+                        await handleDownloadCard(postCardRef.current, "probabify_historia_periodo.png");
+                        setExportingPost(false);
+                      }}
+                      disabled={exportingPost}
+                      className="px-3 py-1.5 rounded-full bg-sky-500 hover:bg-sky-400 text-xs font-semibold text-slate-950 transition disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      {exportPeriodStatus.state === "generating"
-                        ? "Generando..."
-                        : "Exportar historia de este periodo"}
+                      {exportingPost ? "Exportando..." : "Exportar historia de este periodo"}
                     </button>
                   </div>
 
-                  {exportPeriodStatus.state !== "idle" && (
-                    <div className="text-xs">
-                      {exportPeriodStatus.state === "error" ? (
-                        <p className="text-red-400">{exportPeriodStatus.message}</p>
-                      ) : (
-                        <p className="text-slate-300">{exportPeriodStatus.message}</p>
-                      )}
+                  {exportError && <p className="text-red-400 text-sm">{exportError}</p>}
 
-                      {exportPeriodStatus.dataUrl && (
-                        <a
-                          href={exportPeriodStatus.dataUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-block mt-2 text-sky-400 underline"
-                        >
-                          Abrir imagen generada (y guardarla)
-                        </a>
-                      )}
-                    </div>
-                  )}
-
-                  <div
-                    ref={postCardRef}
-                    className="mx-auto w-[360px] h-[640px] rounded-[32px] bg-[#020617] shadow-2xl overflow-hidden flex flex-col px-6 py-6 gap-4"
-                  >
-                    <div className="text-[10px] uppercase tracking-wide text-slate-400">
+                  {/* CARD EXPORTABLE (sin Tailwind colors) */}
+                  <div ref={postCardRef} style={storyOuterStyle}>
+                    <div style={pillTop}>
                       {PERIOD_DETAILS[selectedRange].label} · {PERIOD_DETAILS[selectedRange].subtitle}
                     </div>
 
-                    <div className="flex flex-col gap-3">
-                      <p className="text-xs text-slate-300">{probResult.question}</p>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-5xl font-extrabold text-slate-50">
+                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                      <p style={{ fontSize: 12, color: "#E2E8F0" }}>{probResult.question}</p>
+
+                      <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+                        <span style={{ fontSize: 56, fontWeight: 800, lineHeight: "56px" }}>
                           {probResult.probability}%
                         </span>
-                        <span className="text-xs text-slate-300">según tu Spotify</span>
+                        <span style={{ fontSize: 12, color: "#E2E8F0" }}>según tu Spotify</span>
                       </div>
-                      <p className="text-xs leading-relaxed text-slate-200 mt-2">
+
+                      <p
+                        style={{
+                          fontSize: 12,
+                          lineHeight: "18px",
+                          color: "#E2E8F0",
+                          marginTop: 6,
+                          display: "-webkit-box",
+                          WebkitLineClamp: 8,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
                         {probResult.summary}
                       </p>
                     </div>
 
-                    <div className="mt-auto pt-4 text-[9px] text-slate-500 border-t border-slate-800">
-                      Generado con <span className="font-semibold">Probabify</span>{" "}
+                    <div style={{ marginTop: 8 }}>
+                      <p style={{ fontSize: 10, ...mutedText, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 8 }}>
+                        Canciones que más lo avalan
+                      </p>
+
+                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        {tracks.slice(0, 3).map((track) => (
+                          <div key={track.id} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                            {/* OJO: imágenes pueden fallar por CORS; si quieres 100% estable, quítalas del export */}
+                            <div
+                              style={{
+                                width: 32,
+                                height: 32,
+                                borderRadius: 8,
+                                background: "#0B1220",
+                                border: "1px solid #1E293B",
+                                overflow: "hidden",
+                                flexShrink: 0,
+                              }}
+                            >
+                              {track.image ? (
+                                // Si esto te causa CORS, reemplaza por un div vacío
+                                <img
+                                  src={track.image}
+                                  alt={track.name}
+                                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                />
+                              ) : null}
+                            </div>
+
+                            <div style={{ display: "flex", flexDirection: "column" }}>
+                              <span style={{ fontSize: 13, fontWeight: 700, color: "#F8FAFC" }}>
+                                {track.name}
+                              </span>
+                              <span style={{ fontSize: 11, ...mutedText }}>{track.artist}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: "auto", paddingTop: 14, ...borderTop, fontSize: 9, ...mutedText2 }}>
+                      Generado con <span style={{ fontWeight: 700, color: "#CBD5E1" }}>Probabify</span>{" "}
                       usando tu música top de Spotify.
                     </div>
                   </div>
@@ -549,65 +584,34 @@ export default function Home() {
           </section>
         )}
 
-        {/* Comparación por periodos */}
         {session && (
           <section className="bg-slate-900/60 rounded-2xl p-4 md:p-5 flex flex-col gap-4">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold">Comparar esta pregunta por periodos</h2>
                 <p className="text-sm text-slate-300">
-                  Calculamos la misma pregunta usando tu música de las últimas semanas,
-                  los últimos 6 meses y todo el tiempo.
+                  Calculamos la misma pregunta usando tu música de las últimas semanas, los últimos 6 meses y todo el tiempo.
                 </p>
               </div>
 
               {comparisonResults && (
                 <button
-                  onClick={() =>
-                    exportCardToPng(
-                      periodsCardRef.current,
-                      "probabify_historia_periodos.png",
-                      setExportPeriodsStatus
-                    )
-                  }
-                  disabled={exportPeriodsStatus.state === "generating"}
-                  className="px-3 py-1.5 rounded-full bg-sky-500 hover:bg-sky-400 text-xs font-semibold text-slate-950 transition disabled:opacity-60"
+                  type="button"
+                  onClick={async () => {
+                    setExportingPeriods(true);
+                    await handleDownloadCard(periodsCardRef.current, "probabify_historia_periodos.png");
+                    setExportingPeriods(false);
+                  }}
+                  disabled={exportingPeriods}
+                  className="px-3 py-1.5 rounded-full bg-sky-500 hover:bg-sky-400 text-xs font-semibold text-slate-950 transition disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {exportPeriodsStatus.state === "generating"
-                    ? "Generando..."
-                    : "Exportar resumen por periodos"}
+                  {exportingPeriods ? "Exportando..." : "Exportar resumen por periodos"}
                 </button>
               )}
             </div>
 
-            {exportPeriodsStatus.state !== "idle" && (
-              <div className="text-xs">
-                {exportPeriodsStatus.state === "error" ? (
-                  <p className="text-red-400">{exportPeriodsStatus.message}</p>
-                ) : (
-                  <p className="text-slate-300">{exportPeriodsStatus.message}</p>
-                )}
-
-                {exportPeriodsStatus.dataUrl && (
-                  <a
-                    href={exportPeriodsStatus.dataUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-block mt-2 text-sky-400 underline"
-                  >
-                    Abrir imagen generada (y guardarla)
-                  </a>
-                )}
-              </div>
-            )}
-
             {comparisonError && <p className="text-red-400 text-sm mt-1">{comparisonError}</p>}
-
-            {comparisonLoading && (
-              <p className="text-slate-300 text-sm">
-                Calculando probabilidades para cada periodo...
-              </p>
-            )}
+            {comparisonLoading && <p className="text-slate-300 text-sm">Calculando probabilidades para cada periodo...</p>}
 
             {comparisonResults && (
               <>
@@ -620,54 +624,44 @@ export default function Home() {
                       <p className="text-xs uppercase tracking-wide text-slate-400">
                         {PERIOD_DETAILS[r.key].label}
                       </p>
-                      <p className="text-[11px] text-slate-500 mb-1">
-                        {PERIOD_DETAILS[r.key].subtitle}
-                      </p>
+                      <p className="text-[11px] text-slate-500 mb-1">{PERIOD_DETAILS[r.key].subtitle}</p>
                       {r.probability === null ? (
-                        <p className="text-xs text-slate-500">
-                          Sin datos suficientes para este periodo.
-                        </p>
+                        <p className="text-xs text-slate-500">Sin datos suficientes para este periodo.</p>
                       ) : (
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-3xl font-bold">{r.probability}%</span>
-                        </div>
+                        <span className="text-3xl font-bold">{r.probability}%</span>
                       )}
                     </div>
                   ))}
                 </div>
 
-                <div
-                  ref={periodsCardRef}
-                  className="mt-6 mx-auto w-[360px] h-[640px] rounded-[32px] bg-[#020617] shadow-2xl overflow-hidden flex flex-col px-6 py-6 gap-4"
-                >
-                  <div className="text-[10px] uppercase tracking-wide text-slate-400">
-                    Probabify · Resumen por periodos
-                  </div>
+                {exportError && <p className="text-red-400 text-sm">{exportError}</p>}
 
-                  <div className="mt-2 flex flex-col gap-4">
+                {/* CARD EXPORTABLE PERIODOS (sin Tailwind colors) */}
+                <div ref={periodsCardRef} style={storyOuterStyle}>
+                  <div style={pillTop}>Probabify · Resumen por periodos</div>
+
+                  <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 18 }}>
                     {comparisonResults.map((r) => (
-                      <div key={r.key} className="flex flex-col gap-1">
-                        <p className="text-[11px] uppercase tracking-wide text-slate-400">
+                      <div key={r.key} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                        <div style={{ fontSize: 11, ...mutedText, textTransform: "uppercase", letterSpacing: "0.12em" }}>
                           {PERIOD_DETAILS[r.key].label}
-                        </p>
-                        <p className="text-[11px] text-slate-500">
+                        </div>
+                        <div style={{ fontSize: 11, ...mutedText2 }}>
                           {PERIOD_DETAILS[r.key].subtitle}
-                        </p>
+                        </div>
                         {r.probability === null ? (
-                          <p className="text-xs text-slate-500">
-                            Sin datos suficientes para este periodo.
-                          </p>
+                          <div style={{ fontSize: 12, ...mutedText2 }}>Sin datos suficientes para este periodo.</div>
                         ) : (
-                          <span className="text-3xl font-bold text-slate-50">
+                          <div style={{ fontSize: 42, fontWeight: 800, lineHeight: "44px" }}>
                             {r.probability}%
-                          </span>
+                          </div>
                         )}
                       </div>
                     ))}
                   </div>
 
-                  <div className="mt-auto pt-4 text-[9px] text-slate-500 border-t border-slate-800">
-                    Generado con <span className="font-semibold">Probabify</span>{" "}
+                  <div style={{ marginTop: "auto", paddingTop: 14, ...borderTop, fontSize: 9, ...mutedText2 }}>
+                    Generado con <span style={{ fontWeight: 700, color: "#CBD5E1" }}>Probabify</span>{" "}
                     usando tu música top de Spotify.
                   </div>
                 </div>
