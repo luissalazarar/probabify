@@ -15,12 +15,21 @@ type Track = {
 
 // 🎯 LISTA BLANCA – SOLO ESTAS PREGUNTAS SON PERMITIDAS
 const allowedQuestions = [
+  // ES
   "¿Cuál es la probabilidad de volver con mi ex?",
   "¿Cuál es la probabilidad de superar a mi ex?",
   "¿Cuál es la probabilidad de renunciar a mi trabajo?",
   "¿Cuál es la probabilidad de ser toxico?",
   "¿Cuál es la probabilidad de entrar en una relacion toxica?",
   "¿Cuál es la probabilidad de empezar a valorarme?",
+
+  // EN
+  "What is the probability of getting back with my ex?",
+  "What is the probability of getting over my ex?",
+  "What is the probability of quitting my job?",
+  "What is the probability of being toxic?",
+  "What is the probability of getting into a toxic relationship?",
+  "What is the probability of starting to value myself?",
 ];
 
 export async function POST(req: Request) {
@@ -78,9 +87,14 @@ export async function POST(req: Request) {
 
     const idList = trimmedTracks.map((t) => t.id).join(", ");
 
+    const isEnglish = cleanedQuestion.startsWith("What ");
+
     const systemPrompt = `
 Eres una IA que analiza perfiles musicales y genera probabilidades ficticias pero coherentes.
-Responde siempre en español.
+
+Idioma:
+- Si la pregunta está en inglés, responde en inglés.
+- Si la pregunta está en español, responde en español.
 
 Reglas importantes:
 - Analiza TODAS las canciones proporcionadas.
@@ -99,25 +113,25 @@ Salida obligatoria:
 `.trim();
 
     const userPrompt = `
-Pregunta:
+Question:
 "${cleanedQuestion}"
 
-Canciones más escuchadas (lista completa, NO implica orden de importancia):
+Top tracks (full list; order does NOT imply importance):
 ${tracksText}
 
-IDs permitidos (SOLO puedes elegir de aquí):
+Allowed IDs (you can ONLY pick from here):
 ${idList}
 
-Instrucciones:
-- Escoge EXACTAMENTE 3 canciones que mejor representen el mood dominante y que más “avalan” la probabilidad.
-- Devuelve sus ids en representativeTrackIds (deben existir en la lista permitida).
-- No inventes ids.
+Instructions:
+- Pick EXACTLY 3 songs that best represent the dominant mood and that most “support” the probability.
+- Return their ids in representativeTrackIds (they must exist in the allowed list).
+- Do not invent ids.
 
-Responde SOLO en JSON válido con este formato EXACTO:
+Respond ONLY in valid JSON with this EXACT format:
 {
   "probability": 0-100,
-  "summary": "máx 1.5 líneas explicando la lógica basada en el mood general",
-  "shortLabel": "versión corta de la pregunta",
+  "summary": "max 1.5 lines explaining the logic based on overall mood",
+  "shortLabel": "short version of the question",
   "representativeTrackIds": ["id1","id2","id3"]
 }
 `.trim();
