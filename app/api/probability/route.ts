@@ -39,10 +39,7 @@ export async function POST(req: Request) {
     };
 
     if (!question || typeof question !== "string") {
-      return NextResponse.json(
-        { error: "Falta la pregunta" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Falta la pregunta" }, { status: 400 });
     }
 
     const cleanedQuestion = question.trim();
@@ -67,15 +64,19 @@ export async function POST(req: Request) {
     }
 
     // 🔹 Hasta 50 canciones
-    const tracksText = tracks
-      .slice(0, 50)
+    const trimmedTracks = tracks.slice(0, 50);
+
+    // OJO: incluimos ID en el texto para que el modelo pueda referenciarlos
+    const tracksText = trimmedTracks
       .map(
         (t, i) =>
-          `${i + 1}. "${t.name}" – ${t.artist} (álbum: ${
+          `${i + 1}. [id:${t.id}] "${t.name}" – ${t.artist} (álbum: ${
             t.album ?? "N/A"
           })`
       )
       .join("\n");
+
+    const idList = trimmedTracks.map((t) => t.id).join(", ");
 
     const systemPrompt = `
 Eres una IA que analiza perfiles musicales y genera probabilidades ficticias pero coherentes.
@@ -83,35 +84,41 @@ Responde siempre en español.
 
 Reglas importantes:
 - Analiza TODAS las canciones proporcionadas.
-- Identifica primero cuáles canciones representan MEJOR el mood dominante del usuario.
+- Identifica cuáles canciones representan MEJOR el mood dominante del usuario.
 - No asumas que las primeras canciones son las más importantes.
 - Basa tu probabilidad principalmente en las canciones más representativas del conjunto.
-- Las demás canciones solo sirven como contexto secundario.
 - Prioriza la temática y mensaje real de las letras (según tu conocimiento general).
 - Evita temas sensibles (autolesión, violencia, odio, etc.).
 - Devuelve un porcentaje ENTERO entre 0 y 100.
 - Evita repetir siempre los mismos números (no abusar de 50, 75, 80).
 - Tono ligero, tipo horóscopo musical. No des consejos profesionales.
+
+Salida obligatoria:
+- Además de probability/summary/shortLabel, debes devolver representativeTrackIds:
+  un arreglo de EXACTAMENTE 3 ids (strings) tomados ÚNICAMENTE de la lista permitida.
 `.trim();
 
     const userPrompt = `
 Pregunta:
 "${cleanedQuestion}"
 
-Canciones más escuchadas (lista completa, no orden de importancia):
+Canciones más escuchadas (lista completa, NO implica orden de importancia):
 ${tracksText}
 
-Proceso obligatorio (interno):
-1. Analiza TODAS las canciones.
-2. Determina cuáles reflejan mejor el mood emocional dominante.
-3. Basa la probabilidad principalmente en ese subconjunto representativo.
-4. Usa el resto solo como apoyo contextual.
+IDs permitidos (SOLO puedes elegir de aquí):
+${idList}
+
+Instrucciones:
+- Escoge EXACTAMENTE 3 canciones que mejor representen el mood dominante y que más “avalan” la probabilidad.
+- Devuelve sus ids en representativeTrackIds (deben existir en la lista permitida).
+- No inventes ids.
 
 Responde SOLO en JSON válido con este formato EXACTO:
 {
   "probability": 0-100,
   "summary": "máx 1.5 líneas explicando la lógica basada en el mood general",
-  "shortLabel": "versión corta de la pregunta"
+  "shortLabel": "versión corta de la pregunta",
+  "representativeTrackIds": ["id1","id2","id3"]
 }
 `.trim();
 
@@ -140,11 +147,36 @@ Responde SOLO en JSON válido con este formato EXACTO:
       Math.max(0, Math.round(parsed.probability ?? 0))
     );
 
+    // Validar representativeTrackIds
+    const allowedIdSet = new Set(trimmedTracks.map((t) => t.id));
+    const repIdsRaw: unknown = parsed.representativeTrackIds;
+
+    let representativeTrackIds: string[] = [];
+    if (Array.isArray(repIdsRaw)) {
+      representativeTrackIds = repIdsRaw
+        .map((x) => (typeof x === "string" ? x.trim() : ""))
+        .filter((x) => x && allowedIdSet.has(x));
+    }
+
+    // Queremos EXACTAMENTE 3 ids. Si faltan, rellenamos con tracks del set.
+    if (representativeTrackIds.length < 3) {
+      const fallback = trimmedTracks.map((t) => t.id);
+      for (const id of fallback) {
+        if (!representativeTrackIds.includes(id)) {
+          representativeTrackIds.push(id);
+        }
+        if (representativeTrackIds.length === 3) break;
+      }
+    } else if (representativeTrackIds.length > 3) {
+      representativeTrackIds = representativeTrackIds.slice(0, 3);
+    }
+
     return NextResponse.json({
       question: cleanedQuestion,
       probability,
       summary: parsed.summary ?? "",
       shortLabel: parsed.shortLabel ?? cleanedQuestion,
+      representativeTrackIds,
       modelRaw: content,
     });
   } catch (error: any) {
