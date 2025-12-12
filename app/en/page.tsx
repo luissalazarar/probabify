@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useMemo } from "react";
-import type React from "react"; // para React.CSSProperties
+import type React from "react"; // for React.CSSProperties
 import { signIn, signOut, useSession } from "next-auth/react";
 import * as htmlToImage from "html-to-image";
 
@@ -20,7 +20,7 @@ type ProbabilityResult = {
   probability: number;
   summary: string;
   shortLabel: string;
-  representativeTrackIds?: string[]; // 👈 nuevo
+  representativeTrackIds?: string[]; // 👈 new
 };
 
 type RangeKey = "short_term" | "medium_term" | "long_term";
@@ -54,13 +54,13 @@ const PERIOD_DETAILS: Record<
     label: "Last 6 months",
     subtitle: "Mid-term trend",
     description:
-      "This period shows your sustained tastes over time. It's a balance between what's new and what you truly keep listening to.",
+      "This period shows your sustained tastes over time. It is a balance between what is new and what you truly keep listening to.",
   },
   long_term: {
     label: "All time",
     subtitle: "Your musical essence",
     description:
-      "This range captures your musical DNA: what you've liked the most overall and what best defines you as a listener.",
+      "This range captures your musical DNA: what you have liked the most overall and what best defines you as a listener.",
   },
 };
 
@@ -117,48 +117,6 @@ async function waitForImages(root: HTMLElement) {
   );
 }
 
-// ✅ iOS Safari: forzar “warm up” del fetch de imágenes dentro de html-to-image
-async function warmupHtmlToImage(root: HTMLElement) {
-  const imgs = Array.from(root.querySelectorAll("img")).filter((i) => !!i.src);
-
-  // 1) asegura que estén cargadas
-  await waitForImages(root);
-  await nextPaintTwice();
-
-  // 2) primer render en blob (no descargamos) para que html-to-image cachee recursos
-  try {
-    const blob = await htmlToImage.toBlob(root, {
-      cacheBust: true,
-      backgroundColor: undefined,
-      width: 360,
-      height: 640,
-      pixelRatio: 1,
-    });
-
-    if (blob) {
-      const url = URL.createObjectURL(blob);
-      // “touch” para que iOS termine de materializar
-      await fetch(url).catch(() => {});
-      URL.revokeObjectURL(url);
-    }
-  } catch {}
-
-  // 3) pinta otra vez (iOS a veces necesita un repaint extra)
-  await nextPaintTwice();
-
-  // 4) re-check rápido por si html-to-image reinyecta/duplica nodos
-  await Promise.all(
-    imgs.map(async (img) => {
-      if ("decode" in img) {
-        try {
-          // @ts-ignore
-          await img.decode();
-        } catch {}
-      }
-    })
-  );
-}
-
 export default function Home() {
   const { data: session, status } = useSession();
 
@@ -183,12 +141,12 @@ export default function Home() {
   >(null);
 
   const postCardRef = useRef<HTMLDivElement | null>(null);
-  const periodsCardRef = useRef<HTMLDivElement | null>(null); // compatibilidad
+  const periodsCardRef = useRef<HTMLDivElement | null>(null); // compatibility
 
   const [exportingPost, setExportingPost] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
-  // ✅ cache para preloads
+  // ✅ cache for preloads
   const preloadCacheRef = useRef<Map<string, Promise<void>>>(new Map());
 
   function preloadImage(url: string) {
@@ -220,7 +178,7 @@ export default function Home() {
     await Promise.all(unique.map((u) => preloadImage(u)));
   }
 
-  // ✅ Derivar canciones “que más lo avalan” desde representativeTrackIds
+  // ✅ Derive “most supporting” tracks from representativeTrackIds
   const supportingTracks = useMemo(() => {
     if (!probResult) return tracks.slice(0, 3);
 
@@ -230,11 +188,11 @@ export default function Home() {
     const map = new Map(tracks.map((t) => [t.id, t] as const));
     const picked = ids.map((id) => map.get(id)).filter(Boolean) as Track[];
 
-    // fallback si algo falla
+    // fallback if something fails
     return picked.length ? picked : tracks.slice(0, 3);
   }, [probResult, tracks]);
 
-  // ✅ Preload de portadas que se usan en la card exportable
+  // ✅ Preload covers used in the exportable card
   useEffect(() => {
     const urls = supportingTracks.map((t) => t.image).filter(Boolean) as string[];
     if (urls.length) {
@@ -243,7 +201,7 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supportingTracks]);
 
-  // 1) Cargar canciones del periodo principal
+  // 1) Load tracks for the main period
   useEffect(() => {
     if (status !== "authenticated") return;
 
@@ -271,12 +229,12 @@ export default function Home() {
     fetchTopTracks();
   }, [status, selectedRange]);
 
-  // 2) Botón único: calcula resultado principal + 3 periodos
+  // 2) Single button: calculate main result + 3 periods
   async function handleCalculateAll() {
     try {
       if (!session) {
-        setProbError("Connect your Spotify first.");
-        setComparisonError("Connect your Spotify first.");
+        setProbError("Please connect your Spotify first.");
+        setComparisonError("Please connect your Spotify first.");
         return;
       }
 
@@ -383,7 +341,7 @@ export default function Home() {
     }
   }
 
-  // 3) Exportar como PNG usando html-to-image (ratio 360x640 → 1080x1920)
+  // 3) Export as PNG using html-to-image (ratio 360x640 → 1080x1920)
   async function handleDownloadCard(
     element: HTMLDivElement | null,
     filename: string
@@ -391,33 +349,30 @@ export default function Home() {
     setExportError(null);
 
     if (!element) {
-      setExportError("Could not find the card to export.");
+      setExportError("The card to export was not found.");
       return;
     }
 
     try {
-      // ✅ 1) preload explícito (especialmente primera vez)
+      // ✅ 1) explicit preload (especially first time)
       const urls = supportingTracks.map((t) => t.image).filter(Boolean) as string[];
       if (urls.length) {
         await preloadUrls(urls);
       }
 
-      // ✅ 2) esperar a que el DOM pinte las imágenes ya cargadas
+      // ✅ 2) wait for DOM to paint loaded images
       await nextPaintTwice();
 
-      // ✅ 3) asegurar que los <img> del nodo estén completos
+      // ✅ 3) ensure <img> elements are fully loaded
       await waitForImages(element);
 
-      // ✅ 3.5) iOS Safari warmup (primer export suele fallar sin esto)
-      await warmupHtmlToImage(element);
-
-      // ✅ 4) export final
+      // ✅ 4) export
       const dataUrl = await htmlToImage.toPng(element, {
         cacheBust: true,
         backgroundColor: undefined,
         width: 360,
         height: 640,
-        pixelRatio: 3, // 360x640 * 3 = 1080x1920 (IG story)
+        pixelRatio: 3, // 360x640 * 3 = 1080x1920 (IG Story)
       });
 
       downloadDataUrl(dataUrl, filename);
@@ -439,7 +394,7 @@ export default function Home() {
     );
   }
 
-  // Styles “safe” (HEX/RGB) para html-to-image
+  // Styles “safe” (HEX/RGB) for html-to-image
   const storyOuterStyle: React.CSSProperties = {
     width: 360,
     height: 640,
@@ -471,8 +426,8 @@ export default function Home() {
         <header className="text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-3">Probabify</h1>
           <p className="text-slate-100 max-w-xl mx-auto">
-            Connect your Spotify, pick a question, and we’ll return a made-up
-            probability (but coherent with your music) ready to post.
+            Connect your Spotify, choose a question, and we will return a made-up
+            probability (but consistent with your music) ready to post.
           </p>
         </header>
 
@@ -541,11 +496,14 @@ export default function Home() {
             {loadingTracks && (
               <p className="text-slate-200 text-sm">Loading tracks...</p>
             )}
-            {errorTracks && <p className="text-red-300 text-sm">{errorTracks}</p>}
+            {errorTracks && (
+              <p className="text-red-300 text-sm">{errorTracks}</p>
+            )}
 
             {!loadingTracks && !errorTracks && tracks.length === 0 && (
               <p className="text-slate-200 text-sm">
-                No top tracks found for this period. Listen on Spotify and try again.
+                We could not find top tracks for this period. Listen to something
+                on Spotify and try again.
               </p>
             )}
 
@@ -640,10 +598,7 @@ export default function Home() {
                     </p>
                     <ul className="space-y-2">
                       {supportingTracks.map((track) => (
-                        <li
-                          key={track.id}
-                          className="flex items-center gap-3 text-sm"
-                        >
+                        <li key={track.id} className="flex items-center gap-3 text-sm">
                           {track.image && (
                             <img
                               crossOrigin="anonymous"
@@ -654,9 +609,7 @@ export default function Home() {
                           )}
                           <div className="flex flex-col">
                             <span className="font-semibold">{track.name}</span>
-                            <span className="text-xs text-slate-400">
-                              {track.artist}
-                            </span>
+                            <span className="text-xs text-slate-400">{track.artist}</span>
                           </div>
                         </li>
                       ))}
@@ -664,7 +617,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* VISTA PARA POST */}
+                {/* POST VIEW */}
                 <div className="mt-6 border-t border-slate-800 pt-4 flex flex-col gap-3">
                   <div className="flex items-center justify-between">
                     <p className="text-xs uppercase tracking-wide text-slate-400">
@@ -690,9 +643,8 @@ export default function Home() {
 
                   {exportError && <p className="text-red-300 text-sm">{exportError}</p>}
 
-                  {/* CARD EXPORTABLE */}
+                  {/* EXPORTABLE CARD */}
                   <div ref={postCardRef} style={storyOuterStyle}>
-                    {/* 👇 cambio pedido */}
                     <div style={pillTop}>Probabify.com</div>
 
                     <div
@@ -751,7 +703,6 @@ export default function Home() {
                       </p>
                     </div>
 
-                    {/* Canciones representativas */}
                     <div style={{ marginTop: 0 }}>
                       <p
                         style={{
@@ -765,21 +716,11 @@ export default function Home() {
                         Tracks that support it the most
                       </p>
 
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 10,
-                        }}
-                      >
+                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                         {supportingTracks.map((track) => (
                           <div
                             key={track.id}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 12,
-                            }}
+                            style={{ display: "flex", alignItems: "center", gap: 12 }}
                           >
                             <div
                               style={{
@@ -806,12 +747,7 @@ export default function Home() {
                               ) : null}
                             </div>
 
-                            <div
-                              style={{
-                                display: "flex",
-                                flexDirection: "column",
-                              }}
-                            >
+                            <div style={{ display: "flex", flexDirection: "column" }}>
                               <span
                                 style={{
                                   fontSize: 13,
@@ -830,7 +766,6 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Resumen por periodos */}
                     {comparisonResults && (
                       <div style={{ marginTop: 12 }}>
                         <p
@@ -842,16 +777,10 @@ export default function Home() {
                             marginBottom: 6,
                           }}
                         >
-                          Period summary
+                          Summary by period
                         </p>
 
-                        <div
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 6,
-                          }}
-                        >
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                           {comparisonResults.map((r) => (
                             <div
                               key={r.key}
@@ -861,13 +790,7 @@ export default function Home() {
                                 alignItems: "baseline",
                               }}
                             >
-                              <div
-                                style={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  gap: 2,
-                                }}
-                              >
+                              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                                 <span
                                   style={{
                                     fontSize: 11,
@@ -923,10 +846,10 @@ export default function Home() {
           <section className="bg-slate-950/60 rounded-2xl p-4 md:p-5 flex flex-col gap-4 border border-slate-800/60">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold">Compare this question across periods</h2>
+                <h2 className="text-lg font-semibold">Compare this question by period</h2>
                 <p className="text-sm text-slate-200">
-                  We calculate the same question using your music from the last few
-                  weeks, the last 6 months, and all time.
+                  We calculate the same question using your music from the last few weeks,
+                  the last 6 months, and all time.
                 </p>
               </div>
             </div>
