@@ -102,7 +102,7 @@ Instrucciones:
 Responde SOLO en formato JSON válido con este formato EXACTO:
 {
   "probability": 0-100,
-  "summary": "máx 4 líneas explicando por qué esa probabilidad encaja con la música y su letra/mensaje",
+  "summary": "máx 2 líneas explicando por qué esa probabilidad encaja con la música y su letra/mensaje",
   "shortLabel": "una versión corta de la pregunta, por ejemplo: 'volver con tu ex', 'superar a tu ex', etc."
 }
 `.trim();
