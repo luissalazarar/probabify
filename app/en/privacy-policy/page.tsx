@@ -11,10 +11,10 @@ export default function PrivacyPolicyPage() {
         position: "relative",
       }}
     >
-      {/* Botón cerrar */}
+      {/* Close button */}
       <Link
         href="/"
-        aria-label="Volver a inicio"
+        aria-label="Back to home"
         style={{
           position: "absolute",
           top: 16,
@@ -27,28 +27,25 @@ export default function PrivacyPolicyPage() {
         ✕
       </Link>
 
-      <h1>Política de Privacidad</h1>
+      <h1>Privacy Policy</h1>
 
       <p>
-        Probabify utiliza la API de Spotify para analizar las canciones más
-        escuchadas por el usuario y generar contenido con fines recreativos.
+        Probabify uses the Spotify API to analyze the user&apos;s most-played
+        songs and generate content for entertainment purposes.
       </p>
 
       <p>
-        Probabify no almacena, vende ni comparte datos personales. La información
-        se utiliza únicamente de forma temporal para generar los resultados que
-        ves en la aplicación.
+        Probabify does not store, sell, or share personal data. Information is
+        used only temporarily to generate the results you see in the app.
       </p>
 
       <p>
-        Este sitio puede utilizar servicios de terceros como Google AdSense, los
-        cuales pueden usar cookies para mostrar anuncios basados en visitas
-        previas a este u otros sitios web.
+        This site may use third-party services such as Google AdSense, which may
+        use cookies to show ads based on previous visits to this or other
+        websites.
       </p>
 
-      <p>
-        Al utilizar este sitio web, aceptas esta Política de Privacidad.
-      </p>
+      <p>By using this website, you agree to this Privacy Policy.</p>
     </main>
   );
 }
