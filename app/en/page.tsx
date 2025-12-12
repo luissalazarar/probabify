@@ -426,8 +426,9 @@ export default function Home() {
         <header className="text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-3">Probabify</h1>
           <p className="text-slate-100 max-w-xl mx-auto">
-            Connect your Spotify, choose a question, and we will return a made-up
-            probability (but consistent with your music) ready to post.
+            Connect your Spotify, choose a question, and we will return an AI-calculated
+            probability (made up, but consistent with your music) ready to post.
+
           </p>
         </header>
 
