@@ -3,7 +3,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
-import html2canvas from "html2canvas";
 
 type Track = {
   id: string;
@@ -88,6 +87,11 @@ export default function Home() {
   // refs para las tarjetas exportables
   const postCardRef = useRef<HTMLDivElement | null>(null);
   const periodsCardRef = useRef<HTMLDivElement | null>(null);
+
+  // Debug: confirmar que estamos en cliente
+  useEffect(() => {
+    console.log("Probabify montado en cliente");
+  }, []);
 
   // 1) Cargar canciones del periodo principal
   useEffect(() => {
@@ -230,27 +234,53 @@ export default function Home() {
     }
   }
 
-  // 3) Utilidad para exportar como imagen (historia 9:16)
+  // 3) Utilidad para exportar como imagen (historia 9:16) usando dynamic import
   async function handleDownloadCard(
     element: HTMLDivElement | null,
     filename: string
   ) {
-    if (!element) return;
+    console.log("handleDownloadCard llamado. Element:", element);
+
+    if (!element) {
+      console.error("Elemento para exportar es NULL");
+      return;
+    }
+
     try {
+      const html2canvasModule = await import("html2canvas");
+      const html2canvas = html2canvasModule.default;
+
+      console.log("html2canvas cargado:", typeof html2canvas);
+
       const canvas = await html2canvas(element, {
-        backgroundColor: "#020617", // slate-950
+        backgroundColor: "#020617", // slate-950 sólido
         scale: 3, // 360x640 -> 1080x1920
         useCORS: false,
+        logging: true,
         ignoreElements: (el) =>
           el instanceof HTMLElement &&
           el.classList.contains("html2canvas-ignore"),
       });
 
+      console.log("Canvas generado:", canvas.width, canvas.height);
+
       const dataUrl = canvas.toDataURL("image/png");
+
+      // Intento de descarga directa
       const link = document.createElement("a");
       link.href = dataUrl;
       link.download = filename;
-      link.click();
+
+      // Fallback: por si el navegador ignora download
+      if (typeof link.download === "string") {
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        console.log("Descarga disparada con <a download>.");
+      } else {
+        window.open(dataUrl, "_blank");
+        console.log("Abriendo imagen en nueva pestaña (fallback).");
+      }
     } catch (err) {
       console.error("Error exportando imagen:", err);
     }
@@ -372,9 +402,7 @@ export default function Home() {
                     />
                   )}
                   <div className="flex flex-col">
-                    <span className="font-semibold text-sm">
-                      {track.name}
-                    </span>
+                    <span className="font-semibold text-sm">{track.name}</span>
                     <span className="text-xs text-slate-400">
                       {track.artist} · {track.album}
                     </span>
@@ -464,7 +492,7 @@ export default function Home() {
                             <img
                               src={track.image}
                               alt={track.name}
-                              className="w-8 h-8 rounded-md object-cover"
+                              className="w-8 h-8 rounded-md object-cover html2canvas-ignore"
                             />
                           )}
                           <div className="flex flex-col">
@@ -488,12 +516,16 @@ export default function Home() {
                       Vista para post
                     </p>
                     <button
-                      onClick={() =>
+                      onClick={() => {
+                        console.log(
+                          "Click exportar periodo. Ref:",
+                          postCardRef.current
+                        );
                         handleDownloadCard(
                           postCardRef.current,
                           "probabify_historia_periodo.png"
-                        )
-                      }
+                        );
+                      }}
                       className="px-3 py-1.5 rounded-full bg-sky-500 hover:bg-sky-400 text-xs font-semibold text-slate-950 transition"
                     >
                       Exportar historia de este periodo
@@ -503,7 +535,7 @@ export default function Home() {
                   {/* Card IG story 9:16 */}
                   <div
                     ref={postCardRef}
-                    className="mx-auto w-[360px] h-[640px] rounded-[32px] bg-slate-950 shadow-2xl overflow-hidden flex flex-col px-6 py-6 gap-4"
+                    className="mx-auto w-[360px] h-[640px] rounded-[32px] bg-[#020617] shadow-2xl overflow-hidden flex flex-col px-6 py-6 gap-4"
                   >
                     <div className="text-[10px] uppercase tracking-wide text-slate-400">
                       {PERIOD_DETAILS[selectedRange].label} ·{" "}
@@ -522,7 +554,7 @@ export default function Home() {
                           según tu Spotify
                         </span>
                       </div>
-                      <p className="text-xs leading-relaxed text-slate-200 mt-2 line-clamp-7">
+                      <p className="text-xs leading-relaxed text-slate-200 mt-2">
                         {probResult.summary}
                       </p>
                     </div>
@@ -538,11 +570,9 @@ export default function Home() {
                             className="flex items-center gap-3 text-xs"
                           >
                             {track.image && (
-                              <img
-                                src={track.image}
-                                alt={track.name}
-                                className="w-8 h-8 rounded-md object-cover html2canvas-ignore"
-                              />
+                              <div className="w-8 h-8 rounded-md bg-slate-800 flex items-center justify-center text-[9px] text-slate-400 html2canvas-ignore">
+                                ART
+                              </div>
                             )}
                             <div className="flex flex-col">
                               <span className="font-semibold text-slate-100">
@@ -583,12 +613,16 @@ export default function Home() {
               </div>
               {comparisonResults && (
                 <button
-                  onClick={() =>
+                  onClick={() => {
+                    console.log(
+                      "Click exportar periodos. Ref:",
+                      periodsCardRef.current
+                    );
                     handleDownloadCard(
                       periodsCardRef.current,
                       "probabify_historia_periodos.png"
-                    )
-                  }
+                    );
+                  }}
                   className="px-3 py-1.5 rounded-full bg-sky-500 hover:bg-sky-400 text-xs font-semibold text-slate-950 transition"
                 >
                   Exportar resumen por periodos
@@ -597,9 +631,7 @@ export default function Home() {
             </div>
 
             {comparisonError && (
-              <p className="text-red-400 text-sm mt-1">
-                {comparisonError}
-              </p>
+              <p className="text-red-400 text-sm mt-1">{comparisonError}</p>
             )}
 
             {comparisonLoading && (
@@ -640,7 +672,7 @@ export default function Home() {
                 {/* Card IG story con los 3 periodos */}
                 <div
                   ref={periodsCardRef}
-                  className="mt-6 mx-auto w-[360px] h-[640px] rounded-[32px] bg-slate-950 shadow-2xl overflow-hidden flex flex-col px-6 py-6 gap-4"
+                  className="mt-6 mx-auto w-[360px] h-[640px] rounded-[32px] bg-[#020617] shadow-2xl overflow-hidden flex flex-col px-6 py-6 gap-4"
                 >
                   <div className="text-[10px] uppercase tracking-wide text-slate-400">
                     Probabify · Resumen por periodos
