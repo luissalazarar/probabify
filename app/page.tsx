@@ -547,9 +547,9 @@ export default function Home() {
                       {PERIOD_DETAILS[selectedRange].subtitle}
                     </div>
 
-                    {/* ✅ Ajuste: el texto NO debe quedar debajo del bloque grande
-                        -> Reservamos una altura fija para el bloque “pregunta + %”
-                        -> El summary se clampa con base en ese espacio */}
+                    {/* ✅ Ajuste: agregamos una “línea en blanco sacrificable”
+                        después del summary. Si algo se corta, se corta ese espacio
+                        y no el texto. */}
                     <div
                       style={{
                         display: "flex",
@@ -567,7 +567,7 @@ export default function Home() {
                           color: "#E2E8F0",
                           marginTop: 2,
                           display: "-webkit-box",
-                          WebkitLineClamp: 7, // ✅ menos líneas para que nunca choque
+                          WebkitLineClamp: 7,
                           WebkitBoxOrient: "vertical",
                           overflow: "hidden",
                         }}
@@ -575,7 +575,10 @@ export default function Home() {
                         {probResult.summary}
                       </p>
 
-                      {/* Bloque fijo: pregunta + % (nunca se “sube” encima) */}
+                      {/* ✅ línea en blanco “sacrificable” */}
+                      <div style={{ height: 12, flexShrink: 0 }} />
+
+                      {/* Bloque fijo: pregunta + % */}
                       <div
                         style={{
                           flexShrink: 0,
@@ -678,7 +681,7 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* ✅ Footer pegado abajo */}
+                    {/* Footer pegado abajo */}
                     <div
                       style={{
                         marginTop: "auto",
