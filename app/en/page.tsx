@@ -117,6 +117,48 @@ async function waitForImages(root: HTMLElement) {
   );
 }
 
+// ✅ iOS Safari: forzar “warm up” del fetch de imágenes dentro de html-to-image
+async function warmupHtmlToImage(root: HTMLElement) {
+  const imgs = Array.from(root.querySelectorAll("img")).filter((i) => !!i.src);
+
+  // 1) asegura que estén cargadas
+  await waitForImages(root);
+  await nextPaintTwice();
+
+  // 2) primer render en blob (no descargamos) para que html-to-image cachee recursos
+  try {
+    const blob = await htmlToImage.toBlob(root, {
+      cacheBust: true,
+      backgroundColor: undefined,
+      width: 360,
+      height: 640,
+      pixelRatio: 1,
+    });
+
+    if (blob) {
+      const url = URL.createObjectURL(blob);
+      // “touch” para que iOS termine de materializar
+      await fetch(url).catch(() => {});
+      URL.revokeObjectURL(url);
+    }
+  } catch {}
+
+  // 3) pinta otra vez (iOS a veces necesita un repaint extra)
+  await nextPaintTwice();
+
+  // 4) re-check rápido por si html-to-image reinyecta/duplica nodos
+  await Promise.all(
+    imgs.map(async (img) => {
+      if ("decode" in img) {
+        try {
+          // @ts-ignore
+          await img.decode();
+        } catch {}
+      }
+    })
+  );
+}
+
 export default function Home() {
   const { data: session, status } = useSession();
 
@@ -366,7 +408,10 @@ export default function Home() {
       // ✅ 3) asegurar que los <img> del nodo estén completos
       await waitForImages(element);
 
-      // ✅ 4) export
+      // ✅ 3.5) iOS Safari warmup (primer export suele fallar sin esto)
+      await warmupHtmlToImage(element);
+
+      // ✅ 4) export final
       const dataUrl = await htmlToImage.toPng(element, {
         cacheBust: true,
         backgroundColor: undefined,
