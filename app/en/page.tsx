@@ -26,18 +26,18 @@ type ProbabilityResult = {
 type RangeKey = "short_term" | "medium_term" | "long_term";
 
 const PRESET_QUESTIONS = [
-  "¿Cuál es la probabilidad de volver con mi ex?",
-  "¿Cuál es la probabilidad de superar a mi ex?",
-  "¿Cuál es la probabilidad de renunciar a mi trabajo?",
-  "¿Cuál es la probabilidad de ser toxico?",
-  "¿Cuál es la probabilidad de entrar en una relacion toxica?",
-  "¿Cuál es la probabilidad de empezar a valorarme?",
+  "What are the chances of getting back with my ex?",
+  "What are the chances of getting over my ex?",
+  "What are the chances of quitting my job?",
+  "What are the chances of being toxic?",
+  "What are the chances of getting into a toxic relationship?",
+  "What are the chances of starting to value myself?",
 ];
 
 const PERIODS: { key: RangeKey; label: string }[] = [
-  { key: "short_term", label: "Últimas semanas" },
-  { key: "medium_term", label: "Últimos 6 meses" },
-  { key: "long_term", label: "Todo el tiempo" },
+  { key: "short_term", label: "Last few weeks" },
+  { key: "medium_term", label: "Last 6 months" },
+  { key: "long_term", label: "All time" },
 ];
 
 const PERIOD_DETAILS: Record<
@@ -45,22 +45,22 @@ const PERIOD_DETAILS: Record<
   { label: string; subtitle: string; description: string }
 > = {
   short_term: {
-    label: "Últimas semanas",
-    subtitle: "Mood reciente",
+    label: "Last few weeks",
+    subtitle: "Recent mood",
     description:
-      "Este periodo refleja tus escuchas más recientes. Se enfoca en tu estado emocional actual y tus tendencias inmediatas.",
+      "This period reflects your most recent listens. It focuses on your current emotional state and immediate trends.",
   },
   medium_term: {
-    label: "Últimos 6 meses",
-    subtitle: "Tendencia media",
+    label: "Last 6 months",
+    subtitle: "Mid-term trend",
     description:
-      "Este periodo muestra tus gustos sostenidos en el tiempo. Es un balance entre lo nuevo y lo que realmente mantienes.",
+      "This period shows your sustained tastes over time. It’s a balance between what’s new and what you actually keep.",
   },
   long_term: {
-    label: "Todo el tiempo",
-    subtitle: "Tu esencia musical",
+    label: "All time",
+    subtitle: "Your musical essence",
     description:
-      "Este rango captura tu ADN musical: lo que más te ha gustado en general y define mejor tu esencia como oyente.",
+      "This range captures your musical DNA: what you've liked the most overall and what best defines you as a listener.",
   },
 };
 
@@ -128,14 +128,14 @@ export default function Home() {
         const res = await fetch(`/api/spotify/top-tracks?range=${selectedRange}`);
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || "Error obteniendo canciones");
+          throw new Error(data.error || "Error fetching tracks");
         }
 
         const data = await res.json();
         setTracks(data.tracks || []);
       } catch (err: any) {
         console.error(err);
-        setErrorTracks(err.message || "Error inesperado");
+        setErrorTracks(err.message || "Unexpected error");
       } finally {
         setLoadingTracks(false);
       }
@@ -148,15 +148,15 @@ export default function Home() {
   async function handleCalculateAll() {
     try {
       if (!session) {
-        setProbError("Primero conecta tu Spotify.");
-        setComparisonError("Primero conecta tu Spotify.");
+        setProbError("Connect your Spotify first.");
+        setComparisonError("Connect your Spotify first.");
         return;
       }
 
       const question = selectedPreset.trim();
       if (!question) {
-        setProbError("Selecciona una pregunta.");
-        setComparisonError("Selecciona una pregunta.");
+        setProbError("Select a question.");
+        setComparisonError("Select a question.");
         return;
       }
 
@@ -240,16 +240,14 @@ export default function Home() {
       setComparisonResults(results);
 
       if (!mainResult) {
-        setProbError(
-          "No se pudo calcular la probabilidad para el periodo seleccionado."
-        );
+        setProbError("Could not calculate the probability for the selected period.");
       } else {
         setProbResult(mainResult);
       }
     } catch (err: any) {
       console.error(err);
-      setProbError(err.message || "Error inesperado.");
-      setComparisonError(err.message || "Error inesperado en la comparación.");
+      setProbError(err.message || "Unexpected error.");
+      setComparisonError(err.message || "Unexpected error in comparison.");
     } finally {
       setProbLoading(false);
       setComparisonLoading(false);
@@ -264,7 +262,7 @@ export default function Home() {
     setExportError(null);
 
     if (!element) {
-      setExportError("No se encontró la tarjeta para exportar.");
+      setExportError("Could not find the card to export.");
       return;
     }
 
@@ -279,11 +277,11 @@ export default function Home() {
 
       downloadDataUrl(dataUrl, filename);
     } catch (err: any) {
-      console.error("Error exportando imagen:", err);
+      console.error("Error exporting image:", err);
       setExportError(
         err?.message
-          ? `No se pudo exportar: ${err.message}`
-          : "No se pudo exportar la imagen."
+          ? `Could not export: ${err.message}`
+          : "Could not export the image."
       );
     }
   }
@@ -291,7 +289,7 @@ export default function Home() {
   if (status === "loading") {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#054d61] to-[#049990] text-slate-100">
-        <p>Cargando sesión...</p>
+        <p>Loading session...</p>
       </main>
     );
   }
@@ -328,9 +326,8 @@ export default function Home() {
         <header className="text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-3">Probabify</h1>
           <p className="text-slate-100 max-w-xl mx-auto">
-            Conecta tu Spotify, elige una pregunta y te devolvemos una
-            probabilidad inventada (pero coherente con tu música) lista para
-            post.
+            Connect Spotify, pick a question and we’ll return a made-up probability
+            (but consistent with your music) ready to post.
           </p>
         </header>
 
@@ -340,14 +337,14 @@ export default function Home() {
               onClick={() => signIn("spotify")}
               className="px-6 py-3 rounded-full bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-semibold transition"
             >
-              Conectar con Spotify
+              Connect with Spotify
             </button>
           )}
 
           {session && (
             <>
               <p className="text-sm text-slate-100">
-                Sesión iniciada como{" "}
+                Signed in as{" "}
                 <span className="font-semibold">
                   {session.user?.name ?? session.user?.email}
                 </span>
@@ -356,7 +353,7 @@ export default function Home() {
                 onClick={() => signOut()}
                 className="px-4 py-2 rounded-full border border-slate-100/60 text-slate-50 hover:bg-slate-100/10 transition text-xs"
               >
-                Cerrar sesión
+                Sign out
               </button>
             </>
           )}
@@ -365,7 +362,7 @@ export default function Home() {
         {session && (
           <section className="flex flex-col gap-3">
             <p className="text-xs uppercase tracking-wide text-slate-100/80">
-              Selecciona el periodo de análisis
+              Select analysis period
             </p>
 
             <div className="flex flex-wrap gap-3">
@@ -393,11 +390,11 @@ export default function Home() {
         {session && (
           <section className="bg-slate-950/60 rounded-2xl p-4 md:p-5 border border-slate-800/60">
             <h2 className="text-lg font-semibold mb-2">
-              Tus canciones top ({PERIOD_DETAILS[selectedRange].label})
+              Your top tracks ({PERIOD_DETAILS[selectedRange].label})
             </h2>
 
             {loadingTracks && (
-              <p className="text-slate-200 text-sm">Cargando canciones...</p>
+              <p className="text-slate-200 text-sm">Loading tracks...</p>
             )}
             {errorTracks && (
               <p className="text-red-300 text-sm">{errorTracks}</p>
@@ -405,8 +402,8 @@ export default function Home() {
 
             {!loadingTracks && !errorTracks && tracks.length === 0 && (
               <p className="text-slate-200 text-sm">
-                No encontramos canciones top para este periodo. Escucha algo en
-                Spotify y vuelve a intentar.
+                We couldn't find top tracks for this period. Listen to something on
+                Spotify and try again.
               </p>
             )}
 
@@ -437,13 +434,11 @@ export default function Home() {
 
         {session && (
           <section className="bg-slate-950/60 rounded-2xl p-4 md:p-5 flex flex-col gap-4 border border-slate-800/60">
-            <h2 className="text-lg font-semibold">Calcula tu probabilidad</h2>
+            <h2 className="text-lg font-semibold">Calculate your probability</h2>
 
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">
-                  Pregunta predefinida
-                </label>
+                <label className="text-sm font-medium">Preset question</label>
                 <select
                   value={selectedPreset}
                   onChange={(e) => setSelectedPreset(e.target.value)}
@@ -463,8 +458,8 @@ export default function Home() {
                 className="mt-2 px-6 py-3 rounded-full bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-semibold transition disabled:opacity-60 disabled:cursor-not-allowed self-start"
               >
                 {probLoading || comparisonLoading
-                  ? "Calculando probabilidades..."
-                  : "Calcular probabilidad y ver por periodos"}
+                  ? "Calculating probabilities..."
+                  : "Calculate probability and view by periods"}
               </button>
 
               {probError && (
@@ -477,7 +472,7 @@ export default function Home() {
                 <div className="mt-4 border-t border-slate-800 pt-4 flex flex-col gap-4">
                   <div>
                     <p className="text-xs uppercase tracking-wide text-slate-400 mb-1">
-                      Resultado – {PERIOD_DETAILS[selectedRange].label}
+                      Result – {PERIOD_DETAILS[selectedRange].label}
                     </p>
                     <p className="text-xs text-slate-500 mb-1">
                       {PERIOD_DETAILS[selectedRange].subtitle}
@@ -490,7 +485,7 @@ export default function Home() {
                         {probResult.probability}%
                       </span>
                       <span className="text-slate-300 text-sm">
-                        probabilidad según tu Spotify
+                        probability based on your Spotify
                       </span>
                     </div>
                     <p className="text-sm text-slate-200 mt-2">
@@ -500,7 +495,7 @@ export default function Home() {
 
                   <div>
                     <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">
-                      Canciones que más lo avalan (representativas)
+                      Tracks that support it most (representative)
                     </p>
                     <ul className="space-y-2">
                       {supportingTracks.map((track) => (
@@ -531,7 +526,7 @@ export default function Home() {
                 <div className="mt-6 border-t border-slate-800 pt-4 flex flex-col gap-3">
                   <div className="flex items-center justify-between">
                     <p className="text-xs uppercase tracking-wide text-slate-400">
-                      Vista para post
+                      Post view
                     </p>
 
                     <button
@@ -548,8 +543,8 @@ export default function Home() {
                       className="px-3 py-1.5 rounded-full bg-sky-500 hover:bg-sky-400 text-xs font-semibold text-slate-950 transition disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       {exportingPost
-                        ? "Exportando..."
-                        : "Exportar historia de este periodo"}
+                        ? "Exporting..."
+                        : "Export story for this period"}
                     </button>
                   </div>
 
@@ -600,7 +595,7 @@ export default function Home() {
                             {probResult.probability}%
                           </span>
                           <span style={{ fontSize: 12, color: "#E2E8F0" }}>
-                            según tu Spotify
+                            based on your Spotify
                           </span>
                         </div>
                       </div>
@@ -629,7 +624,7 @@ export default function Home() {
                           marginBottom: 8,
                         }}
                       >
-                        Canciones que más lo avalan
+                        Tracks that support it most
                       </p>
 
                       <div
@@ -708,7 +703,7 @@ export default function Home() {
                             marginBottom: 6,
                           }}
                         >
-                          Resumen por periodos
+                          Period summary
                         </p>
 
                         <div
@@ -774,11 +769,11 @@ export default function Home() {
                         ...mutedText2,
                       }}
                     >
-                      Generado con{" "}
+                      Generated with{" "}
                       <span style={{ fontWeight: 700, color: "#CBD5E1" }}>
                         Probabify
                       </span>{" "}
-                      usando tu música top de Spotify.
+                      using your top Spotify tracks.
                     </div>
                   </div>
                 </div>
@@ -792,11 +787,11 @@ export default function Home() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold">
-                  Comparar esta pregunta por periodos
+                  Compare this question by periods
                 </h2>
                 <p className="text-sm text-slate-200">
-                  Calculamos la misma pregunta usando tu música de las últimas
-                  semanas, los últimos 6 meses y todo el tiempo.
+                  We calculate the same question using your music from the last
+                  few weeks, the last 6 months, and all time.
                 </p>
               </div>
             </div>
@@ -806,7 +801,7 @@ export default function Home() {
             )}
             {comparisonLoading && (
               <p className="text-slate-200 text-sm">
-                Calculando probabilidades para cada periodo...
+                Calculating probabilities for each period...
               </p>
             )}
 
@@ -825,7 +820,7 @@ export default function Home() {
                     </p>
                     {r.probability === null ? (
                       <p className="text-xs text-slate-500">
-                        Sin datos suficientes para este periodo.
+                        Not enough data for this period.
                       </p>
                     ) : (
                       <span className="text-3xl font-bold">
