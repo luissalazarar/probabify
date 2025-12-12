@@ -255,7 +255,8 @@ export default function Home() {
     try {
       const dataUrl = await htmlToImage.toPng(element, {
         cacheBust: true,
-        backgroundColor: "#020617",
+        // importante: dejamos que tome el gradiente del propio elemento
+        backgroundColor: undefined,
         width: 360,
         height: 640,
         pixelRatio: 3, // 360x640 * 3 = 1080x1920 (IG story)
@@ -274,7 +275,7 @@ export default function Home() {
 
   if (status === "loading") {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-100">
+      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#054d61] to-[#049990] text-slate-100">
         <p>Cargando sesión...</p>
       </main>
     );
@@ -285,7 +286,8 @@ export default function Home() {
     width: 360,
     height: 640,
     borderRadius: 32,
-    background: "#020617", // slate-950
+    // degradado exportable
+    background: "linear-gradient(135deg, #054d61, #049990)",
     color: "#F8FAFC", // slate-50
     overflow: "hidden",
     display: "flex",
@@ -295,23 +297,23 @@ export default function Home() {
     boxShadow: "0 25px 50px -12px rgba(0,0,0,0.6)",
   };
 
-  const mutedText: React.CSSProperties = { color: "#94A3B8" }; // slate-400
-  const mutedText2: React.CSSProperties = { color: "#64748B" }; // slate-500
+  const mutedText: React.CSSProperties = { color: "#D1E5F0" }; // ajustado para verde/azul
+  const mutedText2: React.CSSProperties = { color: "#A8C6D8" };
   const borderTop: React.CSSProperties = { borderTop: "1px solid #1E293B" }; // slate-800
 
   const pillTop: React.CSSProperties = {
     fontSize: 10,
     textTransform: "uppercase",
     letterSpacing: "0.12em",
-    color: "#94A3B8",
+    color: "#E2F3F8",
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center bg-slate-950 text-slate-100 px-4 py-10">
+    <main className="min-h-screen flex flex-col items-center bg-gradient-to-br from-[#054d61] to-[#049990] text-slate-100 px-4 py-10">
       <div className="w-full max-w-3xl flex flex-col gap-8">
         <header className="text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-3">Probabify</h1>
-          <p className="text-slate-300 max-w-xl mx-auto">
+          <p className="text-slate-100 max-w-xl mx-auto">
             Conecta tu Spotify, elige una pregunta y te devolvemos una
             probabilidad inventada (pero coherente con tu música) lista para
             post.
@@ -322,7 +324,7 @@ export default function Home() {
           {!session && (
             <button
               onClick={() => signIn("spotify")}
-              className="px-6 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold transition"
+              className="px-6 py-3 rounded-full bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-semibold transition"
             >
               Conectar con Spotify
             </button>
@@ -330,7 +332,7 @@ export default function Home() {
 
           {session && (
             <>
-              <p className="text-sm text-slate-300">
+              <p className="text-sm text-slate-100">
                 Sesión iniciada como{" "}
                 <span className="font-semibold">
                   {session.user?.name ?? session.user?.email}
@@ -338,7 +340,7 @@ export default function Home() {
               </p>
               <button
                 onClick={() => signOut()}
-                className="px-4 py-2 rounded-full border border-slate-500 text-slate-200 hover:bg-slate-800 transition text-xs"
+                className="px-4 py-2 rounded-full border border-slate-100/60 text-slate-50 hover:bg-slate-100/10 transition text-xs"
               >
                 Cerrar sesión
               </button>
@@ -348,7 +350,7 @@ export default function Home() {
 
         {session && (
           <section className="flex flex-col gap-3">
-            <p className="text-xs uppercase tracking-wide text-slate-400">
+            <p className="text-xs uppercase tracking-wide text-slate-100/80">
               Selecciona el periodo de análisis
             </p>
 
@@ -359,8 +361,8 @@ export default function Home() {
                   onClick={() => setSelectedRange(p.key)}
                   className={`px-4 py-2 rounded-xl text-sm font-medium border transition ${
                     selectedRange === p.key
-                      ? "bg-emerald-500 text-slate-950 border-emerald-400"
-                      : "border-slate-700 text-slate-200 hover:bg-slate-800"
+                      ? "bg-emerald-400 text-slate-950 border-emerald-300"
+                      : "border-slate-100/70 text-slate-50 hover:bg-slate-100/10"
                   }`}
                 >
                   {PERIOD_DETAILS[p.key].label}
@@ -368,27 +370,27 @@ export default function Home() {
               ))}
             </div>
 
-            <p className="text-sm text-slate-400 leading-relaxed mt-1">
+            <p className="text-sm text-slate-100/90 leading-relaxed mt-1">
               {PERIOD_DETAILS[selectedRange].description}
             </p>
           </section>
         )}
 
         {session && (
-          <section className="bg-slate-900/60 rounded-2xl p-4 md:p-5">
+          <section className="bg-slate-950/60 rounded-2xl p-4 md:p-5 border border-slate-800/60">
             <h2 className="text-lg font-semibold mb-2">
               Tus canciones top ({PERIOD_DETAILS[selectedRange].label})
             </h2>
 
             {loadingTracks && (
-              <p className="text-slate-300 text-sm">Cargando canciones...</p>
+              <p className="text-slate-200 text-sm">Cargando canciones...</p>
             )}
             {errorTracks && (
-              <p className="text-red-400 text-sm">{errorTracks}</p>
+              <p className="text-red-300 text-sm">{errorTracks}</p>
             )}
 
             {!loadingTracks && !errorTracks && tracks.length === 0 && (
-              <p className="text-slate-400 text-sm">
+              <p className="text-slate-200 text-sm">
                 No encontramos canciones top para este periodo. Escucha algo en
                 Spotify y vuelve a intentar.
               </p>
@@ -398,7 +400,7 @@ export default function Home() {
               {tracks.slice(0, 50).map((track) => (
                 <li
                   key={track.id}
-                  className="flex items-center gap-3 bg-slate-900 rounded-xl px-3 py-2"
+                  className="flex items-center gap-3 bg-slate-900/80 rounded-xl px-3 py-2"
                 >
                   {track.image && (
                     <img
@@ -409,7 +411,7 @@ export default function Home() {
                   )}
                   <div className="flex flex-col">
                     <span className="font-semibold text-sm">{track.name}</span>
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-slate-300">
                       {track.artist} · {track.album}
                     </span>
                   </div>
@@ -420,7 +422,7 @@ export default function Home() {
         )}
 
         {session && (
-          <section className="bg-slate-900/60 rounded-2xl p-4 md:p-5 flex flex-col gap-4">
+          <section className="bg-slate-950/60 rounded-2xl p-4 md:p-5 flex flex-col gap-4 border border-slate-800/60">
             <h2 className="text-lg font-semibold">Calcula tu probabilidad</h2>
 
             <div className="flex flex-col gap-3">
@@ -431,7 +433,7 @@ export default function Home() {
                 <select
                   value={selectedPreset}
                   onChange={(e) => setSelectedPreset(e.target.value)}
-                  className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                  className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-500"
                 >
                   {PRESET_QUESTIONS.map((q) => (
                     <option key={q} value={q}>
@@ -444,7 +446,7 @@ export default function Home() {
               <button
                 onClick={handleCalculateAll}
                 disabled={probLoading || comparisonLoading}
-                className="mt-2 px-6 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold transition disabled:opacity-60 disabled:cursor-not-allowed self-start"
+                className="mt-2 px-6 py-3 rounded-full bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-semibold transition disabled:opacity-60 disabled:cursor-not-allowed self-start"
               >
                 {probLoading || comparisonLoading
                   ? "Calculando probabilidades..."
@@ -452,7 +454,7 @@ export default function Home() {
               </button>
 
               {probError && (
-                <p className="text-red-400 text-sm mt-1">{probError}</p>
+                <p className="text-red-300 text-sm mt-1">{probError}</p>
               )}
             </div>
 
@@ -466,18 +468,18 @@ export default function Home() {
                     <p className="text-xs text-slate-500 mb-1">
                       {PERIOD_DETAILS[selectedRange].subtitle}
                     </p>
-                    <p className="text-sm text-slate-300 mb-1">
+                    <p className="text-sm text-slate-200 mb-1">
                       {probResult.question}
                     </p>
                     <div className="flex items-baseline gap-2">
                       <span className="text-4xl font-bold">
                         {probResult.probability}%
                       </span>
-                      <span className="text-slate-400 text-sm">
+                      <span className="text-slate-300 text-sm">
                         probabilidad según tu Spotify
                       </span>
                     </div>
-                    <p className="text-sm text-slate-300 mt-2">
+                    <p className="text-sm text-slate-200 mt-2">
                       {probResult.summary}
                     </p>
                   </div>
@@ -538,7 +540,7 @@ export default function Home() {
                   </div>
 
                   {exportError && (
-                    <p className="text-red-400 text-sm">{exportError}</p>
+                    <p className="text-red-300 text-sm">{exportError}</p>
                   )}
 
                   {/* CARD EXPORTABLE (una sola imagen con todo) */}
@@ -783,13 +785,13 @@ export default function Home() {
         )}
 
         {session && (
-          <section className="bg-slate-900/60 rounded-2xl p-4 md:p-5 flex flex-col gap-4">
+          <section className="bg-slate-950/60 rounded-2xl p-4 md:p-5 flex flex-col gap-4 border border-slate-800/60">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold">
                   Comparar esta pregunta por periodos
                 </h2>
-                <p className="text-sm text-slate-300">
+                <p className="text-sm text-slate-200">
                   Calculamos la misma pregunta usando tu música de las últimas
                   semanas, los últimos 6 meses y todo el tiempo.
                 </p>
@@ -798,10 +800,10 @@ export default function Home() {
             </div>
 
             {comparisonError && (
-              <p className="text-red-400 text-sm mt-1">{comparisonError}</p>
+              <p className="text-red-300 text-sm mt-1">{comparisonError}</p>
             )}
             {comparisonLoading && (
-              <p className="text-slate-300 text-sm">
+              <p className="text-slate-200 text-sm">
                 Calculando probabilidades para cada periodo...
               </p>
             )}
@@ -811,12 +813,12 @@ export default function Home() {
                 {comparisonResults.map((r) => (
                   <div
                     key={r.key}
-                    className="rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-3 flex flex-col gap-1"
+                    className="rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-3 flex flex-col gap-1"
                   >
-                    <p className="text-xs uppercase tracking-wide text-slate-400">
+                    <p className="text-xs uppercase tracking-wide text-slate-300">
                       {PERIOD_DETAILS[r.key].label}
                     </p>
-                    <p className="text-[11px] text-slate-500 mb-1">
+                    <p className="text-[11px] text-slate-400 mb-1">
                       {PERIOD_DETAILS[r.key].subtitle}
                     </p>
                     {r.probability === null ? (
