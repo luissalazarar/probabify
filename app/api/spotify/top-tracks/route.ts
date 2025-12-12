@@ -19,12 +19,12 @@ export async function GET(req: Request) {
 
     // 🔁 Leer periodo desde querystring
     const url = new URL(req.url);
-    const range = url.searchParams.get("range") ?? "short_term"; // default
+    const range = url.searchParams.get("range") ?? "short_term";
 
     const validRanges = ["short_term", "medium_term", "long_term"];
     const timeRange = validRanges.includes(range) ? range : "short_term";
 
-    // 🎯 Obtener top tracks (hasta 50 permitidas)
+    // 🎯 Obtener top tracks (hasta 50)
     const spotifyRes = await fetch(
       `https://api.spotify.com/v1/me/top/tracks?limit=50&time_range=${timeRange}`,
       {
@@ -34,9 +34,8 @@ export async function GET(req: Request) {
       }
     );
 
-    // 🚨 Token expirado → error 401
+    // 🚨 Token expirado
     if (spotifyRes.status === 401) {
-      console.error("⚠️ Spotify: token expirado");
       return NextResponse.json(
         {
           error:
@@ -60,17 +59,24 @@ export async function GET(req: Request) {
 
     // 🎵 Normalizar tracks
     const tracks =
-      (data.items || []).map((item: any) => ({
-        id: item.id,
-        name: item.name,
-        artist: item.artists?.map((a: any) => a.name).join(", ") ?? "",
-        album: item.album?.name ?? "",
-        image:
+      (data.items || []).map((item: any) => {
+        const rawImage =
           item.album?.images?.[0]?.url ??
           item.album?.images?.[1]?.url ??
-          null,
-        previewUrl: item.preview_url ?? null,
-      })) ?? [];
+          null;
+
+        return {
+          id: item.id,
+          name: item.name,
+          artist: item.artists?.map((a: any) => a.name).join(", ") ?? "",
+          album: item.album?.name ?? "",
+          // ✅ PROXY DE IMAGEN (clave para iOS)
+          image: rawImage
+            ? `/api/image?url=${encodeURIComponent(rawImage)}`
+            : null,
+          previewUrl: item.preview_url ?? null,
+        };
+      }) ?? [];
 
     return NextResponse.json({ tracks });
   } catch (error: any) {
