@@ -1,4 +1,4 @@
-// app/[locale]/page.tsx
+// app/page.tsx
 "use client";
 
 import { useEffect, useRef, useState, useMemo } from "react";
@@ -125,7 +125,6 @@ export default function Home() {
         setLoadingTracks(true);
         setErrorTracks(null);
 
-        // ✅ importante: ruta absoluta para que funcione desde /es o /en
         const res = await fetch(`/api/spotify/top-tracks?range=${selectedRange}`);
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
@@ -400,7 +399,9 @@ export default function Home() {
             {loadingTracks && (
               <p className="text-slate-200 text-sm">Cargando canciones...</p>
             )}
-            {errorTracks && <p className="text-red-300 text-sm">{errorTracks}</p>}
+            {errorTracks && (
+              <p className="text-red-300 text-sm">{errorTracks}</p>
+            )}
 
             {!loadingTracks && !errorTracks && tracks.length === 0 && (
               <p className="text-slate-200 text-sm">
@@ -466,7 +467,9 @@ export default function Home() {
                   : "Calcular probabilidad y ver por periodos"}
               </button>
 
-              {probError && <p className="text-red-300 text-sm mt-1">{probError}</p>}
+              {probError && (
+                <p className="text-red-300 text-sm mt-1">{probError}</p>
+              )}
             </div>
 
             {probResult && (
@@ -544,14 +547,19 @@ export default function Home() {
                       disabled={exportingPost}
                       className="px-3 py-1.5 rounded-full bg-sky-500 hover:bg-sky-400 text-xs font-semibold text-slate-950 transition disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      {exportingPost ? "Exportando..." : "Exportar historia de este periodo"}
+                      {exportingPost
+                        ? "Exportando..."
+                        : "Exportar historia de este periodo"}
                     </button>
                   </div>
 
-                  {exportError && <p className="text-red-300 text-sm">{exportError}</p>}
+                  {exportError && (
+                    <p className="text-red-300 text-sm">{exportError}</p>
+                  )}
 
                   {/* CARD EXPORTABLE */}
                   <div ref={postCardRef} style={storyOuterStyle}>
+                    {/* 👇 cambio pedido */}
                     <div style={pillTop}>Probabify.com</div>
 
                     <div
@@ -624,7 +632,13 @@ export default function Home() {
                         Canciones que más lo avalan
                       </p>
 
-                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 10,
+                        }}
+                      >
                         {supportingTracks.map((track) => (
                           <div
                             key={track.id}
@@ -658,7 +672,12 @@ export default function Home() {
                               ) : null}
                             </div>
 
-                            <div style={{ display: "flex", flexDirection: "column" }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                              }}
+                            >
                               <span
                                 style={{
                                   fontSize: 13,
@@ -692,7 +711,13 @@ export default function Home() {
                           Resumen por periodos
                         </p>
 
-                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 6,
+                          }}
+                        >
                           {comparisonResults.map((r) => (
                             <div
                               key={r.key}
@@ -702,7 +727,13 @@ export default function Home() {
                                 alignItems: "baseline",
                               }}
                             >
-                              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  gap: 2,
+                                }}
+                              >
                                 <span
                                   style={{
                                     fontSize: 11,
@@ -724,7 +755,9 @@ export default function Home() {
                                   color: "#F8FAFC",
                                 }}
                               >
-                                {r.probability === null ? "—" : `${r.probability}%`}
+                                {r.probability === null
+                                  ? "—"
+                                  : `${r.probability}%`}
                               </span>
                             </div>
                           ))}
@@ -768,7 +801,9 @@ export default function Home() {
               </div>
             </div>
 
-            {comparisonError && <p className="text-red-300 text-sm mt-1">{comparisonError}</p>}
+            {comparisonError && (
+              <p className="text-red-300 text-sm mt-1">{comparisonError}</p>
+            )}
             {comparisonLoading && (
               <p className="text-slate-200 text-sm">
                 Calculando probabilidades para cada periodo...
@@ -793,7 +828,9 @@ export default function Home() {
                         Sin datos suficientes para este periodo.
                       </p>
                     ) : (
-                      <span className="text-3xl font-bold">{r.probability}%</span>
+                      <span className="text-3xl font-bold">
+                        {r.probability}%
+                      </span>
                     )}
                   </div>
                 ))}
