@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type React from "react"; // 👈 para React.CSSProperties
 import { signIn, signOut, useSession } from "next-auth/react";
 import html2canvas from "html2canvas";
 
@@ -240,7 +241,7 @@ export default function Home() {
     }
   }
 
-  // 3) Exportar como PNG (sin Tailwind colors dentro del card para evitar lab()/oklch())
+  // 3) Exportar como PNG
   async function handleDownloadCard(
     element: HTMLDivElement | null,
     filename: string
@@ -252,14 +253,14 @@ export default function Home() {
       return;
     }
 
-    // Espera 1 frame para asegurar layout estable (important en Vercel/Next)
+    // Espera 1 frame para asegurar layout estable
     await new Promise<void>((r) => requestAnimationFrame(() => r()));
 
     try {
       const canvas = await html2canvas(element, {
         backgroundColor: "#020617",
         scale: 3, // 360x640 -> 1080x1920
-        useCORS: false,
+        useCORS: true, // 👈 necesario para intentar cargar imágenes remotas
         logging: false,
       });
 
@@ -560,21 +561,17 @@ export default function Home() {
                         minHeight: 0,
                       }}
                     >
-                      {/* ✅ LÍNEA EN BLANCO “SACRIFICABLE” AL FINAL */}
+                      {/* ✅ Resumen SIN cortar líneas */}
                       <p
                         style={{
                           fontSize: 12,
                           lineHeight: "18px",
                           color: "#E2E8F0",
                           marginTop: 2,
-                          display: "-webkit-box",
-                          WebkitLineClamp: 7,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
                           whiteSpace: "pre-line",
                         }}
                       >
-                        {probResult.summary + "\n"}
+                        {probResult.summary}
                       </p>
 
                       <div
@@ -661,6 +658,7 @@ export default function Home() {
                                 <img
                                   src={track.image}
                                   alt={track.name}
+                                  crossOrigin="anonymous" // 👈 para html2canvas
                                   style={{
                                     width: "100%",
                                     height: "100%",
@@ -790,7 +788,7 @@ export default function Home() {
                   <p className="text-red-400 text-sm">{exportError}</p>
                 )}
 
-                {/* CARD EXPORTABLE PERIODOS (sin Tailwind colors) */}
+                {/* CARD EXPORTABLE PERIODOS */}
                 <div ref={periodsCardRef} style={storyOuterStyle}>
                   <div style={pillTop}>Probabify · Resumen por periodos</div>
 
