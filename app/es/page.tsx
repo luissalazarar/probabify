@@ -73,6 +73,50 @@ function downloadDataUrl(dataUrl: string, filename: string) {
   link.remove();
 }
 
+async function nextPaintTwice() {
+  await new Promise<void>((r) => requestAnimationFrame(() => r()));
+  await new Promise<void>((r) => requestAnimationFrame(() => r()));
+}
+
+async function waitForImages(root: HTMLElement) {
+  const imgs = Array.from(root.querySelectorAll("img"));
+
+  await Promise.all(
+    imgs.map(async (img) => {
+      if (!img.src) return;
+
+      if (img.complete && img.naturalWidth > 0) {
+        if ("decode" in img) {
+          try {
+            // @ts-ignore
+            await img.decode();
+          } catch {}
+        }
+        return;
+      }
+
+      await new Promise<void>((resolve) => {
+        const done = async () => {
+          img.removeEventListener("load", done);
+          img.removeEventListener("error", done);
+
+          if ("decode" in img) {
+            try {
+              // @ts-ignore
+              await img.decode();
+            } catch {}
+          }
+
+          resolve();
+        };
+
+        img.addEventListener("load", done);
+        img.addEventListener("error", done);
+      });
+    })
+  );
+}
+
 export default function Home() {
   const { data: session, status } = useSession();
 
@@ -102,6 +146,38 @@ export default function Home() {
   const [exportingPost, setExportingPost] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
+  // ✅ cache para preloads
+  const preloadCacheRef = useRef<Map<string, Promise<void>>>(new Map());
+
+  function preloadImage(url: string) {
+    const cache = preloadCacheRef.current;
+    if (cache.has(url)) return cache.get(url)!;
+
+    const p = new Promise<void>((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = async () => {
+        if ("decode" in img) {
+          try {
+            // @ts-ignore
+            await img.decode();
+          } catch {}
+        }
+        resolve();
+      };
+      img.onerror = () => resolve();
+      img.src = url;
+    });
+
+    cache.set(url, p);
+    return p;
+  }
+
+  async function preloadUrls(urls: string[]) {
+    const unique = Array.from(new Set(urls.filter(Boolean)));
+    await Promise.all(unique.map((u) => preloadImage(u)));
+  }
+
   // ✅ Derivar canciones “que más lo avalan” desde representativeTrackIds
   const supportingTracks = useMemo(() => {
     if (!probResult) return tracks.slice(0, 3);
@@ -115,6 +191,15 @@ export default function Home() {
     // fallback si algo falla
     return picked.length ? picked : tracks.slice(0, 3);
   }, [probResult, tracks]);
+
+  // ✅ Preload de portadas que se usan en la card exportable
+  useEffect(() => {
+    const urls = supportingTracks.map((t) => t.image).filter(Boolean) as string[];
+    if (urls.length) {
+      preloadUrls(urls).catch(() => {});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [supportingTracks]);
 
   // 1) Cargar canciones del periodo principal
   useEffect(() => {
@@ -269,6 +354,19 @@ export default function Home() {
     }
 
     try {
+      // ✅ 1) preload explícito (especialmente primera vez)
+      const urls = supportingTracks.map((t) => t.image).filter(Boolean) as string[];
+      if (urls.length) {
+        await preloadUrls(urls);
+      }
+
+      // ✅ 2) esperar a que el DOM pinte las imágenes ya cargadas
+      await nextPaintTwice();
+
+      // ✅ 3) asegurar que los <img> del nodo estén completos
+      await waitForImages(element);
+
+      // ✅ 4) export
       const dataUrl = await htmlToImage.toPng(element, {
         cacheBust: true,
         backgroundColor: undefined,
@@ -418,6 +516,7 @@ export default function Home() {
                 >
                   {track.image && (
                     <img
+                      crossOrigin="anonymous"
                       src={track.image}
                       alt={track.name}
                       className="w-10 h-10 rounded-md object-cover"
@@ -441,9 +540,7 @@ export default function Home() {
 
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">
-                  Pregunta predefinida
-                </label>
+                <label className="text-sm font-medium">Pregunta predefinida</label>
                 <select
                   value={selectedPreset}
                   onChange={(e) => setSelectedPreset(e.target.value)}
@@ -467,9 +564,7 @@ export default function Home() {
                   : "Calcular probabilidad y comparar periodos"}
               </button>
 
-              {probError && (
-                <p className="text-red-300 text-sm mt-1">{probError}</p>
-              )}
+              {probError && <p className="text-red-300 text-sm mt-1">{probError}</p>}
             </div>
 
             {probResult && (
@@ -504,12 +599,10 @@ export default function Home() {
                     </p>
                     <ul className="space-y-2">
                       {supportingTracks.map((track) => (
-                        <li
-                          key={track.id}
-                          className="flex items-center gap-3 text-sm"
-                        >
+                        <li key={track.id} className="flex items-center gap-3 text-sm">
                           {track.image && (
                             <img
+                              crossOrigin="anonymous"
                               src={track.image}
                               alt={track.name}
                               className="w-8 h-8 rounded-md object-cover"
@@ -517,9 +610,7 @@ export default function Home() {
                           )}
                           <div className="flex flex-col">
                             <span className="font-semibold">{track.name}</span>
-                            <span className="text-xs text-slate-400">
-                              {track.artist}
-                            </span>
+                            <span className="text-xs text-slate-400">{track.artist}</span>
                           </div>
                         </li>
                       ))}
@@ -547,19 +638,14 @@ export default function Home() {
                       disabled={exportingPost}
                       className="px-3 py-1.5 rounded-full bg-sky-500 hover:bg-sky-400 text-xs font-semibold text-slate-950 transition disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      {exportingPost
-                        ? "Exportando..."
-                        : "Exportar historia de este periodo"}
+                      {exportingPost ? "Exportando..." : "Exportar historia de este periodo"}
                     </button>
                   </div>
 
-                  {exportError && (
-                    <p className="text-red-300 text-sm">{exportError}</p>
-                  )}
+                  {exportError && <p className="text-red-300 text-sm">{exportError}</p>}
 
                   {/* CARD EXPORTABLE */}
                   <div ref={postCardRef} style={storyOuterStyle}>
-                    {/* 👇 cambio pedido */}
                     <div style={pillTop}>Probabify.com</div>
 
                     <div
@@ -618,7 +704,6 @@ export default function Home() {
                       </p>
                     </div>
 
-                    {/* Canciones representativas */}
                     <div style={{ marginTop: 0 }}>
                       <p
                         style={{
@@ -632,21 +717,11 @@ export default function Home() {
                         Canciones que más lo avalan
                       </p>
 
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 10,
-                        }}
-                      >
+                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                         {supportingTracks.map((track) => (
                           <div
                             key={track.id}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 12,
-                            }}
+                            style={{ display: "flex", alignItems: "center", gap: 12 }}
                           >
                             <div
                               style={{
@@ -661,6 +736,7 @@ export default function Home() {
                             >
                               {track.image ? (
                                 <img
+                                  crossOrigin="anonymous"
                                   src={track.image}
                                   alt={track.name}
                                   style={{
@@ -672,12 +748,7 @@ export default function Home() {
                               ) : null}
                             </div>
 
-                            <div
-                              style={{
-                                display: "flex",
-                                flexDirection: "column",
-                              }}
-                            >
+                            <div style={{ display: "flex", flexDirection: "column" }}>
                               <span
                                 style={{
                                   fontSize: 13,
@@ -696,7 +767,6 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Resumen por periodos */}
                     {comparisonResults && (
                       <div style={{ marginTop: 12 }}>
                         <p
@@ -711,13 +781,7 @@ export default function Home() {
                           Resumen por periodos
                         </p>
 
-                        <div
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 6,
-                          }}
-                        >
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                           {comparisonResults.map((r) => (
                             <div
                               key={r.key}
@@ -727,13 +791,7 @@ export default function Home() {
                                 alignItems: "baseline",
                               }}
                             >
-                              <div
-                                style={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  gap: 2,
-                                }}
-                              >
+                              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                                 <span
                                   style={{
                                     fontSize: 11,
@@ -755,9 +813,7 @@ export default function Home() {
                                   color: "#F8FAFC",
                                 }}
                               >
-                                {r.probability === null
-                                  ? "—"
-                                  : `${r.probability}%`}
+                                {r.probability === null ? "—" : `${r.probability}%`}
                               </span>
                             </div>
                           ))}
@@ -791,12 +847,10 @@ export default function Home() {
           <section className="bg-slate-950/60 rounded-2xl p-4 md:p-5 flex flex-col gap-4 border border-slate-800/60">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold">
-                  Comparar esta pregunta por periodos
-                </h2>
+                <h2 className="text-lg font-semibold">Comparar esta pregunta por periodos</h2>
                 <p className="text-sm text-slate-200">
-                  Calculamos la misma pregunta usando tu música de las últimas
-                  semanas, los últimos 6 meses y todo el tiempo.
+                  Calculamos la misma pregunta usando tu música de las últimas semanas,
+                  los últimos 6 meses y todo el tiempo.
                 </p>
               </div>
             </div>
@@ -828,9 +882,7 @@ export default function Home() {
                         Sin datos suficientes para este periodo.
                       </p>
                     ) : (
-                      <span className="text-3xl font-bold">
-                        {r.probability}%
-                      </span>
+                      <span className="text-3xl font-bold">{r.probability}%</span>
                     )}
                   </div>
                 ))}
