@@ -26,12 +26,12 @@ type ProbabilityResult = {
 type RangeKey = "short_term" | "medium_term" | "long_term";
 
 const PRESET_QUESTIONS = [
-  "What are the chances of getting back with my ex?",
-  "What are the chances of getting over my ex?",
-  "What are the chances of quitting my job?",
-  "What are the chances of being toxic?",
-  "What are the chances of getting into a toxic relationship?",
-  "What are the chances of starting to value myself?",
+  "What is the probability of getting back with my ex?",
+  "What is the probability of getting over my ex?",
+  "What is the probability of quitting my job?",
+  "What is the probability of being toxic?",
+  "What is the probability of getting into a toxic relationship?",
+  "What is the probability of starting to value myself?",
 ];
 
 const PERIODS: { key: RangeKey; label: string }[] = [
@@ -48,13 +48,13 @@ const PERIOD_DETAILS: Record<
     label: "Last few weeks",
     subtitle: "Recent mood",
     description:
-      "This period reflects your most recent listens. It focuses on your current emotional state and immediate trends.",
+      "This period reflects your most recent listening. It focuses on your current emotional state and immediate trends.",
   },
   medium_term: {
     label: "Last 6 months",
     subtitle: "Mid-term trend",
     description:
-      "This period shows your sustained tastes over time. It’s a balance between what’s new and what you actually keep.",
+      "This period shows your sustained tastes over time. It's a balance between what's new and what you truly keep listening to.",
   },
   long_term: {
     label: "All time",
@@ -240,7 +240,9 @@ export default function Home() {
       setComparisonResults(results);
 
       if (!mainResult) {
-        setProbError("Could not calculate the probability for the selected period.");
+        setProbError(
+          "Could not calculate the probability for the selected period."
+        );
       } else {
         setProbResult(mainResult);
       }
@@ -326,8 +328,8 @@ export default function Home() {
         <header className="text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-3">Probabify</h1>
           <p className="text-slate-100 max-w-xl mx-auto">
-            Connect Spotify, pick a question and we’ll return a made-up probability
-            (but consistent with your music) ready to post.
+            Connect your Spotify, pick a question, and we’ll return a made-up
+            probability (but coherent with your music) ready to post.
           </p>
         </header>
 
@@ -362,7 +364,7 @@ export default function Home() {
         {session && (
           <section className="flex flex-col gap-3">
             <p className="text-xs uppercase tracking-wide text-slate-100/80">
-              Select analysis period
+              Select the analysis period
             </p>
 
             <div className="flex flex-wrap gap-3">
@@ -396,14 +398,11 @@ export default function Home() {
             {loadingTracks && (
               <p className="text-slate-200 text-sm">Loading tracks...</p>
             )}
-            {errorTracks && (
-              <p className="text-red-300 text-sm">{errorTracks}</p>
-            )}
+            {errorTracks && <p className="text-red-300 text-sm">{errorTracks}</p>}
 
             {!loadingTracks && !errorTracks && tracks.length === 0 && (
               <p className="text-slate-200 text-sm">
-                We couldn't find top tracks for this period. Listen to something on
-                Spotify and try again.
+                No top tracks found for this period. Listen on Spotify and try again.
               </p>
             )}
 
@@ -459,12 +458,10 @@ export default function Home() {
               >
                 {probLoading || comparisonLoading
                   ? "Calculating probabilities..."
-                  : "Calculate probability and view by periods"}
+                  : "Calculate probability and compare periods"}
               </button>
 
-              {probError && (
-                <p className="text-red-300 text-sm mt-1">{probError}</p>
-              )}
+              {probError && <p className="text-red-300 text-sm mt-1">{probError}</p>}
             </div>
 
             {probResult && (
@@ -485,7 +482,7 @@ export default function Home() {
                         {probResult.probability}%
                       </span>
                       <span className="text-slate-300 text-sm">
-                        probability based on your Spotify
+                        probability according to your Spotify
                       </span>
                     </div>
                     <p className="text-sm text-slate-200 mt-2">
@@ -495,7 +492,7 @@ export default function Home() {
 
                   <div>
                     <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">
-                      Tracks that support it most (representative)
+                      Tracks that support it the most (representative)
                     </p>
                     <ul className="space-y-2">
                       {supportingTracks.map((track) => (
@@ -526,7 +523,7 @@ export default function Home() {
                 <div className="mt-6 border-t border-slate-800 pt-4 flex flex-col gap-3">
                   <div className="flex items-center justify-between">
                     <p className="text-xs uppercase tracking-wide text-slate-400">
-                      Post view
+                      Post preview
                     </p>
 
                     <button
@@ -535,22 +532,18 @@ export default function Home() {
                         setExportingPost(true);
                         await handleDownloadCard(
                           postCardRef.current,
-                          "probabify_historia_periodo.png"
+                          "probabify_story_period.png"
                         );
                         setExportingPost(false);
                       }}
                       disabled={exportingPost}
                       className="px-3 py-1.5 rounded-full bg-sky-500 hover:bg-sky-400 text-xs font-semibold text-slate-950 transition disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      {exportingPost
-                        ? "Exporting..."
-                        : "Export story for this period"}
+                      {exportingPost ? "Exporting..." : "Export story for this period"}
                     </button>
                   </div>
 
-                  {exportError && (
-                    <p className="text-red-300 text-sm">{exportError}</p>
-                  )}
+                  {exportError && <p className="text-red-300 text-sm">{exportError}</p>}
 
                   {/* CARD EXPORTABLE */}
                   <div ref={postCardRef} style={storyOuterStyle}>
@@ -595,7 +588,7 @@ export default function Home() {
                             {probResult.probability}%
                           </span>
                           <span style={{ fontSize: 12, color: "#E2E8F0" }}>
-                            based on your Spotify
+                            according to your Spotify
                           </span>
                         </div>
                       </div>
@@ -624,7 +617,7 @@ export default function Home() {
                           marginBottom: 8,
                         }}
                       >
-                        Tracks that support it most
+                        Tracks that support it the most
                       </p>
 
                       <div
@@ -750,9 +743,7 @@ export default function Home() {
                                   color: "#F8FAFC",
                                 }}
                               >
-                                {r.probability === null
-                                  ? "—"
-                                  : `${r.probability}%`}
+                                {r.probability === null ? "—" : `${r.probability}%`}
                               </span>
                             </div>
                           ))}
@@ -773,7 +764,7 @@ export default function Home() {
                       <span style={{ fontWeight: 700, color: "#CBD5E1" }}>
                         Probabify
                       </span>{" "}
-                      using your top Spotify tracks.
+                      using your top Spotify music.
                     </div>
                   </div>
                 </div>
@@ -786,12 +777,10 @@ export default function Home() {
           <section className="bg-slate-950/60 rounded-2xl p-4 md:p-5 flex flex-col gap-4 border border-slate-800/60">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold">
-                  Compare this question by periods
-                </h2>
+                <h2 className="text-lg font-semibold">Compare this question across periods</h2>
                 <p className="text-sm text-slate-200">
-                  We calculate the same question using your music from the last
-                  few weeks, the last 6 months, and all time.
+                  We calculate the same question using your music from the last few
+                  weeks, the last 6 months, and all time.
                 </p>
               </div>
             </div>
@@ -823,9 +812,7 @@ export default function Home() {
                         Not enough data for this period.
                       </p>
                     ) : (
-                      <span className="text-3xl font-bold">
-                        {r.probability}%
-                      </span>
+                      <span className="text-3xl font-bold">{r.probability}%</span>
                     )}
                   </div>
                 ))}
