@@ -19,7 +19,7 @@ export async function GET(req: Request) {
 
     // 🔁 Leer periodo desde querystring
     const url = new URL(req.url);
-    const range = url.searchParams.get("range") ?? "short_term";
+    const range = url.searchParams.get("range") ?? "short_term"; // default
 
     const validRanges = ["short_term", "medium_term", "long_term"];
     const timeRange = validRanges.includes(range) ? range : "short_term";
@@ -36,6 +36,7 @@ export async function GET(req: Request) {
 
     // 🚨 Token expirado
     if (spotifyRes.status === 401) {
+      console.error("⚠️ Spotify: token expirado");
       return NextResponse.json(
         {
           error:
@@ -59,24 +60,17 @@ export async function GET(req: Request) {
 
     // 🎵 Normalizar tracks
     const tracks =
-      (data.items || []).map((item: any) => {
-        const rawImage =
+      (data.items || []).map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        artist: item.artists?.map((a: any) => a.name).join(", ") ?? "",
+        album: item.album?.name ?? "",
+        image:
           item.album?.images?.[0]?.url ??
           item.album?.images?.[1]?.url ??
-          null;
-
-        return {
-          id: item.id,
-          name: item.name,
-          artist: item.artists?.map((a: any) => a.name).join(", ") ?? "",
-          album: item.album?.name ?? "",
-          // ✅ PROXY DE IMAGEN (clave para iOS)
-          image: rawImage
-            ? `/api/image?url=${encodeURIComponent(rawImage)}`
-            : null,
-          previewUrl: item.preview_url ?? null,
-        };
-      }) ?? [];
+          null,
+        previewUrl: item.preview_url ?? null,
+      })) ?? [];
 
     return NextResponse.json({ tracks });
   } catch (error: any) {
