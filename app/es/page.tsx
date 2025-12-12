@@ -427,7 +427,7 @@ export default function Home() {
           <h1 className="text-4xl md:text-5xl font-bold mb-3">Probabify</h1>
           <p className="text-slate-100 max-w-xl mx-auto">
             Conecta tu Spotify, elige una pregunta y te devolvemos una
-            probabilidad inventada (pero coherente con tu música) lista para
+            probabilidad calculada con IA (pero coherente con tu música) lista para
             post.
           </p>
         </header>
