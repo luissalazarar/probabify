@@ -386,7 +386,9 @@ export default function Home() {
             {loadingTracks && (
               <p className="text-slate-300 text-sm">Cargando canciones...</p>
             )}
-            {errorTracks && <p className="text-red-400 text-sm">{errorTracks}</p>}
+            {errorTracks && (
+              <p className="text-red-400 text-sm">{errorTracks}</p>
+            )}
 
             {!loadingTracks && !errorTracks && tracks.length === 0 && (
               <p className="text-slate-400 text-sm">
@@ -452,7 +454,9 @@ export default function Home() {
                   : "Calcular probabilidad y ver por periodos"}
               </button>
 
-              {probError && <p className="text-red-400 text-sm mt-1">{probError}</p>}
+              {probError && (
+                <p className="text-red-400 text-sm mt-1">{probError}</p>
+              )}
             </div>
 
             {probResult && (
@@ -547,9 +551,6 @@ export default function Home() {
                       {PERIOD_DETAILS[selectedRange].subtitle}
                     </div>
 
-                    {/* ✅ Ajuste: agregamos una “línea en blanco sacrificable”
-                        después del summary. Si algo se corta, se corta ese espacio
-                        y no el texto. */}
                     <div
                       style={{
                         display: "flex",
@@ -559,7 +560,7 @@ export default function Home() {
                         minHeight: 0,
                       }}
                     >
-                      {/* Descripción primero (ocupa el espacio restante) */}
+                      {/* ✅ LÍNEA EN BLANCO “SACRIFICABLE” AL FINAL */}
                       <p
                         style={{
                           fontSize: 12,
@@ -570,15 +571,12 @@ export default function Home() {
                           WebkitLineClamp: 7,
                           WebkitBoxOrient: "vertical",
                           overflow: "hidden",
+                          whiteSpace: "pre-line",
                         }}
                       >
-                        {probResult.summary}
+                        {probResult.summary + "\n"}
                       </p>
 
-                      {/* ✅ línea en blanco “sacrificable” */}
-                      <div style={{ height: 12, flexShrink: 0 }} />
-
-                      {/* Bloque fijo: pregunta + % */}
                       <div
                         style={{
                           flexShrink: 0,
@@ -632,11 +630,21 @@ export default function Home() {
                         Canciones que más lo avalan
                       </p>
 
-                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 10,
+                        }}
+                      >
                         {tracks.slice(0, 3).map((track) => (
                           <div
                             key={track.id}
-                            style={{ display: "flex", alignItems: "center", gap: 12 }}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 12,
+                            }}
                           >
                             <div
                               style={{
@@ -662,7 +670,12 @@ export default function Home() {
                               ) : null}
                             </div>
 
-                            <div style={{ display: "flex", flexDirection: "column" }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                              }}
+                            >
                               <span
                                 style={{
                                   fontSize: 13,
@@ -681,7 +694,6 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Footer pegado abajo */}
                     <div
                       style={{
                         marginTop: "auto",
