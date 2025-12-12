@@ -547,9 +547,19 @@ export default function Home() {
                       {PERIOD_DETAILS[selectedRange].subtitle}
                     </div>
 
-                    {/* ✅ Ajuste: descripción primero + “pregunta + %” grande; sin espaciador */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                      {/* Descripción primero */}
+                    {/* ✅ Ajuste: el texto NO debe quedar debajo del bloque grande
+                        -> Reservamos una altura fija para el bloque “pregunta + %”
+                        -> El summary se clampa con base en ese espacio */}
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 12,
+                        flex: 1,
+                        minHeight: 0,
+                      }}
+                    >
+                      {/* Descripción primero (ocupa el espacio restante) */}
                       <p
                         style={{
                           fontSize: 12,
@@ -557,7 +567,7 @@ export default function Home() {
                           color: "#E2E8F0",
                           marginTop: 2,
                           display: "-webkit-box",
-                          WebkitLineClamp: 10,
+                          WebkitLineClamp: 7, // ✅ menos líneas para que nunca choque
                           WebkitBoxOrient: "vertical",
                           overflow: "hidden",
                         }}
@@ -565,23 +575,43 @@ export default function Home() {
                         {probResult.summary}
                       </p>
 
-                      {/* Pregunta + % grande */}
-                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {/* Bloque fijo: pregunta + % (nunca se “sube” encima) */}
+                      <div
+                        style={{
+                          flexShrink: 0,
+                          paddingTop: 2,
+                        }}
+                      >
                         <p
                           style={{
                             fontSize: 12,
                             color: "#E2E8F0",
                             opacity: 0.9,
+                            marginBottom: 8,
                           }}
                         >
                           {probResult.question}
                         </p>
 
-                        <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                          <span style={{ fontSize: 56, fontWeight: 800, lineHeight: "56px" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "baseline",
+                            gap: 10,
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: 56,
+                              fontWeight: 800,
+                              lineHeight: "56px",
+                            }}
+                          >
                             {probResult.probability}%
                           </span>
-                          <span style={{ fontSize: 12, color: "#E2E8F0" }}>según tu Spotify</span>
+                          <span style={{ fontSize: 12, color: "#E2E8F0" }}>
+                            según tu Spotify
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -648,7 +678,7 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* ✅ Ajuste clave: footer pegado abajo para que no se corte */}
+                    {/* ✅ Footer pegado abajo */}
                     <div
                       style={{
                         marginTop: "auto",
