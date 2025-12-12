@@ -1,34 +1,22 @@
-// app/[locale]/layout.tsx
 import type { Metadata } from "next";
-import "../globals.css";
+import "./globals.css";
 import { SessionProvider } from "@/components/SessionProvider";
 import Link from "next/link";
-
-type Locale = "es" | "en";
 
 export const metadata: Metadata = {
   title: "Probabify",
   description: "Probabilidades según tu Spotify",
 };
 
-// (Opcional pero recomendado para locale)
-export function generateStaticParams() {
-  return [{ locale: "es" }, { locale: "en" }];
-}
-
-export default async function LocaleLayout({
+export default function RootLayout({
   children,
-  params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
-  const safeLocale: Locale = locale === "en" ? "en" : "es";
-
   return (
-    <html lang={safeLocale}>
+    <html lang="es">
       <body>
+        {/* navegación idioma + privacidad */}
         <div
           style={{
             position: "fixed",
@@ -40,25 +28,25 @@ export default async function LocaleLayout({
           }}
         >
           <Link
-            href={`/${safeLocale}/privacy-policy`}
+            href="/es/privacy-policy"
             style={{
               fontSize: 12,
               textDecoration: "none",
               color: "rgba(255,255,255,0.85)",
             }}
           >
-            {safeLocale === "es" ? "Privacidad" : "Privacy"}
+            Privacidad
           </Link>
 
           <Link
-            href={safeLocale === "es" ? "/en" : "/es"}
+            href="/en"
             style={{
               fontSize: 12,
               textDecoration: "none",
               color: "rgba(255,255,255,0.85)",
             }}
           >
-            {safeLocale === "es" ? "EN" : "ES"}
+            EN
           </Link>
         </div>
 
