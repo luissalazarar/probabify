@@ -4,26 +4,31 @@ import "../globals.css";
 import { SessionProvider } from "@/components/SessionProvider";
 import Link from "next/link";
 
+type Locale = "es" | "en";
+
 export const metadata: Metadata = {
   title: "Probabify",
   description: "Probabilidades según tu Spotify",
 };
 
-type Locale = "es" | "en";
+// (Opcional pero recomendado para locale)
+export function generateStaticParams() {
+  return [{ locale: "es" }, { locale: "en" }];
+}
 
-export default function LocaleLayout({
+export default async function LocaleLayout({
   children,
   params,
 }: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  const safeLocale: Locale = params.locale === "en" ? "en" : "es";
+  const { locale } = await params;
+  const safeLocale: Locale = locale === "en" ? "en" : "es";
 
   return (
     <html lang={safeLocale}>
       <body>
-        {/* nav mínima arriba derecha */}
         <div
           style={{
             position: "fixed",
@@ -45,7 +50,6 @@ export default function LocaleLayout({
             {safeLocale === "es" ? "Privacidad" : "Privacy"}
           </Link>
 
-          {/* switch idioma */}
           <Link
             href={safeLocale === "es" ? "/en" : "/es"}
             style={{

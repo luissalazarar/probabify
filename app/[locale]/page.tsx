@@ -1,4 +1,4 @@
-// app/[locale]/page.tsx
+// app/page.tsx
 "use client";
 
 import { useEffect, useRef, useState, useMemo } from "react";
