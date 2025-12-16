@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { SessionProvider } from "@/components/SessionProvider";
 import TopNav from "@/components/TopNav";
+import Adsense from "@/components/Adsense";
 
 export const metadata: Metadata = {
   title: "Probabify",
@@ -15,16 +16,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <head>
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4130755623732766"
-          crossOrigin="anonymous"
-        ></script>
-      </head>
       <body>
         <TopNav />
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider>
+          {/* ✅ Carga el script SOLO si hay sesión */}
+          <Adsense />
+          {children}
+        </SessionProvider>
       </body>
     </html>
   );
