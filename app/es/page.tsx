@@ -1,4 +1,4 @@
-// app/es/page.tsx
+// app/en/page.tsx
 "use client";
 
 import { useEffect, useRef, useState, useMemo } from "react";
@@ -46,9 +46,9 @@ const PERIOD_DETAILS: Record<
 > = {
   short_term: {
     label: "Últimas semanas",
-    subtitle: "Estado reciente",
+    subtitle: "Ánimo reciente",
     description:
-      "Este periodo refleja lo que has escuchado más recientemente. Se enfoca en tu estado actual y tendencias inmediatas.",
+      "Este periodo refleja lo que escuchaste más recientemente. Se enfoca en tu estado emocional actual y tendencias inmediatas.",
   },
   medium_term: {
     label: "Últimos 6 meses",
@@ -60,7 +60,7 @@ const PERIOD_DETAILS: Record<
     label: "Todo el tiempo",
     subtitle: "Tu esencia musical",
     description:
-      "Este rango captura tu ADN musical: lo que más has escuchado en general y lo que mejor te define como oyente.",
+      "Este rango captura tu ADN musical: lo que más te ha gustado en general y lo que mejor te define como oyente.",
   },
 };
 
@@ -213,7 +213,7 @@ export default function Home() {
         const res = await fetch(`/api/spotify/top-tracks?range=${selectedRange}`);
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || "Error al traer las canciones");
+          throw new Error(data.error || "Error al obtener canciones");
         }
 
         const data = await res.json();
@@ -233,8 +233,8 @@ export default function Home() {
   async function handleCalculateAll() {
     try {
       if (!session) {
-        setProbError("Conecta tu Spotify primero.");
-        setComparisonError("Conecta tu Spotify primero.");
+        setProbError("Primero conecta tu Spotify.");
+        setComparisonError("Primero conecta tu Spotify.");
         return;
       }
 
@@ -386,14 +386,6 @@ export default function Home() {
     }
   }
 
-  if (status === "loading") {
-    return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#054d61] to-[#049990] text-slate-100">
-        <p>Cargando sesión...</p>
-      </main>
-    );
-  }
-
   // Styles “safe” (HEX/RGB) for html-to-image
   const storyOuterStyle: React.CSSProperties = {
     width: 360,
@@ -426,8 +418,8 @@ export default function Home() {
         <header className="text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-3">Probabify</h1>
           <p className="text-slate-100 max-w-xl mx-auto">
-            Conecta tu Spotify, elige una pregunta y te devolveremos una probabilidad calculada por IA
-            (inventada, pero coherente con tu música) lista para compartir.
+            Conecta tu Spotify, elige una pregunta y te devolvemos una probabilidad calculada con IA
+            (inventada, pero coherente con tu música) lista para post.
           </p>
         </header>
 
@@ -440,19 +432,20 @@ export default function Home() {
                   ¿Qué es Probabify?
                 </h2>
                 <p className="text-slate-200 mt-2 leading-relaxed">
-                  Probabify es una herramienta divertida que convierte tu forma de escuchar Spotify en
-                  una “probabilidad” compartible. Tú eliges una pregunta (amor, hábitos, ánimo,
-                  decisiones) y generamos un número con una explicación corta que calza con tus top tracks.
+                  Probabify es una herramienta divertida que convierte tu escucha en Spotify en una
+                  respuesta de “probabilidad” lista para compartir. Tú eliges una pregunta (amor, hábitos,
+                  ánimo, decisiones) y generamos un número más una explicación corta que encaja con
+                  tus canciones top.
                 </p>
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold">¿Cómo funciona?</h3>
+                <h3 className="text-lg font-semibold">Cómo funciona</h3>
                 <ul className="mt-2 space-y-2 text-slate-200">
                   <li className="flex gap-2">
                     <span className="text-emerald-300 font-semibold">1.</span>
                     <span>
-                      Conecta Spotify para leer tus canciones más escuchadas en distintos periodos.
+                      Conecta Spotify para que podamos leer tus canciones top en distintos rangos de tiempo.
                     </span>
                   </li>
                   <li className="flex gap-2">
@@ -464,13 +457,13 @@ export default function Home() {
                   <li className="flex gap-2">
                     <span className="text-emerald-300 font-semibold">3.</span>
                     <span>
-                      Calculamos una probabilidad + resumen y destacamos canciones “representativas”.
+                      Calculamos una probabilidad + resumen y destacamos canciones que la “respaldan”.
                     </span>
                   </li>
                   <li className="flex gap-2">
                     <span className="text-emerald-300 font-semibold">4.</span>
                     <span>
-                      Exporta la story como PNG y súbela donde quieras.
+                      Exporta la story como PNG y publícala donde quieras.
                     </span>
                   </li>
                 </ul>
@@ -482,16 +475,16 @@ export default function Home() {
                   <ul className="text-sm text-slate-200 space-y-1">
                     <li>• “¿Voy a superar a mi ex?”</li>
                     <li>• “¿Estoy por renunciar a mi trabajo?”</li>
-                    <li>• “¿Mi ánimo está mejorando?”</li>
+                    <li>• “¿Está mejorando mi ánimo?”</li>
                     <li>• “¿Qué tan consistente es esto en el tiempo?”</li>
                   </ul>
                 </div>
 
                 <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
-                  <p className="text-sm font-semibold mb-1">Nota</p>
+                  <p className="text-sm font-semibold mb-1">Notas</p>
                   <p className="text-sm text-slate-200 leading-relaxed">
-                    El resultado es intencionalmente “inventado” para entretener — pero se genera de forma
-                    consistente con tu perfil musical, así que se siente personal y compartible.
+                    El resultado es intencionalmente “inventado” por diversión — pero se genera de una forma
+                    consistente en base a tu perfil musical, para que se sienta personal y compartible.
                   </p>
                 </div>
               </div>
@@ -501,9 +494,9 @@ export default function Home() {
                 <h3 className="text-lg font-semibold">Preguntas frecuentes</h3>
                 <div className="mt-3 space-y-3 text-slate-200">
                   <div>
-                    <p className="text-sm font-semibold">¿Probabify es “exacto”?</p>
+                    <p className="text-sm font-semibold">¿Probabify es “preciso”?</p>
                     <p className="text-sm leading-relaxed">
-                      No. Es un resultado divertido y compartible generado con tus patrones de escucha en Spotify.
+                      No. Es un resultado divertido y compartible generado a partir de tus patrones de escucha en Spotify.
                       El objetivo es entretenimiento + una story personalizada.
                     </p>
                   </div>
@@ -511,22 +504,22 @@ export default function Home() {
                   <div>
                     <p className="text-sm font-semibold">¿Qué datos usan?</p>
                     <p className="text-sm leading-relaxed">
-                      Tus top tracks de Spotify para el periodo seleccionado (últimas semanas, últimos 6 meses o todo el tiempo).
-                      Con esa lista se genera la probabilidad y el resumen.
+                      Tus canciones top de Spotify para el rango de tiempo seleccionado (últimas semanas, últimos 6 meses o todo el tiempo).
+                      La app usa esa lista para generar la probabilidad y el resumen.
                     </p>
                   </div>
 
                   <div>
                     <p className="text-sm font-semibold">¿Publican algo en mi Spotify?</p>
                     <p className="text-sm leading-relaxed">
-                      No. La app solo lee tus top tracks (con tu permiso) y genera una imagen descargable.
+                      No. La app solo lee tus canciones top (con tu permiso) y genera una imagen descargable.
                     </p>
                   </div>
 
                   <div>
                     <p className="text-sm font-semibold">¿Puedo pedir nuevas preguntas o features?</p>
                     <p className="text-sm leading-relaxed">
-                      Sí. Escríbenos al contacto de abajo e incluye ejemplos de preguntas que quieras que agreguemos.
+                      Sí. Manda tus ideas al contacto de abajo e incluye un par de preguntas de ejemplo que quieras agregar.
                     </p>
                   </div>
                 </div>
@@ -535,7 +528,7 @@ export default function Home() {
               <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
                 <p className="text-sm font-semibold mb-1">Contacto</p>
                 <p className="text-sm text-slate-200">
-                  Consultas, feedback o alianzas:{" "}
+                  Preguntas, feedback o alianzas:{" "}
                   <a
                     href="mailto:contact@sarecorp.com"
                     className="text-emerald-300 hover:text-emerald-200 underline underline-offset-2"
@@ -554,7 +547,7 @@ export default function Home() {
               onClick={() => signIn("spotify")}
               className="px-6 py-3 rounded-full bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-semibold transition"
             >
-              Conectar con Spotify
+              {status === "loading" ? "Cargando sesión..." : "Conectar con Spotify"}
             </button>
           )}
 
@@ -607,7 +600,7 @@ export default function Home() {
         {session && (
           <section className="bg-slate-950/60 rounded-2xl p-4 md:p-5 border border-slate-800/60">
             <h2 className="text-lg font-semibold mb-2">
-              Tus top tracks ({PERIOD_DETAILS[selectedRange].label})
+              Tus canciones top ({PERIOD_DETAILS[selectedRange].label})
             </h2>
 
             {loadingTracks && (
@@ -619,7 +612,8 @@ export default function Home() {
 
             {!loadingTracks && !errorTracks && tracks.length === 0 && (
               <p className="text-slate-200 text-sm">
-                No encontramos top tracks para este periodo. Escucha algo en Spotify y vuelve a intentar.
+                No pudimos encontrar canciones top para este periodo. Escucha algo
+                en Spotify e inténtalo de nuevo.
               </p>
             )}
 
@@ -710,7 +704,7 @@ export default function Home() {
 
                   <div>
                     <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">
-                      Canciones más representativas
+                      Canciones que más lo respaldan (representativas)
                     </p>
                     <ul className="space-y-2">
                       {supportingTracks.map((track) => (
@@ -737,8 +731,8 @@ export default function Home() {
                 <div className="mt-6 border-t border-slate-800 pt-4 flex flex-col gap-3">
                   <div className="flex items-center justify-between">
                     <p className="text-xs uppercase tracking-wide text-slate-400">
-                      Vista previa del post - En dispositivos móviles, las imágenes de los álbumes pueden no renderizarse correctamente en la primera descarga.
-                      Si esto ocurre, por favor intenta exportar la imagen nuevamente. Estamos trabajando activamente en solucionarlo.
+                      Vista previa del post - En dispositivos móviles, las imágenes de álbum pueden no renderizarse correctamente en la primera descarga.
+                      Si pasa, intenta exportar la imagen otra vez. Estamos trabajando activamente en una solución.
                     </p>
 
                     <button
@@ -747,7 +741,7 @@ export default function Home() {
                         setExportingPost(true);
                         await handleDownloadCard(
                           postCardRef.current,
-                          "probabify_story_periodo.png"
+                          "probabify_story_period.png"
                         );
                         setExportingPost(false);
                       }}
@@ -830,7 +824,7 @@ export default function Home() {
                           marginBottom: 8,
                         }}
                       >
-                        Canciones más representativas
+                        Canciones que más lo respaldan
                       </p>
 
                       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -950,7 +944,7 @@ export default function Home() {
                       <span style={{ fontWeight: 700, color: "#CBD5E1" }}>
                         Probabify
                       </span>{" "}
-                      usando tu top de Spotify.
+                      usando tu música top de Spotify.
                     </div>
                   </div>
                 </div>
@@ -963,9 +957,10 @@ export default function Home() {
           <section className="bg-slate-950/60 rounded-2xl p-4 md:p-5 flex flex-col gap-4 border border-slate-800/60">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold">Compara la misma pregunta por periodo</h2>
+                <h2 className="text-lg font-semibold">Compara esta pregunta por periodo</h2>
                 <p className="text-sm text-slate-200">
-                  Calculamos la misma pregunta usando tu música de las últimas semanas, los últimos 6 meses y todo el tiempo.
+                  Calculamos la misma pregunta usando tu música de las últimas semanas,
+                  los últimos 6 meses y todo el tiempo.
                 </p>
               </div>
             </div>
