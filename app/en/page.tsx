@@ -743,6 +743,13 @@ export default function Home() {
                       Post preview
                     </p>
 
+                    {/* ✅ ONLY ADDITION */}
+              <p className="text-xs text-slate-300 leading-relaxed">
+                On mobile devices, album images may not render correctly on the first download.
+                If this happens, please try exporting the image again. We are actively working on a fix :)
+              </p>
+            </div>
+
                     <button
                       type="button"
                       onClick={async () => {
