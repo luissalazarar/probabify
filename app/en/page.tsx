@@ -498,6 +498,42 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* ✅ Added: FAQs (still pre-login) */}
+              <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+                <h3 className="text-lg font-semibold">FAQ</h3>
+                <div className="mt-3 space-y-3 text-slate-200">
+                  <div>
+                    <p className="text-sm font-semibold">Is Probabify “accurate”?</p>
+                    <p className="text-sm leading-relaxed">
+                      No. It is a fun, shareable result generated from your Spotify listening patterns.
+                      The goal is entertainment + a personalized story card.
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-semibold">What data do you use?</p>
+                    <p className="text-sm leading-relaxed">
+                      Your Spotify top tracks for the selected time range (last few weeks, last 6 months, or all time).
+                      The app uses that list to generate the probability and summary.
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-semibold">Do you post anything to my Spotify?</p>
+                    <p className="text-sm leading-relaxed">
+                      No. The app only reads your top tracks (with your permission) and generates a downloadable image.
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-semibold">Can I request new questions or features?</p>
+                    <p className="text-sm leading-relaxed">
+                      Yes. Send your ideas to the contact below and include a couple example questions you want added.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
                 <p className="text-sm font-semibold mb-1">Contact</p>
                 <p className="text-sm text-slate-200">
