@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { SessionProvider } from "@/components/SessionProvider";
 import TopNav from "@/components/TopNav";
-import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Probabify",
@@ -17,13 +16,12 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
-        <Script
-          id="adsbygoogle-init"
+        {/* Google AdSense verification script */}
+        <script
           async
-          strategy="beforeInteractive"
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4130755623732766"
           crossOrigin="anonymous"
-        />
+        ></script>
       </head>
       <body>
         <TopNav />
