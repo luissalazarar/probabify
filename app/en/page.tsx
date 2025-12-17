@@ -1,4 +1,4 @@
-// app/page.tsx
+// app/en/page.tsx
 "use client";
 
 import { useEffect, useRef, useState, useMemo } from "react";
@@ -431,6 +431,88 @@ export default function Home() {
 
           </p>
         </header>
+
+        {/* ✅ Added: pre-login content so the page has indexable value before auth */}
+        {!session && (
+          <section className="bg-slate-950/50 rounded-2xl p-5 md:p-6 border border-slate-800/60">
+            <div className="flex flex-col gap-5">
+              <div>
+                <h2 className="text-xl md:text-2xl font-semibold">
+                  What is Probabify?
+                </h2>
+                <p className="text-slate-200 mt-2 leading-relaxed">
+                  Probabify is a playful tool that turns your Spotify listening into a
+                  shareable “probability” answer. You pick a question (love, habits, mood,
+                  decisions), and we generate a number plus a short explanation that matches
+                  your top tracks.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold">How it works</h3>
+                <ul className="mt-2 space-y-2 text-slate-200">
+                  <li className="flex gap-2">
+                    <span className="text-emerald-300 font-semibold">1.</span>
+                    <span>
+                      Connect Spotify so we can read your top tracks for different time ranges.
+                    </span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-emerald-300 font-semibold">2.</span>
+                    <span>
+                      Choose a question and a period (last weeks, last 6 months, or all time).
+                    </span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-emerald-300 font-semibold">3.</span>
+                    <span>
+                      We compute a probability + summary, and highlight tracks that “support” it.
+                    </span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-emerald-300 font-semibold">4.</span>
+                    <span>
+                      Export the story card as PNG and post it anywhere.
+                    </span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+                  <p className="text-sm font-semibold mb-1">Use cases</p>
+                  <ul className="text-sm text-slate-200 space-y-1">
+                    <li>• “Will I get over my ex?”</li>
+                    <li>• “Am I about to quit my job?”</li>
+                    <li>• “Is my mood improving?”</li>
+                    <li>• “How consistent is this across time?”</li>
+                  </ul>
+                </div>
+
+                <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+                  <p className="text-sm font-semibold mb-1">Notes</p>
+                  <p className="text-sm text-slate-200 leading-relaxed">
+                    The result is intentionally “made up” for fun — but it is generated in a
+                    consistent way based on your music profile, so it feels personal and shareable.
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+                <p className="text-sm font-semibold mb-1">Contact</p>
+                <p className="text-sm text-slate-200">
+                  Questions, feedback, or partnerships:{" "}
+                  <a
+                    href="mailto:contact@sarecorp.com"
+                    className="text-emerald-300 hover:text-emerald-200 underline underline-offset-2"
+                  >
+                    contact@sarecorp.com
+                  </a>
+                </p>
+              </div>
+            </div>
+          </section>
+        )}
 
         <section className="flex flex-col items-center gap-3">
           {!session && (

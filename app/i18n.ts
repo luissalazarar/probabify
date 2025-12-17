@@ -1,3 +1,4 @@
+// app/i18n.ts
 export type Locale = "es" | "en";
 
 export const STRINGS: Record<Locale, Record<string, string>> = {
