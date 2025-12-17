@@ -386,14 +386,6 @@ export default function Home() {
     }
   }
 
-  if (status === "loading") {
-    return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#054d61] to-[#049990] text-slate-100">
-        <p>Loading session...</p>
-      </main>
-    );
-  }
-
   // Styles “safe” (HEX/RGB) for html-to-image
   const storyOuterStyle: React.CSSProperties = {
     width: 360,
@@ -556,7 +548,7 @@ export default function Home() {
               onClick={() => signIn("spotify")}
               className="px-6 py-3 rounded-full bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-semibold transition"
             >
-              Connect with Spotify
+              {status === "loading" ? "Loading Session" : "Connect with Spotify"}
             </button>
           )}
 
