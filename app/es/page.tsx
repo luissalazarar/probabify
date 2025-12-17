@@ -737,7 +737,8 @@ export default function Home() {
                 <div className="mt-6 border-t border-slate-800 pt-4 flex flex-col gap-3">
                   <div className="flex items-center justify-between">
                     <p className="text-xs uppercase tracking-wide text-slate-400">
-                      Vista previa del post
+                      Vista previa del post - En dispositivos móviles, las imágenes de los álbumes pueden no renderizarse correctamente en la primera descarga.
+                      Si esto ocurre, por favor intenta exportar la imagen nuevamente. Estamos trabajando activamente en solucionarlo.
                     </p>
 
                     <button
