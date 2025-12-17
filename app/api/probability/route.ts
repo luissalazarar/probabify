@@ -20,7 +20,7 @@ const allowedQuestions = [
   "¿Cuál es la probabilidad de superar a mi ex?",
   "¿Cuál es la probabilidad de renunciar a mi trabajo?",
   "¿Cuál es la probabilidad de ser tóxico?",
-  "¿Cuál es la probabilidad de entrar en una relacion tóxica?",
+  "¿Cuál es la probabilidad de entrar en una relación tóxica?",
   "¿Cuál es la probabilidad de empezar a valorarme?",
 
   // EN
