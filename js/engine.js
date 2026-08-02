@@ -2,6 +2,8 @@ import { GAME_CONFIG } from "../data/config.js";
 import { ORIGINS } from "../data/origins.js";
 import { EVENTS } from "../data/events/index.js";
 import { ENDINGS } from "../data/endings.js";
+import { EVENT_CAREER_GATES } from "../data/eventLogic.js";
+import { BACKGROUNDS, backgroundsForOrigin } from "../data/backgrounds.js";
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const clamp = (value, min = -Infinity, max = Infinity) => Math.max(min, Math.min(max, value));
@@ -10,11 +12,28 @@ const ROLE_RANK = {
   "Creador de contenido político": 1, "Dirigente vecinal": 1, "Asesor independiente": 2,
   "Asesora parlamentaria": 2, "Asesor de imagen": 2, "Vocero político": 3, "Regidor distrital": 3,
   "Secretario partidario": 3, "Operador mediático": 3, "Alcalde": 4, "Congresista": 5,
+  "Diputado de la República": 5, "Diputada de la República": 5, "Senador de la República": 6, "Senadora de la República": 6,
   "Gobernador regional": 6, "Embajador": 6, "Ministro de Estado": 7, "Premier": 8,
   "Exministro": 7, "Presidente del Congreso": 8, "Vicepresidente del Perú": 8, "Presidente del Perú": 10,
   "Expresidente del Perú": 10,
 };
 const ROLE_CANONICAL = { "Exministro": "Ministro de Estado" };
+const TERM_END_ROLES = {
+  "Alcalde": { role: "Exalcalde", removeTags: ["cargo-ejecutivo-local"], addTag: "fue-alcalde" },
+  "Gobernador regional": { role: "Exgobernador regional", removeTags: ["poder-regional"], addTag: "fue-gobernador" },
+  "Congresista": { role: "Excongresista", removeTags: ["congresista"], addTag: "fue-congresista" },
+  "Diputado de la República": { role: "Exdiputado de la República", removeTags: ["diputado", "congresista"], addTag: "fue-congresista" },
+  "Diputada de la República": { role: "Exdiputada de la República", removeTags: ["diputado", "congresista"], addTag: "fue-congresista" },
+  "Senador de la República": { role: "Exsenador de la República", removeTags: ["senador", "congresista"], addTag: "fue-congresista" },
+  "Senadora de la República": { role: "Exsenadora de la República", removeTags: ["senador", "congresista"], addTag: "fue-congresista" },
+  "Vicepresidente del Perú": { role: "Exvicepresidente del Perú", addTag: "fue-vicepresidente" },
+  "Premier": { role: "Expremier", addTag: "fue-premier" },
+  "Embajador": { role: "Exembajador", addTag: "fue-embajador" },
+};
+const PRESIDENT_EXIT_EVENTS = new Set(["eleccion-nacional", "mocion-vacancia", "fiscalia-cerca", "investigacion-avanzada", "orden-captura"]);
+const ACTIVE_LOCAL_ROLES = new Set(["Regidor distrital", "Alcalde", "Gobernador regional"]);
+const ACTIVE_NATIONAL_ROLES = new Set(["Congresista", "Diputado de la República", "Diputada de la República", "Senador de la República", "Senadora de la República", "Ministro de Estado", "Premier", "Vicepresidente del Perú", "Presidente del Perú", "Presidente del Congreso"]);
+const ACTIVE_PUBLIC_OFFICE_ROLES = new Set([...ACTIVE_LOCAL_ROLES, ...ACTIVE_NATIONAL_ROLES, "Embajador"]);
 
 function hashSeed(value) {
   let hash = 2166136261;
@@ -40,6 +59,7 @@ export class GameEngine {
   constructor({ seed = "probabify" } = {}) {
     this.config = GAME_CONFIG;
     this.origins = ORIGINS;
+    this.backgrounds = BACKGROUNDS;
     this.events = new Map(EVENTS.map((event) => [event.id, event]));
     this.endings = [...ENDINGS].sort((a, b) => b.priority - a.priority);
     this.seed = String(seed || "probabify");
@@ -68,6 +88,18 @@ export class GameEngine {
     };
 
     this.origins.forEach((origin) => collect(origin.id, "origen"));
+    this.backgrounds.forEach((background) => {
+      if (!background.id || !this.origins.some((origin) => origin.id === background.originId)) throw new Error(`Antecedente inválido: «${background.id}».`);
+      if (!this.events.has(background.initialEvent)) throw new Error(`El antecedente ${background.id} apunta a un evento inexistente.`);
+      const initialEvent = this.events.get(background.initialEvent);
+      if (![initialEvent.requirements?.background].flat().includes(background.id)) throw new Error(`El evento inicial ${background.initialEvent} no está limitado al antecedente ${background.id}.`);
+      for (const [eventId, multiplier] of Object.entries(background.eventWeights ?? {})) {
+        if (!this.events.has(eventId)) throw new Error(`El antecedente ${background.id} pondera el evento inexistente ${eventId}.`);
+        if (!(Number(multiplier) > 0)) throw new Error(`El antecedente ${background.id} tiene una ponderación inválida para ${eventId}.`);
+      }
+      if (ids.has(background.id)) throw new Error(`Identificador duplicado de antecedente: «${background.id}».`);
+      ids.add(background.id);
+    });
     EVENTS.forEach((event) => {
       collect(event.id, "evento");
       if (!event.options?.length) throw new Error(`El evento ${event.id} no tiene opciones.`);
@@ -80,9 +112,11 @@ export class GameEngine {
         });
       });
     });
+    for (const eventId of Object.keys(EVENT_CAREER_GATES)) if (!this.events.has(eventId)) throw new Error(`Regla narrativa sin evento: «${eventId}».`);
     this.endings.forEach((ending) => collect(ending.id, "final"));
     this.origins.forEach((origin) => {
       if (!this.events.has(origin.initialEvent)) throw new Error(`El origen ${origin.id} apunta a un evento inexistente.`);
+      if (backgroundsForOrigin(origin.id).length < 2) throw new Error(`El origen ${origin.id} necesita al menos dos antecedentes distintos.`);
       for (const eventId of origin.exclusiveEvents ?? []) {
         if (!this.events.has(eventId)) throw new Error(`El origen ${origin.id} declara el evento inexistente ${eventId}.`);
       }
@@ -107,7 +141,7 @@ export class GameEngine {
 
   buildInitialHidden(origin) {
     const hidden = {};
-    for (const key of Object.keys(this.config.hiddenStats)) hidden[key] = 50;
+    for (const key of Object.keys(this.config.hiddenStats)) hidden[key] = key === "vacancyRisk" ? 0 : 50;
     for (const [key, value] of Object.entries(origin.hidden ?? {})) hidden[key] = this.sampleValue(value, 50);
     return hidden;
   }
@@ -135,49 +169,68 @@ export class GameEngine {
     return { national, contexts };
   }
 
-  start(originId) {
+  getBackgrounds(originId) { return clone(backgroundsForOrigin(originId)); }
+
+  start(originId, { characterName = "Alex", backgroundId = null } = {}) {
     const origin = this.origins.find((item) => item.id === originId);
     if (!origin) throw new Error("Origen no encontrado.");
+    const availableBackgrounds = backgroundsForOrigin(origin.id);
+    const background = backgroundId ? availableBackgrounds.find((item) => item.id === backgroundId) : availableBackgrounds[0];
+    if (!background) throw new Error(`El origen ${origin.id} no tiene antecedentes configurados.`);
+    const safeName = String(characterName ?? "").replace(/[<>]/g, "").replace(/\s+/g, " ").trim().slice(0, 32) || "Alex";
     this.initializeRandom();
     const stats = {};
     for (const key of Object.keys(this.config.stats)) stats[key] = this.sampleValue(origin.stats?.[key], 0);
+    for (const [key, multiplier] of Object.entries(background.statMultipliers ?? {})) if (key in stats) stats[key] *= Number(multiplier) || 1;
+    for (const [key, effect] of Object.entries(background.effects ?? {})) if (key in stats) stats[key] += Number(effect) || 0;
     const { national, contexts } = this.buildNationalContext();
     const age = this.sampleValue(origin.startAge, this.config.minAge);
+    const hidden = this.buildInitialHidden(origin);
+    for (const [key, effect] of Object.entries(background.hiddenEffects ?? {})) if (key in hidden) hidden[key] += Number(effect) || 0;
+    const role = background.initialRole ?? origin.initialRole;
 
     this.state = {
-      version: 2,
+      version: 4,
       seed: this.seed,
       originId: origin.id,
       originName: origin.name,
+      characterName: safeName,
+      backgroundId: background.id,
+      backgroundName: background.name,
+      backgroundHistory: background.history,
+      backgroundImpact: background.impact,
       age,
       year: this.config.startYear,
       nextElectionYear: this.config.startYear + this.config.electionCycleYears,
       presidentialRuns: 0,
-      role: origin.initialRole,
-      highestRole: origin.initialRole,
-      currentOffice: { role: origin.initialRole, startYear: this.config.startYear, expectedEndYear: null },
-      career: [{ role: origin.initialRole, startYear: this.config.startYear, endYear: null }],
+      role,
+      highestRole: role,
+      currentOffice: { role, startYear: this.config.startYear, expectedEndYear: null },
+      career: [{ role, startYear: this.config.startYear, endYear: null }],
       yearsInPublicOffice: 0,
       elections: { won: 0, lost: 0, history: [] },
       stats,
-      hidden: this.buildInitialHidden(origin),
+      hidden,
       national,
       contexts,
-      relations: clone(origin.relations ?? {}),
+      relations: { ...clone(origin.relations ?? {}), ...clone(background.relations ?? {}) },
       memory: { allies: [], enemies: [], favors: [], promises: [], scandals: [], investigations: [], crises: [], wars: [] },
       personality: "outsider",
-      tags: [...(origin.tags ?? [])],
+      tags: [...new Set([...(origin.tags ?? []), ...(background.tags ?? [])])],
       decisions: [],
       outcomes: [],
       eventCounts: {},
       lastEventYear: {},
       lastEventGroupYear: {},
-      eventAffinities: Object.fromEntries([...this.events.values()].map((event) => [event.id, event.forced ? 1 : Math.round((0.55 + this.roll() * 0.9) * 100) / 100])),
+      pendingEventId: null,
+      eventAffinities: Object.fromEntries([...this.events.values()].map((event) => [event.id, event.forced ? 1 : Math.round((0.55 + this.roll() * 0.9) * Number(background.eventWeights?.[event.id] ?? 1) * 100) / 100])),
+      statLedger: {},
       history: [],
-      currentEventId: origin.initialEvent,
+      currentEventId: background.initialEvent ?? origin.initialEvent,
       endingId: null,
     };
     this.normalizeAll();
+    this.initializeStatLedger(`Inicio: ${origin.name} · ${background.shortName}`);
     this.state.personality = this.derivePersonality();
     return this.getSnapshot();
   }
@@ -191,9 +244,25 @@ export class GameEngine {
     delete this.state.randomCalls;
     delete this.state.event;
     delete this.state.ending;
+    this.state.version = 4;
+    this.state.characterName ??= "Tu personaje";
+    this.state.backgroundId ??= null;
+    this.state.backgroundName ??= "Trayectoria original";
+    this.state.backgroundHistory ??= "Partida creada antes del sistema de antecedentes.";
+    this.state.backgroundImpact ??= "Conserva los efectos y decisiones de la partida guardada.";
     this.state.lastEventGroupYear ??= {};
+    this.state.pendingEventId ??= null;
+    if (this.state.pendingEventId && !this.events.has(this.state.pendingEventId)) this.state.pendingEventId = null;
     this.state.eventAffinities ??= {};
     this.normalizeAll();
+    if (!this.state.tags.includes("presidente-actual")) this.state.hidden.vacancyRisk = 0;
+    if (!this.state.statLedger) this.initializeStatLedger("Estado al recuperar la partida");
+    const current = this.events.get(this.state.currentEventId);
+    if (!current && !this.state.endingId) {
+      this.state.currentEventId = this.findNextEventId();
+    } else if (current && !current.initialOnly && !current.directedOnly && (!this.meetsCareerGate(current) || !this.meetsRequirements(current.requirements))) {
+      this.state.currentEventId = this.findNextEventId();
+    }
     return this.getSnapshot();
   }
 
@@ -209,7 +278,7 @@ export class GameEngine {
   getAvailableOptions() {
     if (!this.state?.currentEventId || this.state.endingId) return [];
     const event = this.events.get(this.state.currentEventId);
-    return event.options.map((option) => ({ ...clone(option), available: this.meetsRequirements(option.requirements) }));
+    return event.options.map((option) => ({ ...clone(option), available: this.isOptionAvailable(option) }));
   }
 
   choose(optionId) {
@@ -217,10 +286,13 @@ export class GameEngine {
     const event = this.events.get(this.state.currentEventId);
     const option = event.options.find((item) => item.id === optionId);
     if (!option) throw new Error("Opción no encontrada.");
-    if (!this.meetsRequirements(option.requirements)) throw new Error("Esta opción no está disponible.");
+    if (!this.isOptionAvailable(option)) throw new Error("Esta opción no está disponible.");
     const before = this.getSnapshot();
 
     this.applyPayload(option);
+    // Las probabilidades y el desglose deben usar el valor real tras aplicar los límites.
+    this.normalizeAll();
+    const afterOptionStats = clone(this.state.stats);
     const outcome = this.pickOutcome(option.outcomes ?? [{ id: `${option.id}-default`, weight: 100 }]);
     this.applyPayload(outcome);
 
@@ -240,9 +312,11 @@ export class GameEngine {
       highlight: Boolean(outcome.highlight ?? event.highlight),
     });
 
-    const sameYear = Boolean(outcome.sameYear ?? option.sameYear);
+    // El antecedente explica el pasado del personaje: elegirlo no consume un año de carrera.
+    const sameYear = event.category === "background" || Boolean(outcome.sameYear ?? option.sameYear);
     if (!sameYear) this.advanceYear();
     this.normalizeAll();
+    this.recordStatChanges(before, afterOptionStats, event, option, outcome);
     this.state.personality = this.derivePersonality();
 
     const ending = this.findEnding();
@@ -251,7 +325,20 @@ export class GameEngine {
       this.state.endingId = ending.id;
       this.state.currentEventId = null;
     } else {
-      const nextEventId = outcome.nextEvent ?? option.nextEvent ?? this.findNextEventId();
+      const originEntryEvent = event.category === "background" ? this.origins.find((origin) => origin.id === this.state.originId)?.initialEvent : null;
+      const directedNextEventId = outcome.nextEvent ?? option.nextEvent ?? originEntryEvent ?? null;
+      let nextEventId;
+      if (event.id !== "eleccion-nacional" && this.state.year >= this.state.nextElectionYear) {
+        if (directedNextEventId) this.state.pendingEventId = directedNextEventId;
+        nextEventId = "eleccion-nacional";
+      } else if (directedNextEventId) {
+        nextEventId = directedNextEventId;
+      } else if (this.state.pendingEventId) {
+        nextEventId = this.state.pendingEventId;
+        this.state.pendingEventId = null;
+      } else {
+        nextEventId = this.findNextEventId();
+      }
       this.state.currentEventId = nextEventId && this.events.has(nextEventId) ? nextEventId : null;
     }
 
@@ -307,6 +394,10 @@ export class GameEngine {
 
   setRole(role, duration = null) {
     if (!role || role === this.state.role) return;
+    if (this.state.role === "Presidente del Perú" && role !== "Presidente del Perú") {
+      this.state.tags = this.state.tags.filter((tag) => tag !== "presidente-actual");
+      if (!this.state.tags.includes("fue-presidente")) this.state.tags.push("fue-presidente");
+    }
     this.closeCurrentOffice();
     this.state.role = role;
     this.state.currentOffice = { role, startYear: this.state.year, expectedEndYear: duration ? this.state.year + duration : null };
@@ -321,7 +412,8 @@ export class GameEngine {
 
   recordElection(event, option, outcome) {
     if (event.category === "presidential-election") {
-      this.state.nextElectionYear = this.state.year + this.config.electionCycleYears;
+      do { this.state.nextElectionYear += this.config.electionCycleYears; }
+      while (this.state.nextElectionYear <= this.state.year);
       if (option.id === "campana-presidencial") this.state.presidentialRuns += 1;
     }
     if (outcome.electionWon === undefined) return;
@@ -333,9 +425,19 @@ export class GameEngine {
   advanceYear() {
     this.state.age += 1;
     this.state.year += 1;
-    if (ROLE_RANK[this.state.role] >= 3) this.state.yearsInPublicOffice += 1;
+    if (ACTIVE_PUBLIC_OFFICE_ROLES.has(this.state.role)) this.state.yearsInPublicOffice += 1;
+    this.expireCurrentOffice();
     this.evolveNationalContext();
     this.updatePoliticalRisk();
+  }
+
+  expireCurrentOffice() {
+    const expectedEndYear = this.state.currentOffice?.expectedEndYear;
+    const transition = TERM_END_ROLES[this.state.role];
+    if (!transition || !expectedEndYear || this.state.year < expectedEndYear) return;
+    for (const tag of transition.removeTags ?? []) this.state.tags = this.state.tags.filter((item) => item !== tag);
+    if (transition.addTag && !this.state.tags.includes(transition.addTag)) this.state.tags.push(transition.addTag);
+    this.setRole(transition.role);
   }
 
   evolveNationalContext() {
@@ -355,7 +457,35 @@ export class GameEngine {
       h.governmentStability += Math.round((h.congressSupport - 50) * 0.08 + (this.state.stats.approval - 50) * 0.06 - n.socialConflict * 0.025);
       h.vacancyRisk = Math.round(clamp((100 - h.congressSupport) * 0.28 + (100 - h.governmentStability) * 0.25 + this.state.stats.legalRisk * 0.22 + n.socialConflict * 0.15 + (100 - h.cabinetLoyalty) * 0.1, 0, 100));
     } else {
-      h.vacancyRisk = Math.max(0, h.vacancyRisk - 8);
+      h.vacancyRisk = 0;
+    }
+  }
+
+  initializeStatLedger(reason) {
+    this.state.statLedger = Object.fromEntries(Object.keys(this.config.stats).map((key) => [key, [{
+      year: this.state.year,
+      age: this.state.age,
+      value: this.state.stats[key],
+      delta: null,
+      reason,
+    }]]));
+  }
+
+  recordStatChanges(before, afterOptionStats, event, option, outcome) {
+    this.state.statLedger ??= {};
+    for (const key of Object.keys(this.config.stats)) {
+      this.state.statLedger[key] ??= [];
+      const finalDelta = this.state.stats[key] - before.stats[key];
+      const optionDelta = Math.round(afterOptionStats[key] - before.stats[key]);
+      const outcomeDelta = finalDelta - optionDelta;
+      let runningValue = before.stats[key];
+      const append = (delta, reason) => {
+        if (!delta) return;
+        runningValue += delta;
+        this.state.statLedger[key].push({ year: before.year, age: before.age, value: runningValue, delta, reason });
+      };
+      append(optionDelta, `Decisión: ${option.label}`);
+      append(outcomeDelta, outcome.headline ?? event.headline ?? event.title);
     }
   }
 
@@ -423,11 +553,50 @@ export class GameEngine {
     return Math.max(0, weight * affinity * novelty);
   }
 
+  hasCareerTrack(track) {
+    const role = this.state.role.toLowerCase();
+    const tags = this.state.tags;
+    const hasAnyTag = (values) => values.some((tag) => tags.includes(tag));
+    if (tags.includes("en-prision")) return false;
+    if (tags.includes("retiro-definitivo")) return track === "formerPresident" && tags.includes("fue-presidente");
+    const localGovernment = ACTIVE_LOCAL_ROLES.has(this.state.role);
+    const nationalInstitution = ACTIVE_NATIONAL_ROLES.has(this.state.role);
+    const communityLeadership = ["provincia", "reinsercion"].includes(this.state.originId) || /dirigente vecinal|líder regional|líder vecinal/.test(role) || hasAnyTag(["base-territorial", "poder-regional", "cargo-ejecutivo-local", "ruta-democratica", "reconciliacion"]);
+    const party = this.state.originId === "dinastia" || /congresista|diputad|senador|senadora|secretario partidario|dirigente partidari|candidat|presidente del partido|presidente del congreso|presidente del perú|vicepresidente|líder opositor/.test(role) || hasAnyTag(["partido-formal", "familia-politica", "candidata-congreso", "congresista", "diputado", "senador", "candidato-interno", "controla-partido", "excandidato", "excandidata", "excandidato-presidencial", "oposicion-nacional", "movimiento-digital"]);
+    const politicalOrganization = party || communityLeadership || /asesor|vocero político|operador|dirigente político/.test(role) || hasAnyTag(["asesor", "vocero", "operador", "financista-legal"]);
+    if (track === "party") return party;
+    if (track === "politicalOrganization") return politicalOrganization;
+    if (track === "communityLeadership") return communityLeadership;
+    if (track === "localGovernment") return localGovernment;
+    if (track === "publicAuthority") return localGovernment || nationalInstitution;
+    if (track === "nationalInstitution") return nationalInstitution;
+    if (track === "candidateReady") return party || communityLeadership || /vocero político|dirigente político/.test(role) || hasAnyTag(["vocero", "experiencia-electoral"]);
+    if (track === "formerPresident") return tags.includes("fue-presidente") && !tags.includes("presidente-actual");
+    return true;
+  }
+
+  meetsCareerGate(event) {
+    if (this.state?.tags.includes("presidente-actual") && !PRESIDENT_EXIT_EVENTS.has(event.id)) {
+      const replacesPresident = event.options.some((option) => option.setRole && option.setRole !== "Presidente del Perú"
+        || (option.outcomes ?? []).some((outcome) => outcome.setRole && outcome.setRole !== "Presidente del Perú"));
+      if (replacesPresident) return false;
+    }
+    const gate = EVENT_CAREER_GATES[event.id];
+    return !gate || this.hasCareerTrack(gate);
+  }
+
+  isOptionAvailable(option) {
+    if (!this.meetsRequirements(option.requirements)) return false;
+    const dirtyCost = Math.max(0, -Number(option.effects?.dirtyMoney ?? 0));
+    return option.allowDirtyShortfall || dirtyCost === 0 || this.state.stats.dirtyMoney >= dirtyCost;
+  }
+
   findNextEventId() {
-    const candidates = [...this.events.values()].filter((event) => {
+    let candidates = [...this.events.values()].filter((event) => {
+      if (event.fallbackOnly) return false;
       if (event.id === this.state.currentEventId && this.config.random.avoidImmediateRepeats) return false;
-      if (event.initialOnly || event.directedOnly || !this.meetsRequirements(event.requirements)) return false;
-      if (!event.options.some((option) => this.meetsRequirements(option.requirements))) return false;
+      if (event.initialOnly || event.directedOnly || !this.meetsCareerGate(event) || !this.meetsRequirements(event.requirements)) return false;
+      if (!event.options.some((option) => this.isOptionAvailable(option))) return false;
       const count = this.state.eventCounts[event.id] ?? 0;
       if (!event.repeatable && count > 0) return false;
       if (event.maxOccurrences && count >= event.maxOccurrences) return false;
@@ -435,6 +604,12 @@ export class GameEngine {
       if (event.group && this.state.year - (this.state.lastEventGroupYear[event.group] ?? -Infinity) < (event.groupCooldown ?? 0)) return false;
       return true;
     });
+    if (!candidates.length) {
+      candidates = [...this.events.values()].filter((event) => event.fallbackOnly
+        && this.meetsCareerGate(event)
+        && this.meetsRequirements(event.requirements)
+        && event.options.some((option) => this.isOptionAvailable(option)));
+    }
     if (!candidates.length) return null;
     const forced = candidates.filter((event) => event.forced);
     let pool = candidates;
@@ -467,12 +642,14 @@ export class GameEngine {
     if (requirements.stat) return this.inRange(this.state?.stats?.[requirements.stat], requirements);
     if (requirements.hidden) return this.inRange(this.state?.hidden?.[requirements.hidden], requirements);
     if (requirements.national) return this.inRange(this.state?.national?.[requirements.national], requirements);
+    if (requirements.careerTrack) return [requirements.careerTrack].flat().some((track) => this.hasCareerTrack(track));
     if (requirements.age) return this.inRange(this.state.age, requirements.age);
     if (requirements.year) return this.inRange(this.state.year, requirements.year);
     if (requirements.electionDue !== undefined) return (this.state.year >= this.state.nextElectionYear) === requirements.electionDue;
     if (requirements.eventCount) return this.inRange(this.state.eventCounts[requirements.eventCount.id] ?? 0, requirements.eventCount);
     if (requirements.state) return this.inRange(this.state[requirements.state] ?? 0, requirements);
     if (requirements.origin) return [requirements.origin].flat().includes(this.state.originId);
+    if (requirements.background) return [requirements.background].flat().includes(this.state.backgroundId);
     if (requirements.role) return [requirements.role].flat().includes(this.state.role);
     if (requirements.roleIncludes) return this.state.role.toLowerCase().includes(String(requirements.roleIncludes).toLowerCase());
     if (requirements.context) return [requirements.context].flat().some((id) => this.state.contexts.includes(id));
@@ -492,11 +669,12 @@ export class GameEngine {
   getDiagnostics() {
     return [...this.events.values()].map((event) => ({
       id: event.id,
-      eligible: !event.initialOnly && !event.directedOnly && this.meetsRequirements(event.requirements),
+      eligible: !event.initialOnly && !event.directedOnly && this.meetsCareerGate(event) && this.meetsRequirements(event.requirements),
       count: this.state?.eventCounts?.[event.id] ?? 0,
       weight: this.state ? this.getEventWeight(event) : event.weight ?? 10,
       requirements: clone(event.requirements ?? null),
-      options: event.options.map((option) => ({ id: option.id, available: this.state ? this.meetsRequirements(option.requirements) : true, requirements: clone(option.requirements ?? null), outcomes: (option.outcomes ?? []).map((outcome) => ({ id: outcome.id, weight: this.state ? this.getOutcomeWeight(outcome) : outcome.weight ?? 1 })) })),
+      careerGate: EVENT_CAREER_GATES[event.id] ?? null,
+      options: event.options.map((option) => ({ id: option.id, available: this.state ? this.isOptionAvailable(option) : true, requirements: clone(option.requirements ?? null), outcomes: (option.outcomes ?? []).map((outcome) => ({ id: outcome.id, weight: this.state ? this.getOutcomeWeight(outcome) : outcome.weight ?? 1 })) })),
     }));
   }
 

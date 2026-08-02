@@ -6,8 +6,8 @@ export const thirtiesEvents = [
     kicker: "Presupuesto bajo presión",
     description: "Una constructora ofrece terminar la carretera antes de las fiestas. A cambio, pide ajustar las bases de la licitación.",
     options: [
-      { id: "licitacion-limpia", label: "Convocar una licitación limpia", hint: "La obra tardará, pero el expediente resistirá", effects: { approval: -5, influence: -2, legalRisk: -4 }, outcomes: [{ id: "obra-transparente", weight: 100, text: "La demora irrita al pueblo, aunque la contraloría felicita el proceso.", effects: { cleanMoney: 6000 }, addTags: ["gestion-limpia"] }] },
-      { id: "arreglo-constructora", label: "Cerrar el trato", hint: "Obra rápida, condiciones en letra pequeña", effects: { approval: 12, influence: 9, dirtyMoney: 38000, legalRisk: 18 }, addTags: ["favor-constructor"], outcomes: [{ id: "obra-inaugurada", weight: 70, text: "La carretera abre a tiempo. La multitud corea tu nombre y nadie pregunta demasiado.", effects: { approval: 9 } }, { id: "audio-filtrado", weight: 30, text: "Un audio del acuerdo llega a una radio local. La fiscalía abre diligencias.", effects: { approval: -22, legalRisk: 42 }, addTags: ["investigado"], nextEvent: "fiscalia-cerca" }] },
+      { id: "licitacion-limpia", label: "Convocar una licitación limpia", hint: "La obra tardará, pero el expediente resistirá", effects: { approval: -5, influence: -2, legalRisk: -4 }, outcomes: [{ id: "obra-transparente", weight: 100, text: "La demora irrita al pueblo, aunque la contraloría felicita el proceso.", effects: { cleanMoney: 6000 }, addTags: ["gestion-limpia"], nextEvent: "provincia-control-obra" }] },
+      { id: "arreglo-constructora", label: "Cerrar el trato", hint: "Obra rápida, condiciones en letra pequeña", effects: { approval: 12, influence: 9, dirtyMoney: 38000, legalRisk: 18 }, addTags: ["favor-constructor"], outcomes: [{ id: "obra-inaugurada", weight: 70, text: "La carretera abre a tiempo. La multitud corea tu nombre y nadie pregunta demasiado.", effects: { approval: 9 }, nextEvent: "provincia-favor-cobrado" }, { id: "audio-filtrado", weight: 30, text: "Un audio del acuerdo llega a una radio local. La fiscalía abre diligencias.", effects: { approval: -22, legalRisk: 42 }, addTags: ["investigado"], nextEvent: "fiscalia-cerca" }] },
     ],
   },
   {
@@ -18,8 +18,8 @@ export const thirtiesEvents = [
     kicker: "Tu nombre crece fuera del distrito",
     description: "Dos movimientos te ofrecen encabezar una fórmula regional. Uno tiene estructura; el otro, una reputación impecable.",
     options: [
-      { id: "movimiento-grande", label: "Elegir la maquinaria", hint: "Más alcance, más compromisos", effects: { influence: 18, approval: -5, legalRisk: 8, cleanMoney: -16000 }, outcomes: [{ id: "gobierno-regional", weight: 62, text: "La estructura territorial te lleva al gobierno regional.", setRole: "Gobernador regional", addTags: ["poder-regional"], effects: { cleanMoney: 32000 } }, { id: "regional-derrota", weight: 38, text: "La maquinaria no alcanza y las deudas de campaña quedan contigo.", effects: { cleanMoney: -22000, influence: 5 }, setRole: "Excandidato regional" }] },
-      { id: "movimiento-limpio", label: "Elegir la lista independiente", hint: "Una campaña austera y lenta", effects: { cleanMoney: -12000, approval: 14, influence: 6 }, outcomes: [{ id: "liderazgo-regional", weight: 42, text: "Tu campaña ciudadana gana por un margen mínimo.", setRole: "Gobernador regional", addTags: ["gestion-limpia", "poder-regional"] }, { id: "liderazgo-oposicion", weight: 58, text: "No ganas, pero instalas una forma distinta de hacer política.", setRole: "Líder regional", effects: { influence: 7 } }] },
+      { id: "movimiento-grande", label: "Elegir la maquinaria", hint: "Más alcance, más compromisos", effects: { influence: 18, approval: -5, legalRisk: 8, cleanMoney: -16000 }, outcomes: [{ id: "gobierno-regional", weight: 62, text: "La estructura territorial te lleva al gobierno regional.", setRole: "Gobernador regional", roleDuration: 4, addTags: ["poder-regional"], effects: { cleanMoney: 32000 } }, { id: "regional-derrota", weight: 38, text: "La maquinaria no alcanza y las deudas de campaña quedan contigo.", effects: { cleanMoney: -22000, influence: 5 }, setRole: "Excandidato regional" }] },
+      { id: "movimiento-limpio", label: "Elegir la lista independiente", hint: "Una campaña austera y lenta", effects: { cleanMoney: -12000, approval: 14, influence: 6 }, outcomes: [{ id: "liderazgo-regional", weight: 42, text: "Tu campaña ciudadana gana por un margen mínimo.", setRole: "Gobernador regional", roleDuration: 4, addTags: ["gestion-limpia", "poder-regional"] }, { id: "liderazgo-oposicion", weight: 58, text: "No ganas, pero instalas una forma distinta de hacer política.", setRole: "Líder regional", effects: { influence: 7 } }] },
     ],
   },
   {
@@ -56,11 +56,11 @@ export const thirtiesEvents = [
     cooldown: 5,
     weight: 10,
     requirements: { all: [{ age: { min: 30, max: 65 } }, { stat: "influence", min: 22 }] },
-    title: "Una curul en juego",
-    kicker: "Elección legislativa",
-    description: "Tu organización te ofrece un número competitivo para el Congreso. La campaña puede darte tribuna nacional o dejarte endeudado.",
+    title: "Una curul en la Cámara de Diputados",
+    kicker: "Elección bicameral · representación territorial",
+    description: "Tu organización te ofrece un número competitivo para Diputados. La campaña puede darte una tribuna nacional, aunque la lista del Senado consume parte de los mismos recursos.",
     options: [
-      { id: "postular-congreso", label: "Postular al Congreso", hint: "Invertir en una campaña nacional", effects: { cleanMoney: -26000, influence: 7 }, outcomes: [{ id: "curul-ganada", weight: 48, text: "Superas la cifra repartidora y obtienes una curul.", effects: { approval: 7, influence: 14, cleanMoney: 18000 }, setRole: "Congresista", addTags: ["congresista"] }, { id: "curul-perdida", weight: 52, text: "Los votos no alcanzan. Puedes volver a intentarlo en otro ciclo.", effects: { approval: -5, influence: 3 }, setRole: "Excandidato al Congreso", addTags: ["excandidato"] }] },
+      { id: "postular-congreso", label: "Postular a la Cámara de Diputados", hint: "Distrito electoral · campaña de cinco años", effects: { cleanMoney: -26000, influence: 7 }, outcomes: [{ id: "curul-ganada", weight: 48, text: "Superas la cifra repartidora y obtienes un escaño en Diputados.", effects: { approval: 7, influence: 14, cleanMoney: 18000 }, setRole: "Diputado de la República", roleDuration: 5, addTags: ["diputado", "congresista"] }, { id: "curul-perdida", weight: 52, text: "Los votos no alcanzan. Puedes volver a intentarlo en otro ciclo.", effects: { approval: -5, influence: 3 }, setRole: "Excandidato a Diputado", addTags: ["excandidato"] }] },
       { id: "dirigir-lista", label: "Dirigir la campaña de la lista", hint: "Menor exposición y honorarios seguros", effects: { cleanMoney: 21000, influence: 8 }, outcomes: [{ id: "operador-legislativo", weight: 100, text: "Varios candidatos electos quedan en deuda contigo.", addTags: ["operador"] }] },
     ],
   },

@@ -4,7 +4,7 @@ export const fiftiesEvents = [
     category: "presidential-election",
     repeatable: true,
     forced: true,
-    priority: 80,
+    priority: 110,
     weight: 100,
     requirements: { electionDue: true },
     title: "El país vuelve a las urnas",
@@ -15,7 +15,7 @@ export const fiftiesEvents = [
         id: "campana-presidencial",
         label: "Postular a la presidencia",
         hint: "Puedes volver a intentarlo en futuros ciclos",
-        requirements: { all: [{ stat: "approval", min: 30 }, { stat: "influence", min: 28 }, { missingTag: "presidente-actual" }] },
+        requirements: { all: [{ careerTrack: "candidateReady" }, { stat: "approval", min: 30 }, { stat: "influence", min: 28 }, { missingTag: "presidente-actual" }] },
         effects: { cleanMoney: -80000, approval: 4, influence: 3 },
         outcomes: [
           {
@@ -39,12 +39,20 @@ export const fiftiesEvents = [
         outcomes: [{ id: "sucesor-gana", weight: 55, text: "Tu candidato gana y conserva parte de tu equipo en el gobierno.", effects: { influence: 12 }, setRole: "Expresidente del Perú" }, { id: "sucesor-pierde", weight: 45, text: "La oposición gana. Dejas Palacio y preparas tu eventual retorno.", effects: { influence: -10, approval: -6 }, setRole: "Expresidente del Perú" }],
       },
       {
-        id: "postular-congreso-eleccion",
-        label: "Competir por una curul",
-        hint: "Mantener presencia sin ir por Palacio",
-        requirements: { missingTag: "presidente-actual" },
+        id: "postular-senado-eleccion",
+        label: "Competir por el Senado",
+        hint: "Cámara alta · distrito nacional y regional",
+        requirements: { all: [{ careerTrack: "candidateReady" }, { missingTag: "presidente-actual" }] },
+        effects: { cleanMoney: -34000, influence: 5 },
+        outcomes: [{ id: "senado-electo", weight: 52, text: "Obtienes un escaño en el Senado y una tribuna para el siguiente ciclo.", effects: { influence: 14, cleanMoney: 18000 }, setRole: "Senador de la República", roleDuration: 5, addTags: ["senador", "congresista"] }, { id: "senado-derrota", weight: 48, text: "No obtienes el escaño, pero mantienes activa tu organización.", effects: { approval: -5 }, setRole: "Dirigente político" }],
+      },
+      {
+        id: "postular-diputados-eleccion",
+        label: "Competir por la Cámara de Diputados",
+        hint: "Distrito electoral · campaña menos costosa",
+        requirements: { all: [{ careerTrack: "candidateReady" }, { missingTag: "presidente-actual" }] },
         effects: { cleanMoney: -26000, influence: 4 },
-        outcomes: [{ id: "senado-electo", weight: 58, text: "Obtienes una curul y una tribuna para el siguiente ciclo.", effects: { influence: 12, cleanMoney: 18000 }, setRole: "Congresista", addTags: ["congresista"] }, { id: "senado-derrota", weight: 42, text: "No obtienes la curul, pero mantienes activa tu organización.", effects: { approval: -5 }, setRole: "Dirigente político" }],
+        outcomes: [{ id: "diputados-electo", weight: 58, text: "Obtienes un escaño en Diputados y una base para el siguiente ciclo.", effects: { influence: 11, cleanMoney: 16000 }, setRole: "Diputado de la República", roleDuration: 5, addTags: ["diputado", "congresista"] }, { id: "diputados-derrota", weight: 42, text: "No obtienes el escaño, pero el recorrido fortalece tu organización.", effects: { approval: -4 }, setRole: "Dirigente político" }],
       },
       {
         id: "guardar-fuerzas",

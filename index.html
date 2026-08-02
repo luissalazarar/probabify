@@ -6,6 +6,7 @@
     <meta name="theme-color" content="#f2efe7">
     <meta name="description" content="Probabify: un simulador de carrera política en el Perú.">
     <title>Probabify — Tu carrera política</title>
+    <script>document.documentElement.dataset.theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";</script>
     <link rel="stylesheet" href="./css/theme.css">
     <link rel="stylesheet" href="./css/styles.css">
   </head>
@@ -15,7 +16,6 @@
         <span class="brand__mark">P</span>
         <span>PROBABI<span>FY</span></span>
       </a>
-      <button class="seed-button" type="button" data-copy-seed title="Copiar semilla"><span id="seed-label">Semilla</span> ⧉</button>
       <div class="header-actions">
         <button class="theme-button" type="button" data-theme-toggle aria-label="Activar tema oscuro" title="Cambiar tema">
           <span class="theme-button__icon" aria-hidden="true">◐</span><span class="theme-button__text">Tema</span>
@@ -50,17 +50,42 @@
 
         <aside class="disclaimer">
           <span>i</span>
-          <p><strong>Esta es una obra de ficción.</strong> Los personajes y situaciones son imaginarios, aunque la política a veces se empeñe en parecerse.</p>
+          <p><strong>Esta es una obra de ficción.</strong> Todos los personajes, medios, partidos y expedientes pertenecen al universo de Probabify.</p>
         </aside>
+      </section>
+
+      <section class="setup-view" id="setup-view" hidden>
+        <button class="setup-back" type="button" data-back-origins>← Cambiar origen</button>
+        <div class="setup-heading">
+          <p class="section-label">Creación de personaje</p>
+          <h1 id="setup-origin-name">Tu trayectoria</h1>
+          <p id="setup-origin-description"></p>
+        </div>
+        <form class="character-form" id="character-form">
+          <label class="name-field" for="character-name">
+            <span><b>01</b> Nombre del personaje</span>
+            <input id="character-name" name="character-name" type="text" maxlength="32" autocomplete="off" placeholder="Escribe un nombre" required>
+            <small>Se usará en tu expediente, trayectoria y resumen final.</small>
+          </label>
+          <div class="background-picker">
+            <div class="background-picker__heading"><span><b>02</b> Antecedente</span><p>Tu pasado cambia recursos, contactos, riesgos y las situaciones que aparecerán.</p></div>
+            <div class="background-grid" id="background-grid" role="radiogroup" aria-label="Antecedentes disponibles"></div>
+          </div>
+          <div class="setup-submit">
+            <p><strong>Obra ficticia.</strong> La violencia política forma parte del conflicto narrativo y no es justificada ni glorificada.</p>
+            <button class="primary-button" id="start-character" type="submit" disabled>Comenzar trayectoria <span>→</span></button>
+          </div>
+        </form>
       </section>
 
       <section class="game-view" id="game-view" hidden>
         <div class="player-strip">
           <div class="player-strip__age"><small>Edad</small><strong id="player-age">—</strong><span>años</span></div>
           <div class="player-strip__identity">
-            <p id="player-origin">—</p>
+            <p><span id="player-name">—</span> · <span id="player-origin">—</span></p>
             <h1 id="player-role">—</h1>
             <span class="political-calendar" id="political-calendar">—</span>
+            <span class="save-status" id="save-status" aria-live="polite">Guardado automático</span>
           </div>
           <div class="player-strip__seal" aria-hidden="true"><span>PE</span><small>República<br>del Perú</small></div>
         </div>
@@ -70,7 +95,7 @@
 
         <div class="game-layout">
           <div class="decision-column">
-            <div class="result-banner" id="result-banner" hidden></div>
+            <div class="result-banner" id="result-banner" role="status" aria-live="polite" hidden></div>
 
             <article class="decision-card">
               <div class="decision-card__flag"><i></i><i></i><i></i></div>
@@ -78,7 +103,7 @@
               <h2 id="event-title">—</h2>
               <p class="decision-card__description" id="event-description">—</p>
               <div class="options" id="options"></div>
-              <small class="decision-card__footnote">La consecuencia puede depender de tu trayectoria y del azar.</small>
+              <small class="decision-card__footnote" id="decision-footnote">Las consecuencias dependen de tu trayectoria.</small>
             </article>
 
             <article class="ending-card" id="ending-card" hidden></article>

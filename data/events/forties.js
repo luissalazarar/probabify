@@ -6,8 +6,8 @@ export const fortiesEvents = [
     kicker: "Tu primera aparición pública",
     description: "Una organización de derechos humanos te invita a hablar en una plaza. Antiguos compañeros quieren convertir el acto en una demostración de fuerza.",
     options: [
-      { id: "discurso-democratico", label: "Defender la vía democrática", hint: "Romper públicamente con el pasado", effects: { approval: 14, influence: -5, legalRisk: -10 }, removeTags: ["vigilado"], addTags: ["reconciliacion"], outcomes: [{ id: "nuevo-discurso", weight: 100, text: "El discurso divide a los tuyos, pero abre conversaciones inesperadas." }] },
-      { id: "mensaje-ambiguo", label: "Mantener un mensaje ambiguo", hint: "Conservar a la vieja base movilizada", effects: { influence: 17, approval: -9, legalRisk: 22 }, outcomes: [{ id: "base-movilizada", weight: 60, text: "Tu base vuelve a organizarse. Un nuevo movimiento te ofrece liderazgo.", addTags: ["base-radical"] }, { id: "operativo", weight: 40, text: "La fiscalía interpreta tus palabras como apología y ordena un operativo.", effects: { legalRisk: 38, approval: -8 }, addTags: ["investigado"], nextEvent: "fiscalia-cerca" }] },
+      { id: "discurso-democratico", label: "Defender la vía democrática", hint: "Romper públicamente con el pasado", effects: { approval: 14, influence: -5, legalRisk: -10 }, removeTags: ["vigilado"], addTags: ["reconciliacion"], outcomes: [{ id: "nuevo-discurso", weight: 100, text: "El discurso divide a los tuyos, pero abre conversaciones inesperadas.", nextEvent: "reinsercion-mesa-democratica" }] },
+      { id: "mensaje-ambiguo", label: "Mantener un mensaje ambiguo", hint: "Conservar a la vieja base movilizada", effects: { influence: 17, approval: -9, legalRisk: 22 }, outcomes: [{ id: "base-movilizada", weight: 60, text: "Tu base vuelve a organizarse. Un nuevo movimiento te ofrece liderazgo.", addTags: ["base-radical"], nextEvent: "reinsercion-red-radical" }, { id: "operativo", weight: 40, text: "La fiscalía interpreta tus palabras como apología y ordena un operativo.", effects: { legalRisk: 38, approval: -8 }, addTags: ["investigado"], nextEvent: "fiscalia-cerca" }] },
     ],
   },
   {
@@ -17,7 +17,7 @@ export const fortiesEvents = [
     kicker: "El candidato llama a tu puerta",
     description: "El favorito presidencial te pide financiar el tramo final de su campaña. Parte del aporte no aparecerá en ningún reporte.",
     options: [
-      { id: "aporte-registrado", label: "Aportar por la vía legal", hint: "Menos acceso, cuentas claras", effects: { cleanMoney: -80000, influence: 10, approval: 6 }, outcomes: [{ id: "aporte-publico", weight: 100, text: "Tu aporte se publica. El partido agradece, aunque no te debe favores secretos.", addTags: ["financista-legal"] }] },
+      { id: "aporte-registrado", label: "Aportar por la vía legal", hint: "Menos acceso, cuentas claras", effects: { cleanMoney: -80000, influence: 10, approval: 6 }, outcomes: [{ id: "aporte-publico", weight: 100, text: "Tu aporte se publica. El partido agradece, aunque no te debe favores secretos.", addTags: ["financista-legal"], nextEvent: "directorio-en-crisis" }] },
       { id: "maletin", label: "Entregar el maletín", hint: "Una decisión que aún puedes detener", effects: { cleanMoney: -30000 }, outcomes: [{ id: "antesala", weight: 100, text: "El intermediario llega a tu oficina. Te pide una confirmación final.", nextEvent: "empresario-confirmacion", sameYear: true }] },
     ],
   },
@@ -39,7 +39,7 @@ export const fortiesEvents = [
     kicker: "El expediente ya tiene tu nombre",
     description: "Tus abogados ven dos salidas: colaborar y reconstruir tu carrera, o usar todo tu poder para bloquear el caso.",
     options: [
-      { id: "colaborar", label: "Colaborar con la investigación", hint: "Perder poder para reducir el riesgo", effects: { legalRisk: -45, influence: -20, dirtyMoney: -25000, approval: -4 }, addTags: ["colaborador"], outcomes: [{ id: "retiro-colaborador", weight: 100, text: "Entregas información y abandonas temporalmente la primera línea. Con los años podrás regresar.", setRole: "Asesor independiente" }] },
+      { id: "colaborar", label: "Colaborar con la investigación", hint: "Perder poder para reducir el riesgo", allowDirtyShortfall: true, effects: { legalRisk: -45, influence: -20, dirtyMoney: -25000, approval: -4 }, addTags: ["colaborador"], outcomes: [{ id: "retiro-colaborador", weight: 100, text: "Entregas información y abandonas temporalmente la primera línea. Con los años podrás regresar.", setRole: "Asesor independiente" }] },
       { id: "obstruir", label: "Obstruir la investigación", hint: "Todo o nada", effects: { dirtyMoney: -40000, influence: -8, legalRisk: 35 }, outcomes: [{ id: "prision-preventiva", weight: 58, headline: "Un juez dicta prisión preventiva", text: "Los intentos de obstrucción quedan registrados. La carrera continuará desde prisión.", effects: { legalRisk: 18 }, addTags: ["en-prision"], addInvestigations: [{ id: "obstruccion", label: "Investigación por obstrucción" }], setRole: "Interno penitenciario", nextEvent: "prision-decision" }, { id: "caso-archivado", weight: 42, headline: "Una nulidad derrumba el caso", text: "El archivo evita la prisión, pero el costo político y económico es enorme.", effects: { legalRisk: -28, approval: -16, cleanMoney: -18000 }, addTags: ["sobrevivio-investigacion"] }] },
     ],
   },

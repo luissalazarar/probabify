@@ -15,8 +15,8 @@ export const mediaEvents = [
         hiddenEffects: { mediaNotoriety: 14, credibility: 4, polarization: 20, unionSupport: 10, businessSupport: -8 },
         addTags: ["medio-ideologico", "ideologo"],
         outcomes: [
-          { id: "comunidad-militante", weight: 72, headline: "Un canal de nicho se convierte en comunidad militante", text: "La audiencia es menor de lo esperado, pero comparte cada episodio y organiza encuentros.", effects: { influence: 8, cleanMoney: 6000 }, hiddenEffects: { mediaNotoriety: 8 } },
-          { id: "etiqueta-extremista", weight: 28, headline: "Tus primeros clips desatan una controversia nacional", text: "Otros medios te presentan como una figura extrema. La notoriedad llega antes que los ingresos.", effects: { approval: -8 }, hiddenEffects: { mediaNotoriety: 18, credibility: -9, polarization: 12 } },
+          { id: "comunidad-militante", weight: 72, headline: "Un canal de nicho se convierte en comunidad militante", text: "La audiencia es menor de lo esperado, pero comparte cada episodio y organiza encuentros.", effects: { influence: 8, cleanMoney: 6000 }, hiddenEffects: { mediaNotoriety: 8 }, nextEvent: "podcast-ruta-ideologica" },
+          { id: "etiqueta-extremista", weight: 28, headline: "Tus primeros clips desatan una controversia nacional", text: "Otros medios te presentan como una figura extrema. La notoriedad llega antes que los ingresos.", effects: { approval: -8 }, hiddenEffects: { mediaNotoriety: 18, credibility: -9, polarization: 12 }, nextEvent: "podcast-ruta-ideologica" },
         ],
       },
       {
@@ -27,8 +27,8 @@ export const mediaEvents = [
         hiddenEffects: { mediaNotoriety: 24, credibility: -14, polarization: 18, leakExposure: 12 },
         addTags: ["medio-sensacionalista"],
         outcomes: [
-          { id: "viralidad-podcast", weight: 64, headline: "Una denuncia explosiva multiplica tu audiencia", text: "El episodio cruza el millón de reproducciones y los anunciantes empiezan a llamar.", effects: { cleanMoney: 24000, influence: 9 }, hiddenEffects: { mediaNotoriety: 18 } },
-          { id: "demanda-podcast", weight: 36, headline: "El debut termina con una carta notarial", text: "Una afirmación sin verificar provoca una demanda y obliga a publicar una rectificación.", effects: { cleanMoney: -9000, legalRisk: 15, approval: -6 }, hiddenEffects: { credibility: -10 }, addScandals: [{ id: "demanda-por-difamacion", label: "Demanda por difamación" }] },
+          { id: "viralidad-podcast", weight: 64, headline: "Una denuncia explosiva multiplica tu audiencia", text: "El episodio cruza el millón de reproducciones y los anunciantes empiezan a llamar.", effects: { cleanMoney: 24000, influence: 9 }, hiddenEffects: { mediaNotoriety: 18 }, nextEvent: "podcast-ruta-sensacional" },
+          { id: "demanda-podcast", weight: 36, headline: "El debut termina con una carta notarial", text: "Una afirmación sin verificar provoca una demanda y obliga a publicar una rectificación.", effects: { cleanMoney: -9000, legalRisk: 15, approval: -6 }, hiddenEffects: { credibility: -10 }, addScandals: [{ id: "demanda-por-difamacion", label: "Demanda por difamación" }], nextEvent: "podcast-ruta-sensacional" },
         ],
       },
       {
@@ -39,8 +39,8 @@ export const mediaEvents = [
         hiddenEffects: { mediaNotoriety: 8, credibility: 18, pressSupport: 8, polarization: -10 },
         addTags: ["medio-independiente"],
         outcomes: [
-          { id: "entrevistas-respetadas", weight: 78, headline: "Tus entrevistas ganan respeto entre adversarios", text: "El crecimiento es lento, pero políticos de distintas tendencias aceptan sentarse contigo.", hiddenEffects: { credibility: 12, mediaNotoriety: 7 }, effects: { influence: 7, cleanMoney: 8000 } },
-          { id: "neutralidad-cuestionada", weight: 22, headline: "Ambos bandos te acusan de favorecer al rival", text: "La neutralidad no evita ataques coordinados y pierdes parte de la audiencia.", effects: { approval: -5 }, hiddenEffects: { polarization: 8 } },
+          { id: "entrevistas-respetadas", weight: 78, headline: "Tus entrevistas ganan respeto entre adversarios", text: "El crecimiento es lento, pero políticos de distintas tendencias aceptan sentarse contigo.", hiddenEffects: { credibility: 12, mediaNotoriety: 7 }, effects: { influence: 7, cleanMoney: 8000 }, nextEvent: "podcast-ruta-independiente" },
+          { id: "neutralidad-cuestionada", weight: 22, headline: "Ambos bandos te acusan de favorecer al rival", text: "La neutralidad no evita ataques coordinados y pierdes parte de la audiencia.", effects: { approval: -5 }, hiddenEffects: { polarization: 8 }, nextEvent: "podcast-ruta-independiente" },
         ],
       },
     ],

@@ -13,8 +13,8 @@ export const twentiesEvents = [
         effects: { influence: 12, cleanMoney: -18000, approval: -4 },
         addTags: ["candidata-congreso"],
         outcomes: [
-          { id: "herencia-gana", weight: 65, text: "La maquinaria responde. Obtienes una votación sólida y un lugar propio en el partido.", effects: { approval: 14, influence: 16, cleanMoney: 18000 }, setRole: "Congresista", addTags: ["congresista"] },
-          { id: "herencia-pierde", weight: 35, text: "El apellido moviliza rechazo. Pierdes, pero la campaña te vuelve una figura nacional.", effects: { approval: -7, influence: 8 }, setRole: "Excandidata al Congreso", addTags: ["excandidata"] },
+          { id: "herencia-gana", weight: 65, text: "La maquinaria responde. Obtienes una votación sólida y un escaño en la Cámara de Diputados.", effects: { approval: 14, influence: 16, cleanMoney: 18000 }, setRole: "Diputada de la República", roleDuration: 5, addTags: ["diputado", "congresista"], nextEvent: "dinastia-bancada" },
+          { id: "herencia-pierde", weight: 35, text: "El apellido moviliza rechazo. Pierdes, pero la campaña te vuelve una figura nacional.", effects: { approval: -7, influence: 8 }, setRole: "Excandidata a Diputada", addTags: ["excandidata"], nextEvent: "dinastia-gira-propia" },
         ],
       },
       {
@@ -23,7 +23,7 @@ export const twentiesEvents = [
         hint: "Renunciar a la curul y recorrer regiones",
         effects: { cleanMoney: -28000, influence: -8, approval: 13 },
         addTags: ["independiente"],
-        outcomes: [{ id: "ruta-propia", weight: 100, text: "El gesto sorprende. No tienes cargo, pero comienzas a ser más que un apellido.", setRole: "Dirigente partidaria" }],
+        outcomes: [{ id: "ruta-propia", weight: 100, text: "El gesto sorprende. No tienes cargo, pero comienzas a ser más que un apellido.", setRole: "Dirigente partidaria", nextEvent: "dinastia-gira-propia" }],
       },
     ],
   },
@@ -103,10 +103,10 @@ export const twentiesEvents = [
   },
   {
     id: "pareja-militante", maxOccurrences: 1, weight: 8, requirements: { age: { max: 43 } }, category: "personal",
-    title: "Una relación dentro de la organización", kicker: "Lo personal también construye poder", description: "Una persona cercana se convierte en tu principal colaboradora. Puede mantenerse fuera de la política o asumir un papel visible.",
+    title: "Una relación dentro del proyecto", kicker: "Lo personal también construye poder", description: "Una persona cercana se convierte en tu principal colaboradora dentro del canal, empresa, movimiento o equipo que estés construyendo. Debes decidir cuánta visibilidad tendrá.",
     options: [
       { id: "pareja-privada", label: "Separar la relación de la organización", hint: "Menos influencia, menor exposición", hiddenEffects: { familyStress: -7, personalReputation: 5, leakExposure: -4 }, outcomes: [{ id: "limites-personales", weight: 100, headline: "La vida privada queda fuera del comando", text: "La decisión evita conflictos de interés, aunque pierdes una operadora valiosa." }] },
-      { id: "pareja-operadora", label: "Integrarla al equipo político", hint: "Lealtad inmediata · riesgo futuro", effects: { influence: 8, cleanMoney: -6000 }, hiddenEffects: { familyStress: 8, cabinetLoyalty: 6, leakExposure: 8 }, addAllies: [{ id: "pareja-operadora", label: "Pareja integrada a la organización" }], outcomes: [{ id: "dupla-politica", weight: 67, headline: "Una nueva dupla toma control de la organización", text: "El equipo funciona mejor, pero empieza a depender de la relación." }, { id: "favoritismo-pareja", weight: 33, headline: "El equipo denuncia favoritismo hacia tu pareja", text: "Dos colaboradores renuncian y filtran conversaciones internas.", effects: { influence: -6 }, hiddenEffects: { partyCohesion: -12, leakExposure: 14 }, addScandals: [{ id: "favoritismo-pareja", label: "Acusaciones de favoritismo a la pareja" }] }] },
+      { id: "pareja-operadora", label: "Integrarla al equipo", hint: "Lealtad inmediata · riesgo futuro", effects: { influence: 8, cleanMoney: -6000 }, hiddenEffects: { familyStress: 8, cabinetLoyalty: 6, leakExposure: 8 }, addAllies: [{ id: "pareja-operadora", label: "Pareja integrada al proyecto" }], outcomes: [{ id: "dupla-politica", weight: 67, headline: "Una nueva dupla toma control del proyecto", text: "El equipo funciona mejor, pero empieza a depender de la relación." }, { id: "favoritismo-pareja", weight: 33, headline: "El equipo denuncia favoritismo hacia tu pareja", text: "Dos colaboradores renuncian y filtran conversaciones internas.", effects: { influence: -6 }, hiddenEffects: { partyCohesion: -12, leakExposure: 14 }, addScandals: [{ id: "favoritismo-pareja", label: "Acusaciones de favoritismo a la pareja" }] }] },
     ],
   },
 ];

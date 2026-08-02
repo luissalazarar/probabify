@@ -44,7 +44,7 @@ export const sixtiesEvents = [
     repeatable: true,
     cooldown: 4,
     weight: 7,
-    requirements: { age: { min: 65 } },
+    requirements: { all: [{ age: { min: 65 } }, { missingTag: "retiro-definitivo" }] },
     title: "¿Es momento de parar?",
     kicker: "La decisión que nadie puede tomar por ti",
     description: "Tu familia pide que te retires. El partido insiste en que aún queda una campaña y tú sabes que la próxima elección está cerca.",

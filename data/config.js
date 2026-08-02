@@ -14,7 +14,7 @@ export const GAME_CONFIG = {
     approval: { label: "Aceptación", min: 0, max: 100, format: "percent", icon: "♥" },
     influence: { label: "Influencia", min: 0, max: 100, format: "percent", icon: "◆" },
     cleanMoney: { label: "Dinero limpio", format: "money", icon: "S/" },
-    dirtyMoney: { label: "Dinero sucio", format: "money", icon: "S/" },
+    dirtyMoney: { label: "Dinero sucio", min: 0, format: "money", icon: "S/" },
     legalRisk: { label: "Riesgo judicial", min: 0, max: 100, format: "percent", icon: "⚖" },
     ideology: { label: "Tendencia política", min: -100, max: 100, format: "ideology", icon: "↔" },
   },
