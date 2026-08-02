@@ -3,6 +3,9 @@ import { thirtiesEvents } from "./thirties.js";
 import { fortiesEvents } from "./forties.js";
 import { fiftiesEvents } from "./fifties.js";
 import { sixtiesEvents } from "./sixties.js";
+import { mediaEvents } from "./media.js";
+import { specialEvents } from "./special.js";
+import { decadeExtraEvents } from "./decadeExtras.js";
 
 export const EVENTS = [
   ...twentiesEvents,
@@ -10,4 +13,7 @@ export const EVENTS = [
   ...fortiesEvents,
   ...fiftiesEvents,
   ...sixtiesEvents,
+  ...mediaEvents,
+  ...specialEvents,
+  ...decadeExtraEvents,
 ];

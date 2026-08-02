@@ -15,10 +15,15 @@
         <span class="brand__mark">P</span>
         <span>PROBABI<span>FY</span></span>
       </a>
-      <p id="seed-label">Cada decisión puede cambiarlo todo</p>
-      <button class="ghost-button" type="button" data-restart>
-        <span aria-hidden="true">↻</span> Reiniciar
-      </button>
+      <button class="seed-button" type="button" data-copy-seed title="Copiar semilla"><span id="seed-label">Semilla</span> ⧉</button>
+      <div class="header-actions">
+        <button class="theme-button" type="button" data-theme-toggle aria-label="Activar tema oscuro" title="Cambiar tema">
+          <span class="theme-button__icon" aria-hidden="true">◐</span><span class="theme-button__text">Tema</span>
+        </button>
+        <button class="ghost-button" type="button" data-restart>
+          <span aria-hidden="true">↻</span> Reiniciar
+        </button>
+      </div>
     </header>
 
     <main>
@@ -38,6 +43,11 @@
         </div>
         <div class="origin-grid" id="origin-grid" aria-label="Orígenes disponibles"></div>
 
+        <div class="continue-panel" id="continue-panel" hidden>
+          <div><small>Partida guardada</small><strong id="continue-text">Trayectoria en curso</strong></div>
+          <button class="primary-button" type="button" data-continue>Continuar partida <span>→</span></button>
+        </div>
+
         <aside class="disclaimer">
           <span>i</span>
           <p><strong>Esta es una obra de ficción.</strong> Los personajes y situaciones son imaginarios, aunque la política a veces se empeñe en parecerse.</p>
@@ -50,11 +60,13 @@
           <div class="player-strip__identity">
             <p id="player-origin">—</p>
             <h1 id="player-role">—</h1>
+            <span class="political-calendar" id="political-calendar">—</span>
           </div>
           <div class="player-strip__seal" aria-hidden="true"><span>PE</span><small>República<br>del Perú</small></div>
         </div>
 
         <div class="stats-grid" id="stats" aria-label="Estadísticas de la partida"></div>
+        <section class="context-panel" id="context-panel" aria-label="Contexto de la partida"></section>
 
         <div class="game-layout">
           <div class="decision-column">
@@ -80,6 +92,8 @@
             <ol class="history-list" id="history-list"></ol>
           </aside>
         </div>
+
+        <aside class="debug-panel" id="debug-panel" hidden></aside>
       </section>
     </main>
 
