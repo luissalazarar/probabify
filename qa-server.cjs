@@ -10,10 +10,17 @@ const contentTypes = {
   ".svg": "image/svg+xml",
   ".woff2": "font/woff2",
 };
+const cleanRoutes = {
+  "/como-jugar": "/como-jugar.html",
+  "/sistema-de-valoracion": "/sistema-de-valoracion.html",
+  "/legado-y-logros": "/legado-y-logros.html",
+  "/preguntas-frecuentes": "/preguntas-frecuentes.html",
+  "/privacidad": "/privacidad.html",
+};
 
 http.createServer((request, response) => {
   const pathname = decodeURIComponent(new URL(request.url, "http://localhost").pathname);
-  const requested = pathname === "/" ? "/index.html" : pathname;
+  const requested = pathname === "/" ? "/index.html" : cleanRoutes[pathname] ?? pathname;
   const filePath = path.resolve(root, `.${requested}`);
   if (filePath !== root && !filePath.startsWith(`${root}${path.sep}`)) {
     response.writeHead(403).end("Forbidden");

@@ -11,9 +11,11 @@ import { backgroundEvents } from "./backgroundEvents.js";
 import { peruvianScandalEvents } from "./peruvianScandals.js";
 import { nationalCrisisEvents } from "./nationalCrises.js";
 import { statConsequenceEvents } from "./statConsequences.js";
+import { deferredConsequenceEvents } from "./deferredConsequences.js";
 import { applyPeruvianLore } from "../peruvianLore.js";
 import { globalizeNationalEvents } from "./globalizeEvents.js";
 import { applyStatCausality } from "../statCausality.js";
+import { applyNarrativeCausality } from "../narrativeCausality.js";
 
 const RAW_EVENTS = [
   ...twentiesEvents,
@@ -29,6 +31,7 @@ const RAW_EVENTS = [
   ...peruvianScandalEvents,
   ...nationalCrisisEvents,
   ...statConsequenceEvents,
+  ...deferredConsequenceEvents,
 ];
 
-export const EVENTS = applyPeruvianLore(applyStatCausality(globalizeNationalEvents(RAW_EVENTS)));
+export const EVENTS = applyNarrativeCausality(applyPeruvianLore(applyStatCausality(globalizeNationalEvents(RAW_EVENTS))));

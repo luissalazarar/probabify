@@ -4,7 +4,7 @@ const THEME_EVENTS = {
   ],
   conflicto_interno: [
     "reinsercion-regreso", "archivo-subversivo", "asamblea-comunal", "reinsercion-mesa-democratica", "reinsercion-red-radical",
-    "memoria-mrta", "memoria-sl", "justicia-rondas", "archivo-de-legado",
+    "memoria-mrta", "memoria-sl", "justicia-rondas", "archivo-de-legado", "reinsercion-testigo-regresa", "reinsercion-red-investigada",
   ],
   crisis_economica: [
     "negocio-expansion", "directorio-en-crisis", "ultima-empresa", "dolar-muc-amigos",
@@ -19,7 +19,7 @@ const THEME_EVENTS = {
     "voluntariado-desastre", "mediacion-nacional", "reconciliacion-historica",
   ],
   descentralizacion: [
-    "provincia-obra", "salto-regional", "presupuesto-participativo", "herencia-regional", "provincia-control-obra", "cabildo-juvenil", "dinamicos-del-centro", "centralita-regional",
+    "provincia-obra", "salto-regional", "presupuesto-participativo", "herencia-regional", "provincia-control-obra", "promesa-provincial-pendiente", "cabildo-juvenil", "dinamicos-del-centro", "centralita-regional",
   ],
   obras_y_adendas: [
     "contrato-municipal", "concesion-transporte", "provincia-favor-cobrado", "auditoria-municipal", "adenda-heredada", "comunicore-municipal",
@@ -35,10 +35,10 @@ const THEME_EVENTS = {
   ],
   partidos_alquiler: [
     "juventud-partidaria", "eleccion-universitaria", "practicas-congreso", "cambio-partido", "alianza-rival", "control-partido",
-    "primaria-partidaria", "archivo-parlamentario", "dinastia-bancada", "dinastia-gira-propia", "tesis-copiada",
+    "primaria-partidaria", "archivo-parlamentario", "dinastia-bancada", "dinastia-gira-propia", "tesis-copiada", "dinastia-operador-cobra", "dinastia-familia-se-divide", "partido-despues-palacio",
   ],
   financiamiento_electoral: [
-    "asesoria-campana", "primer-financista", "empresario-campana", "caja-vacia", "credito-campana-banco", "oferta-vicepresidencia", "cocteles-naranjas", "plata-como-estadio", "taperes-campana",
+    "asesoria-campana", "primer-financista", "financista-cobra-deuda", "empresario-campana", "caja-vacia", "credito-campana-banco", "oferta-vicepresidencia", "cocteles-naranjas", "plata-como-estadio", "taperes-campana",
   ],
   politica_digital: [
     "redes-viral", "podcaster-lanzamiento", "publicidad-politica", "testaferro-mediatico", "salto-voceria", "ruta-figura-culto",
@@ -73,6 +73,7 @@ const THEME_EVENTS = {
   legado: [
     "oferta-ministerial", "foro-internacional", "embajada-estrategica", "asesoria-expresidente", "fundacion-legado", "memorias-politicas",
     "mentor-en-caida", "mentor-sucesion", "ultima-retirada", "familiar-candidato", "premio-internacional", "salud-y-agenda", "catedra-politica",
+    "sucesor-marca-distancia", "comision-postpresidencial", "regreso-del-expresidente", "cumbre-expresidentes",
   ],
 };
 

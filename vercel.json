@@ -3,5 +3,12 @@
   "framework": null,
   "installCommand": "echo No dependencies",
   "buildCommand": "echo Static site ready",
-  "outputDirectory": "."
+  "outputDirectory": ".",
+  "rewrites": [
+    { "source": "/como-jugar", "destination": "/como-jugar.html" },
+    { "source": "/sistema-de-valoracion", "destination": "/sistema-de-valoracion.html" },
+    { "source": "/legado-y-logros", "destination": "/legado-y-logros.html" },
+    { "source": "/preguntas-frecuentes", "destination": "/preguntas-frecuentes.html" },
+    { "source": "/privacidad", "destination": "/privacidad.html" }
+  ]
 }
