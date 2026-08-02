@@ -16,6 +16,8 @@ let choiceLocked = false;
 const elements = {
   originView: document.querySelector("#origin-view"), setupView: document.querySelector("#setup-view"), gameView: document.querySelector("#game-view"),
   originGrid: document.querySelector("#origin-grid"), stats: document.querySelector("#stats"),
+  statsArea: document.querySelector("#stats-area"), statsToggle: document.querySelector("#all-stats-toggle"),
+  statsPanel: document.querySelector("#all-stats-panel"), statsContent: document.querySelector("#all-stats-content"),
   age: document.querySelector("#player-age"), role: document.querySelector("#player-role"), origin: document.querySelector("#player-origin"), name: document.querySelector("#player-name"),
   eventKicker: document.querySelector("#event-kicker"), eventTitle: document.querySelector("#event-title"),
   eventDescription: document.querySelector("#event-description"), options: document.querySelector("#options"),
@@ -26,7 +28,8 @@ const elements = {
   continueText: document.querySelector("#continue-text"), debug: document.querySelector("#debug-panel"),
   setupOriginName: document.querySelector("#setup-origin-name"), setupOriginDescription: document.querySelector("#setup-origin-description"),
   characterForm: document.querySelector("#character-form"), characterName: document.querySelector("#character-name"),
-  backgroundGrid: document.querySelector("#background-grid"), startCharacter: document.querySelector("#start-character"), footnote: document.querySelector("#decision-footnote"),
+  backgroundGrid: document.querySelector("#background-grid"), expressMode: document.querySelector("#express-mode"),
+  startCharacter: document.querySelector("#start-character"), footnote: document.querySelector("#decision-footnote"),
 };
 
 function storageGet(key) {
@@ -67,11 +70,95 @@ function ideologyLabel(value) {
   return "derecha radical";
 }
 
+const clampScore = (value) => Math.max(0, Math.min(100, Math.round(value)));
+
+function deriveLegacyProfile(snapshot) {
+  const hidden = snapshot.hidden;
+  const visibleReach = Math.max(hidden.regionalSupport, hidden.internationalReputation, hidden.mediaNotoriety, hidden.urbanApproval, hidden.ruralApproval);
+  const declaredTotal = Math.max(0, snapshot.stats.cleanMoney) + Math.max(0, snapshot.stats.dirtyMoney);
+  const transparentFunds = declaredTotal === 0 ? 100 : 100 - (Math.max(0, snapshot.stats.dirtyMoney) / declaredTotal) * 115;
+  const recordPenalty = snapshot.memory.scandals.length * 5 + snapshot.memory.investigations.length * 3;
+  const impact = clampScore(snapshot.stats.approval * 0.4 + snapshot.stats.influence * 0.4 + visibleReach * 0.2);
+  const integrity = clampScore(hidden.credibility * 0.3 + hidden.personalReputation * 0.25 + (100 - snapshot.stats.legalRisk) * 0.3 + transparentFunds * 0.15 - recordPenalty);
+  const service = clampScore(snapshot.yearsInPublicOffice * 4 + snapshot.elections.won * 10 + Math.min(20, snapshot.history.length * 0.35));
+  const reach = clampScore(visibleReach * 0.75 + Math.max(hidden.partyCohesion, hidden.businessSupport, hidden.unionSupport) * 0.25);
+  const score = clampScore(impact * 0.35 + integrity * 0.3 + service * 0.2 + reach * 0.15);
+  return { score, impact, integrity, service, reach };
+}
+
+function deriveAchievements(snapshot) {
+  const hidden = snapshot.hidden;
+  const allies = Object.values(snapshot.relations).filter((item) => item.score >= 60).length;
+  const definitions = [
+    { icon: "★", title: "Llegó a Palacio", description: "Ganó una elección presidencial.", when: snapshot.elections.won > 0 || snapshot.tags.includes("fue-presidente") },
+    { icon: "★", title: "Mandato renovado", description: "Alcanzó dos victorias presidenciales.", when: snapshot.elections.won >= 2 },
+    { icon: "↻", title: "Siempre en campaña", description: "Disputó la presidencia al menos tres veces.", when: snapshot.presidentialRuns >= 3 },
+    { icon: "▥", title: "Vida de servicio", description: "Acumuló quince años en cargos públicos.", when: snapshot.yearsInPublicOffice >= 15 },
+    { icon: "○", title: "Manos limpias", description: "Cerró con poco riesgo, casi sin fondos clandestinos y sin escándalos.", when: snapshot.stats.legalRisk <= 20 && snapshot.stats.dirtyMoney <= 10000 && snapshot.memory.scandals.length === 0 },
+    { icon: "♥", title: "Respaldo popular", description: "Terminó con aceptación extraordinaria.", when: snapshot.stats.approval >= 75 },
+    { icon: "◆", title: "Poder de convocatoria", description: "Conservó una influencia extraordinaria.", when: snapshot.stats.influence >= 75 },
+    { icon: "▲", title: "Raíz territorial", description: "Construyó una base regional duradera.", when: hidden.regionalSupport >= 75 },
+    { icon: "◎", title: "Voz internacional", description: "Alcanzó reconocimiento fuera del país.", when: hidden.internationalReputation >= 75 },
+    { icon: "◉", title: "Dueño de la agenda", description: "Su notoriedad mediática superó a la organización.", when: hidden.mediaNotoriety >= 80 },
+    { icon: "▧", title: "Organización duradera", description: "Dejó una estructura partidaria cohesionada.", when: hidden.partyCohesion >= 75 },
+    { icon: "S/", title: "Autonomía financiera", description: "Terminó con más de un millón de soles declarados.", when: snapshot.stats.cleanMoney >= 1000000 },
+    { icon: "◇", title: "Red de confianza", description: "Conservó al menos tres aliados sólidos.", when: allies >= 3 },
+    { icon: "⚖", title: "Sobrevivió al expediente", description: "Atravesó varias investigaciones sin terminar en prisión.", when: snapshot.memory.investigations.length >= 2 && !snapshot.tags.includes("en-prision") },
+    { icon: "—", title: "Toda una trayectoria", description: "Tomó al menos treinta decisiones a lo largo de su vida política.", when: snapshot.history.length >= 30 },
+  ];
+  return definitions.filter((achievement) => achievement.when);
+}
+
 function formatStat(key, value) {
   const meta = GAME_CONFIG.stats[key];
   if (meta.format === "money") return formatMoney(value);
   if (meta.format === "ideology") return `${value > 0 ? "+" : ""}${value} · ${ideologyLabel(value)}`;
   return `${value}%`;
+}
+
+function formatInternalStat(key, value) {
+  if (key === "undeclaredWealth") return formatMoney(value);
+  return `${Math.round(value)}%`;
+}
+
+function formatNationalStat(key, value) {
+  const meta = GAME_CONFIG.nationalStats[key];
+  const rounded = Number.isInteger(value) ? value : Math.round(value * 10) / 10;
+  return meta.suffix ? `${rounded}${meta.suffix}` : `${rounded}/100`;
+}
+
+function normalizedStatValue(value, meta) {
+  if (!Number.isFinite(meta.min) || !Number.isFinite(meta.max) || meta.max === meta.min) return null;
+  return Math.max(0, Math.min(100, ((value - meta.min) / (meta.max - meta.min)) * 100));
+}
+
+function renderAllStatsGroup(title, entries, values, formatter) {
+  return `<section class="all-stats-group">
+    <div class="all-stats-group__title"><h3>${title}</h3><span>${entries.length}</span></div>
+    <div class="all-stats-grid">${entries.map(([key, meta]) => {
+      const value = values[key];
+      const meter = normalizedStatValue(value, meta);
+      return `<article class="all-stat-card">
+        <div><small>${meta.label}</small><strong>${formatter(key, value)}</strong></div>
+        ${meter === null ? `<span class="all-stat-card__rule"></span>` : `<span class="all-stat-card__meter"><i style="width:${meter}%"></i></span>`}
+      </article>`;
+    }).join("")}</div>
+  </section>`;
+}
+
+function renderAllStats(snapshot) {
+  elements.statsContent.innerHTML = [
+    renderAllStatsGroup("Principales", Object.entries(GAME_CONFIG.stats), snapshot.stats, formatStat),
+    renderAllStatsGroup("Internas", Object.entries(GAME_CONFIG.hiddenStats), snapshot.hidden, formatInternalStat),
+    renderAllStatsGroup("Indicadores nacionales", Object.entries(GAME_CONFIG.nationalStats), snapshot.national, formatNationalStat),
+  ].join("");
+}
+
+function setAllStatsOpen(open) {
+  elements.statsPanel.hidden = !open;
+  elements.statsToggle.setAttribute("aria-expanded", String(open));
+  elements.statsToggle.classList.toggle("is-open", open);
+  elements.statsToggle.querySelector("i").textContent = open ? "−" : "+";
 }
 
 function formatLedgerChange(key, entry) {
@@ -117,7 +204,7 @@ function ageRangeLabel(age) {
 
 function renderOrigins() {
   elements.originGrid.innerHTML = engine.origins.map((origin, index) => `
-    <button class="origin-card" type="button" data-origin="${origin.id}" style="--delay: ${index * 70}ms">
+    <button class="origin-card" type="button" data-origin="${origin.id}">
       <span class="origin-card__topline"><span class="origin-card__number">${String(index + 1).padStart(2, "0")}</span><span class="origin-card__icon" aria-hidden="true">${origin.icon ?? "·"}</span></span>
       <span class="origin-card__eyebrow">${origin.eyebrow ?? "Origen"}</span>
       <strong>${origin.name}</strong>
@@ -151,6 +238,7 @@ function openCharacterSetup(originId) {
   elements.setupOriginName.textContent = origin.name;
   elements.setupOriginDescription.textContent = origin.description;
   elements.characterName.value = "";
+  elements.expressMode.checked = false;
   renderBackgrounds(originId);
   updateSetupValidity();
   elements.originView.hidden = true;
@@ -256,9 +344,14 @@ function renderChanges(changes, snapshot) {
     return `<span class="change-chip ${delta > 0 ? "is-up" : "is-down"}">${meta.label} ${delta > 0 ? "+" : "−"}${amount}</span>`;
   });
   const relevantHidden = changes.hidden.filter(({ key }) => hiddenChangeMakesSense(key, snapshot)).slice(0, 3).map(({ key, delta }) => `<span class="change-chip is-context">${GAME_CONFIG.hiddenStats[key].label} ${delta > 0 ? "+" : ""}${delta}</span>`);
+  const publicRole = snapshot.tags.includes("presidente-actual") || /alcalde|gobernador|congres|diputad|senad|ministro|premier|vicepresidente/.test(snapshot.role.toLowerCase());
+  const relevantNational = publicRole ? changes.national.slice(0, 3).map(({ key, delta }) => {
+    const meta = GAME_CONFIG.nationalStats[key];
+    return `<span class="change-chip is-context">${meta.label} ${delta > 0 ? "+" : ""}${delta}${meta.suffix}</span>`;
+  }) : [];
   if (changes.role) visible.unshift(`<span class="change-chip is-role">Nuevo cargo: ${changes.role.to}</span>`);
   for (const scandal of changes.newScandals) visible.push(`<span class="change-chip is-alert">Escándalo: ${scandal.label}</span>`);
-  return [...visible, ...relevantHidden].join("");
+  return [...visible, ...relevantHidden, ...relevantNational].join("");
 }
 
 function showResult({ outcome, changes, headline, snapshot }) {
@@ -275,7 +368,9 @@ function showResult({ outcome, changes, headline, snapshot }) {
 function endingNarrative(snapshot) {
   const scandalCount = snapshot.memory.scandals.length;
   const crisisCount = snapshot.memory.crises.length + snapshot.memory.wars.length;
-  return `${snapshot.characterName}, desde ${snapshot.originName.toLowerCase()} y con el antecedente «${snapshot.backgroundName}», construyó una carrera de ${snapshot.history.length} decisiones. Su mayor cargo fue ${snapshot.highestRole.toLowerCase()}. En elecciones presidenciales obtuvo ${snapshot.elections.won} victoria${snapshot.elections.won === 1 ? "" : "s"} y ${snapshot.elections.lost} derrota${snapshot.elections.lost === 1 ? "" : "s"}. Cerró como ${snapshot.personality}, dejando ${scandalCount} escándalo${scandalCount === 1 ? "" : "s"} y ${crisisCount} crisis mayor${crisisCount === 1 ? "" : "es"} en el archivo.`;
+  const profile = deriveLegacyProfile(snapshot);
+  const achievements = deriveAchievements(snapshot);
+  return `${snapshot.characterName}, desde ${snapshot.originName.toLowerCase()} y con el antecedente «${snapshot.backgroundName}», construyó una carrera de ${snapshot.history.length} decisiones. Su mayor cargo fue ${snapshot.highestRole.toLowerCase()} y cerró como ${snapshot.personality}, con un legado de ${profile.score}/100. En presidenciales obtuvo ${snapshot.elections.won} victoria${snapshot.elections.won === 1 ? "" : "s"} y ${snapshot.elections.lost} derrota${snapshot.elections.lost === 1 ? "" : "s"}; el archivo conserva ${scandalCount} escándalo${scandalCount === 1 ? "" : "s"} y ${crisisCount} crisis mayor${crisisCount === 1 ? "" : "es"}. Logros: ${achievements.map((item) => item.title).join(", ") || "ningún hito extraordinario"}.`;
 }
 
 function renderEnding(snapshot) {
@@ -284,12 +379,22 @@ function renderEnding(snapshot) {
   const characterName = escapeHtml(snapshot.characterName);
   const narrative = escapeHtml(endingNarrative(snapshot));
   const ideology = ideologyLabel(snapshot.stats.ideology);
+  const legacy = deriveLegacyProfile(snapshot);
+  const achievements = deriveAchievements(snapshot);
   const allies = Object.entries(snapshot.relations).filter(([, item]) => item.score >= 60).map(([name]) => name);
   const enemies = [...snapshot.memory.enemies.map((item) => item.label), ...Object.entries(snapshot.relations).filter(([, item]) => item.score <= -20).map(([name]) => name)];
   elements.ending.hidden = false;
   elements.ending.innerHTML = `
     <div class="ending-card__icon">${ending.icon}</div><p class="section-label">Final de trayectoria · ${characterName}</p>
-    <h2>${ending.title}</h2><strong class="ending-card__label">${ending.label}</strong><p>${narrative}</p>
+    <h2>${escapeHtml(ending.title)}</h2><strong class="ending-card__label">${escapeHtml(ending.label)}</strong>
+    <p class="ending-card__verdict">${escapeHtml(ending.description)}</p><p class="ending-card__narrative">${narrative}</p>
+    <div class="legacy-index" aria-label="Índice de legado: ${legacy.score} de 100">
+      <div class="legacy-index__total"><small>Índice de legado</small><strong>${legacy.score}</strong><span>/100</span></div>
+      <div class="legacy-index__parts"><span><small>Impacto</small><b>${legacy.impact}</b></span><span><small>Integridad</small><b>${legacy.integrity}</b></span><span><small>Servicio</small><b>${legacy.service}</b></span><span><small>Alcance</small><b>${legacy.reach}</b></span></div>
+    </div>
+    <section class="achievement-section" aria-label="Logros desbloqueados"><div class="achievement-section__heading"><div><small>Archivo de hitos</small><h3>Logros desbloqueados</h3></div><strong>${achievements.length}</strong></div>
+      <div class="achievement-grid">${achievements.length ? achievements.map((achievement) => `<article><i aria-hidden="true">${achievement.icon}</i><div><b>${escapeHtml(achievement.title)}</b><small>${escapeHtml(achievement.description)}</small></div></article>`).join("") : `<p>No desbloqueaste un hito extraordinario; el arquetipo de legado resume igualmente tu trayectoria completa.</p>`}</div>
+    </section>
     <div class="ending-card__score ending-card__score--wide">
       <span><small>Mayor cargo</small><b>${snapshot.highestRole}</b></span><span><small>Años en cargos</small><b>${snapshot.yearsInPublicOffice}</b></span>
       <span><small>Presidenciales</small><b>${snapshot.elections.won}G · ${snapshot.elections.lost}P</b></span><span><small>Personalidad</small><b>${snapshot.personality}</b></span>
@@ -320,8 +425,8 @@ function render(snapshot) {
   elements.origin.textContent = snapshot.originName;
   elements.name.textContent = snapshot.characterName;
   const yearsToElection = Math.max(0, snapshot.nextElectionYear - snapshot.year);
-  elements.calendar.textContent = `${snapshot.year} · ${yearsToElection === 0 ? "Elecciones este año" : `Elecciones en ${yearsToElection} ${yearsToElection === 1 ? "año" : "años"}`} · ${snapshot.presidentialRuns} ${snapshot.presidentialRuns === 1 ? "postulación" : "postulaciones"}`;
-  renderStats(snapshot); renderContext(snapshot); renderHistory(snapshot); renderEnding(snapshot); renderDebug(snapshot);
+  elements.calendar.textContent = `${snapshot.year} · ${yearsToElection === 0 ? "Elecciones este año" : `Elecciones en ${yearsToElection} ${yearsToElection === 1 ? "año" : "años"}`} · ${snapshot.presidentialRuns} ${snapshot.presidentialRuns === 1 ? "postulación" : "postulaciones"}${snapshot.gameMode === "express" ? " · Express" : ""}`;
+  renderStats(snapshot); renderAllStats(snapshot); renderContext(snapshot); renderHistory(snapshot); renderEnding(snapshot); renderDebug(snapshot);
   if (!snapshot.ending) renderEvent(snapshot);
   document.body.classList.toggle("has-ending", Boolean(snapshot.ending));
 }
@@ -340,12 +445,13 @@ function updateUrlSeed() {
   history.replaceState(null, "", url);
 }
 
-function startGame(originId, { seed = activeSeed, characterName = "Alex", backgroundId = null } = {}) {
+function startGame(originId, { seed = activeSeed, characterName = "Alex", backgroundId = null, gameMode = "standard" } = {}) {
   activeSeed = seed;
   engine = new GameEngine({ seed: activeSeed });
-  const snapshot = engine.start(originId, { characterName, backgroundId });
+  const snapshot = engine.start(originId, { characterName, backgroundId, gameMode });
   updateUrlSeed();
   elements.originView.hidden = true; elements.setupView.hidden = true; elements.gameView.hidden = false; elements.result.hidden = true;
+  setAllStatsOpen(false);
   render(snapshot); persist(snapshot);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -365,6 +471,7 @@ function continueGame() {
   }
   updateUrlSeed();
   elements.originView.hidden = true; elements.setupView.hidden = true; elements.gameView.hidden = false; elements.result.hidden = true;
+  setAllStatsOpen(false);
   render(snapshot);
 }
 
@@ -387,6 +494,7 @@ function showOriginScreen({ newSeed = false } = {}) {
   storageRemove(SAVE_KEY);
   selectedOriginId = null; selectedBackgroundId = null;
   elements.gameView.hidden = true; elements.setupView.hidden = true; elements.originView.hidden = false; elements.result.hidden = true; elements.ending.hidden = true;
+  setAllStatsOpen(false);
   document.body.classList.remove("has-ending");
   renderOrigins(); updateUrlSeed(); updateContinuePanel();
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -399,7 +507,7 @@ function updateContinuePanel() {
     saved = null;
   }
   elements.continuePanel.hidden = !saved;
-  if (saved) elements.continueText.textContent = `${saved.characterName ?? "Tu personaje"} · ${saved.originName} · ${saved.age} años · ${saved.role}`;
+  if (saved) elements.continueText.textContent = `${saved.characterName ?? "Tu personaje"} · ${saved.originName} · ${saved.age} años · ${saved.role}${saved.gameMode === "express" ? " · Express" : ""}`;
 }
 
 async function copyText(text) {
@@ -408,6 +516,11 @@ async function copyText(text) {
 }
 
 document.addEventListener("click", (event) => {
+  const statsToggle = event.target.closest("#all-stats-toggle");
+  const closeStats = event.target.closest("[data-close-stats]");
+  if (statsToggle) setAllStatsOpen(elements.statsToggle.getAttribute("aria-expanded") !== "true");
+  else if (closeStats) setAllStatsOpen(false);
+  else if (!elements.statsPanel.hidden && !event.target.closest("#all-stats-panel")) setAllStatsOpen(false);
   const originButton = event.target.closest("[data-origin]");
   const optionButton = event.target.closest("[data-option]");
   if (originButton) openCharacterSetup(originButton.dataset.origin);
@@ -427,7 +540,7 @@ document.addEventListener("click", (event) => {
   const backgroundButton = event.target.closest("[data-background]");
   if (backgroundButton) { selectedBackgroundId = backgroundButton.dataset.background; renderBackgrounds(selectedOriginId); updateSetupValidity(); }
   const replay = event.target.closest("[data-replay-origin]");
-  if (replay) { const snapshot = engine.getSnapshot(); startGame(replay.dataset.replayOrigin, { seed: activeSeed, characterName: snapshot.characterName, backgroundId: snapshot.backgroundId }); }
+  if (replay) { const snapshot = engine.getSnapshot(); startGame(replay.dataset.replayOrigin, { seed: activeSeed, characterName: snapshot.characterName, backgroundId: snapshot.backgroundId, gameMode: snapshot.gameMode }); }
   const shareButton = event.target.closest("[data-share-ending]");
   if (shareButton) {
     copyText(endingNarrative(engine.getSnapshot())).then((copied) => {
@@ -447,6 +560,12 @@ document.addEventListener("click", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !elements.statsPanel.hidden) {
+    event.preventDefault();
+    setAllStatsOpen(false);
+    elements.statsToggle.focus();
+    return;
+  }
   if (event.defaultPrevented || event.repeat || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
   if (elements.gameView.hidden || engine.state?.endingId || ["INPUT", "TEXTAREA", "SELECT"].includes(event.target.tagName)) return;
   const key = event.key.toLowerCase();
@@ -464,7 +583,7 @@ elements.characterName.addEventListener("input", updateSetupValidity);
 elements.characterForm.addEventListener("submit", (event) => {
   event.preventDefault();
   if (!selectedOriginId || !selectedBackgroundId || !elements.characterName.value.trim()) return;
-  startGame(selectedOriginId, { characterName: elements.characterName.value, backgroundId: selectedBackgroundId });
+  startGame(selectedOriginId, { characterName: elements.characterName.value, backgroundId: selectedBackgroundId, gameMode: elements.expressMode.checked ? "express" : "standard" });
 });
 
 const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");

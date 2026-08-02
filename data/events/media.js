@@ -3,13 +3,13 @@ export const mediaEvents = [
     id: "podcaster-lanzamiento",
     initialOnly: true,
     category: "media",
-    title: "Un micrófono y ninguna línea editorial",
-    kicker: "Nace tu canal político",
-    description: "Tienes equipo prestado, una pequeña audiencia y libertad total. La identidad que elijas atraerá aliados, anunciantes y enemigos distintos.",
+    title: "El canal cruza la frontera política",
+    kicker: "Tu audiencia exige una línea",
+    description: "El canal ya tiene audiencia, fuentes y patrocinadores. Ahora debes definir qué línea seguirá cuando informar también empiece a producir poder.",
     options: [
       {
         id: "podcast-ideologico",
-        label: "Crear un canal ideológico",
+        label: "Adoptar una línea ideológica",
         hint: "Audiencia leal · alta polarización",
         effects: { approval: 7, influence: 8, ideology: -28, cleanMoney: -5000 },
         hiddenEffects: { mediaNotoriety: 14, credibility: 4, polarization: 20, unionSupport: 10, businessSupport: -8 },
@@ -21,8 +21,8 @@ export const mediaEvents = [
       },
       {
         id: "podcast-sensacionalista",
-        label: "Apostar por el sensacionalismo",
-        hint: "Crecimiento rápido · resultado impredecible",
+        label: "Apostar por titulares sensacionalistas",
+        hint: "Crecimiento rápido · credibilidad frágil",
         effects: { approval: 5, influence: 10, cleanMoney: -7000 },
         hiddenEffects: { mediaNotoriety: 24, credibility: -14, polarization: 18, leakExposure: 12 },
         addTags: ["medio-sensacionalista"],

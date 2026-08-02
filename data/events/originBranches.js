@@ -25,10 +25,10 @@ export const originBranchEvents = [
   },
   {
     id: "provincia-favor-cobrado", directedOnly: true, category: "regional",
-    title: "La constructora presenta su primera factura", kicker: "Continuación de origen · el favor vuelve", description: "Tras inaugurar la carretera, la empresa exige controlar un nuevo contrato municipal y recuerda el acuerdo que aceleró la obra.",
+    title: "La constructora presenta su primera factura", kicker: "Continuación de origen · el favor vuelve", description: "Tras la inauguración, la empresa exige que uses tus contactos para controlar un nuevo contrato municipal y recuerda el acuerdo que aceleró la obra.",
     options: [
       { id: "romper-constructora", label: "Romper el acuerdo", hint: "Pierde dinero y aliados · reduce riesgo", allowDirtyShortfall: true, effects: { influence: -6, legalRisk: -8, dirtyMoney: -8000 }, hiddenEffects: { credibility: 8 }, addEnemies: [{ id: "constructora-traicionada", label: "Constructora apartada tras el primer acuerdo" }], outcomes: [{ id: "empresa-amenaza", weight: 100, headline: "La constructora amenaza con revelar el acuerdo", text: "Recuperas autonomía, pero el expediente queda como riesgo futuro." }] },
-      { id: "nuevo-favor-constructora", label: "Conceder el nuevo contrato", hint: "Caja y obras · exposición creciente", effects: { dirtyMoney: 42000, influence: 7, legalRisk: 13 }, hiddenEffects: { leakExposure: 12 }, addTags: ["red-contratos"], outcomes: [{ id: "red-municipal", weight: 100, headline: "La constructora amplía su dominio municipal", text: "Las obras avanzan y también crece el número de personas que conocen el trato." }] },
+      { id: "nuevo-favor-constructora", label: "Presionar por el nuevo contrato", hint: "Caja y obras · exposición creciente", effects: { dirtyMoney: 42000, influence: 7, legalRisk: 13 }, hiddenEffects: { leakExposure: 12 }, addTags: ["red-contratos"], outcomes: [{ id: "red-municipal", weight: 100, headline: "La constructora amplía su dominio municipal", text: "Tus contactos inclinan el proceso. Las obras avanzan y también crece el número de personas que conocen el trato." }] },
     ],
   },
   {

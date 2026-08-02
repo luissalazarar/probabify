@@ -1,14 +1,14 @@
 export const BACKGROUNDS = [
   {
-    id: "reinsercion-mrta", originId: "reinsercion", initialEvent: "memoria-mrta", shortName: "MRTA", name: "MRTA · Movimiento Revolucionario Todos Amigos",
-    eyebrow: "Insurgencia urbana", history: "Fuiste enlace periférico de Todos Amigos. Secuestros, acciones armadas y una toma de residencia diplomática dejaron rehenes, víctimas y una condena social que ninguna campaña puede borrar.",
+    id: "reinsercion-mrta", originId: "reinsercion", initialEvent: "memoria-mrta", initialRole: "Exmilitante del MRTA", shortName: "MRTA", name: "Movimiento Revolucionario Todos Amigos (MRTA)",
+    eyebrow: "Insurgencia urbana", history: "Fuiste enlace periférico del Movimiento Revolucionario Todos Amigos (MRTA). Secuestros, acciones armadas y una toma de residencia diplomática dejaron rehenes, víctimas y una condena social que ninguna campaña puede borrar.",
     impact: "Más contactos urbanos y sindicales; mayor vigilancia, pero una ruta de reconciliación relativamente más viable.",
     effects: { approval: 5, influence: 4, legalRisk: 7, ideology: -8 }, hiddenEffects: { urbanApproval: 9, unionSupport: 8, credibility: 3, internationalReputation: -8, prosecutionRelation: -5 },
     tags: ["background-mrta", "red-urbana-antigua"], relations: { "Celia Montes": { role: "Exmilitante convertida en mediadora", score: 58, loyalty: 64, knows: ["red urbana desmovilizada"] } },
     eventWeights: { "reinsercion-mesa-democratica": 1.45, "protesta-regional": 1.2, "archivo-subversivo": 1.35, "memoria-mrta": 2.4 },
   },
   {
-    id: "reinsercion-sl", originId: "reinsercion", initialEvent: "memoria-sl", shortName: "SL", name: "SL · Somos Lunáticos",
+    id: "reinsercion-sl", originId: "reinsercion", initialEvent: "memoria-sl", initialRole: "Excuadro de Somos Lunáticos", shortName: "SL", name: "Somos Lunáticos (SL)",
     eyebrow: "Organización totalitaria", history: "Fuiste cuadro regional de Somos Lunáticos. Su violencia devastó comunidades rurales y convirtió el terror en método; tu retorno empieza bajo rechazo extremo y memoria documentada.",
     impact: "Conservas una red disciplinada, pero empiezas con más riesgo judicial, polarización extrema y muy poca confianza rural.",
     effects: { approval: -9, influence: 11, legalRisk: 19, ideology: -16 }, hiddenEffects: { ruralApproval: -20, credibility: -16, polarization: 22, prosecutionRelation: -14, mediaNotoriety: 9, personalReputation: -15 },
@@ -17,7 +17,7 @@ export const BACKGROUNDS = [
   },
 
   {
-    id: "dinastia-palacio", originId: "dinastia", initialEvent: "archivo-palacio", shortName: "Casa presidencial", name: "La familia que llegó a Palacio",
+    id: "dinastia-palacio", originId: "dinastia", initialEvent: "archivo-palacio", initialRole: "Heredera de una familia presidencial", shortName: "Casa presidencial", name: "La familia que llegó a Palacio",
     eyebrow: "Poder nacional", history: "Tu madre, Aurora Del Pino, gobernó tras cerrar el Congreso y reformar la Constitución. El régimen cayó cuando aparecieron videos de una salita y una renuncia enviada desde Asia; el apellido conserva votos, ministros y expedientes.",
     impact: "Máxima influencia inicial y acceso nacional; menor aceptación y más riesgo de escándalos heredados.",
     effects: { approval: -5, influence: 11, cleanMoney: 55000, legalRisk: 7 }, hiddenEffects: { congressSupport: 13, mediaNotoriety: 12, partyCohesion: 10, credibility: -7, leakExposure: 10 },
@@ -25,7 +25,7 @@ export const BACKGROUNDS = [
     eventWeights: { "oferta-ministerial": 1.5, "control-partido": 1.45, "secreto-familiar": 1.5, "archivo-palacio": 2.4, "cocteles-naranjas": 1.45, "agendas-primera-dama": 1.45, "hermano-en-la-sombra": 1.55, "diarios-chicha": 1.25 },
   },
   {
-    id: "dinastia-regional", originId: "dinastia", initialEvent: "herencia-regional", shortName: "Clan regional", name: "La dinastía de gobernadores",
+    id: "dinastia-regional", originId: "dinastia", initialEvent: "herencia-regional", initialRole: "Heredera de un clan regional", shortName: "Clan regional", name: "La dinastía de gobernadores",
     eyebrow: "Poder territorial", history: "Tres generaciones del clan Acuña del Norte controlaron alcaldías, universidad, gobierno regional y proveedores. Fuera de Lima el apellido moviliza votos; en la capital recuerda plagios, contratos y un partido construido como empresa familiar.",
     impact: "Mayor aprobación rural y estructura territorial; más exposición a contratos regionales cuestionables.",
     effects: { approval: 7, influence: 5, cleanMoney: 24000, legalRisk: 8 }, hiddenEffects: { ruralApproval: 14, regionalSupport: 17, businessSupport: 8, urbanApproval: -6, leakExposure: 7 },
@@ -33,7 +33,7 @@ export const BACKGROUNDS = [
     eventWeights: { "salto-regional": 1.45, "proyecto-minero": 1.3, "contrato-municipal": 1.35, "herencia-regional": 2.4, "dinamicos-del-centro": 1.55, "centralita-regional": 1.5, "comunicore-municipal": 1.35 },
   },
   {
-    id: "dinastia-parlamentaria", originId: "dinastia", initialEvent: "archivo-parlamentario", shortName: "Linaje parlamentario", name: "La familia de veinte años en el Congreso",
+    id: "dinastia-parlamentaria", originId: "dinastia", initialEvent: "archivo-parlamentario", initialRole: "Heredera de un linaje parlamentario", shortName: "Linaje parlamentario", name: "La familia de veinte años en el Congreso",
     eyebrow: "Oficio legislativo", history: "Tu familia nunca alcanzó Palacio, pero sobrevivió al Congreso unicameral y ahora vuelve con la bicameralidad. Conservó comisiones, asesores y alianzas cambiantes durante cinco periodos legislativos.",
     impact: "Más credibilidad técnica y apoyo congresal; menos dinero y menor arrastre popular fuera del Legislativo.",
     effects: { approval: 2, influence: 7, cleanMoney: 12000, legalRisk: 2 }, hiddenEffects: { congressSupport: 16, credibility: 12, partyCohesion: 8, ruralApproval: -5 },
@@ -42,7 +42,7 @@ export const BACKGROUNDS = [
   },
 
   {
-    id: "provincia-rondas", originId: "provincia", initialEvent: "justicia-rondas", shortName: "Rondas campesinas", name: "Dirigente de rondas campesinas",
+    id: "provincia-rondas", originId: "provincia", initialEvent: "justicia-rondas", initialRole: "Dirigente de rondas campesinas", shortName: "Rondas campesinas", name: "Dirigente de rondas campesinas",
     eyebrow: "Autoridad comunal", history: "Organizaste rondas en una provincia andina donde el Estado llegaba tarde. Su historia mezcla defensa comunal durante la violencia, justicia local y líderes que luego saltaron desde la plaza rural hasta Palacio.",
     impact: "Fuerte respaldo rural y capacidad de movilización; relación más tensa con justicia y sectores urbanos.",
     effects: { approval: 8, influence: 4, legalRisk: 4, ideology: -7 }, hiddenEffects: { ruralApproval: 17, regionalSupport: 12, unionSupport: 8, judiciaryRelation: -7, urbanApproval: -5 },
@@ -50,15 +50,15 @@ export const BACKGROUNDS = [
     eventWeights: { "protesta-regional": 1.45, "seguridad-ciudadana": 1.3, "asamblea-comunal": 1.45, "justicia-rondas": 2.5 },
   },
   {
-    id: "provincia-tecnico", originId: "provincia", initialEvent: "auditoria-municipal", shortName: "Gestor municipal", name: "El técnico que hizo funcionar el municipio",
-    eyebrow: "Gestión pública", history: "Antes de ser regidor dirigiste presupuesto después de la descentralización. Conoces expedientes, adicionales y obras paralizadas: el territorio donde una firma técnica puede terminar en inauguración o carpeta fiscal.",
+    id: "provincia-tecnico", originId: "provincia", initialEvent: "auditoria-municipal", initialRole: "Gestor municipal", shortName: "Gestor municipal", name: "El técnico que hizo funcionar el municipio",
+    eyebrow: "Gestión pública", history: "Dirigiste presupuesto municipal después de la descentralización. Conoces expedientes, adicionales y obras paralizadas: el territorio donde una firma técnica puede terminar en inauguración o carpeta fiscal.",
     impact: "Mayor credibilidad, dinero limpio y capacidad de gestión; menos magnetismo popular y menor red militante.",
     effects: { approval: -2, influence: 5, cleanMoney: 16000, legalRisk: -3 }, hiddenEffects: { credibility: 17, businessSupport: 8, regionalSupport: 7, mediaNotoriety: -6 },
     tags: ["background-gestor", "tecnico-municipal"], relations: { "Ana Luján": { role: "Jefa de presupuesto municipal", score: 68, loyalty: 62, knows: ["expedientes de obras locales"] } },
     eventWeights: { "presupuesto-participativo": 1.55, "concesion-transporte": 1.35, "provincia-control-obra": 1.4, "auditoria-municipal": 2.5, "comunicore-municipal": 1.55, "dinamicos-del-centro": 1.35 },
   },
   {
-    id: "provincia-ambiental", originId: "provincia", initialEvent: "retorno-minera", shortName: "Frente ambiental", name: "Vocero del frente contra la mina",
+    id: "provincia-ambiental", originId: "provincia", initialEvent: "retorno-minera", initialRole: "Vocero de un frente ambiental", shortName: "Frente ambiental", name: "Vocero del frente contra la mina",
     eyebrow: "Conflicto extractivo", history: "Te hiciste conocido al grito de «Conga Clara no va» y frenaste un proyecto que ofrecía reservorios a cambio de lagunas. Para la comunidad defendiste el agua; para la empresa bloqueaste empleo y canon.",
     impact: "Más respaldo rural y notoriedad; fuerte rechazo empresarial, polarización y riesgo en futuras protestas.",
     effects: { approval: 6, influence: 7, legalRisk: 7, ideology: -15 }, hiddenEffects: { ruralApproval: 15, regionalSupport: 13, businessSupport: -22, polarization: 11, mediaNotoriety: 8 },
@@ -67,7 +67,7 @@ export const BACKGROUNDS = [
   },
 
   {
-    id: "empresario-construccion", originId: "empresario", initialEvent: "adenda-heredada", shortName: "Infraestructura", name: "Dueño de una constructora nacional",
+    id: "empresario-construccion", originId: "empresario", initialEvent: "adenda-heredada", initialRole: "Director de una constructora", shortName: "Infraestructura", name: "Dueño de una constructora nacional",
     eyebrow: "Contratos y obras", history: "Tu grupo, Caminos del Sur, creció junto a Odebrasa y el Club del Cemento. Levantó carreteras y hospitales, pero cada consorcio, buena pro y adenda conecta tu fortuna con autoridades.",
     impact: "Mucho capital e influencia contractual; mayor dinero opaco, riesgo judicial y exposición a filtraciones.",
     effects: { influence: 9, cleanMoney: 260000, dirtyMoney: 22000, legalRisk: 12 }, hiddenEffects: { businessSupport: 13, regionalSupport: 8, leakExposure: 13, credibility: -6 },
@@ -75,7 +75,7 @@ export const BACKGROUNDS = [
     eventWeights: { "contrato-municipal": 1.4, "concesion-transporte": 1.4, "investigacion-avanzada": 1.15, "adenda-heredada": 2.6, "petroaudios-faenon": 1.45, "campana-no-revocatoria": 1.4, "comunicore-municipal": 1.35 },
   },
   {
-    id: "empresario-tecnologia", originId: "empresario", initialEvent: "datos-plataforma", shortName: "Tecnología", name: "Fundador de una plataforma tecnológica",
+    id: "empresario-tecnologia", originId: "empresario", initialEvent: "datos-plataforma", initialRole: "Fundador tecnológico", shortName: "Tecnología", name: "Fundador de una plataforma tecnológica",
     eyebrow: "Fortuna nueva", history: "Construiste Yapeando, una plataforma de pagos y servicios que creció antes que la regulación. El negocio te dejó prestigio urbano y una base de datos capaz de describir mejor a un votante que cualquier padrón partidario.",
     impact: "Mayor aprobación urbana, credibilidad e imagen moderna; menos estructura territorial y conflictos regulatorios propios.",
     effects: { approval: 6, influence: 4, cleanMoney: 140000, ideology: 8 }, hiddenEffects: { urbanApproval: 15, mediaNotoriety: 12, credibility: 9, internationalReputation: 8, unionSupport: -8 },
@@ -83,7 +83,7 @@ export const BACKGROUNDS = [
     eventWeights: { "negocio-expansion": 1.2, "programa-dominical": 1.3, "guerra-de-redes": 1.25, "datos-plataforma": 2.6 },
   },
   {
-    id: "empresario-minero", originId: "empresario", initialEvent: "pasivo-minero", shortName: "Minería exportadora", name: "Presidente de un grupo minero exportador",
+    id: "empresario-minero", originId: "empresario", initialEvent: "pasivo-minero", initialRole: "Ejecutivo minero", shortName: "Minería exportadora", name: "Presidente de un grupo minero exportador",
     eyebrow: "Capital extractivo", history: "Tu empresa opera Yanaplata, Tía Marina y varios puertos de exportación. Generó empleo y divisas, mientras comunidades conservan actas sobre agua, tierras, relaves y promesas incumplidas.",
     impact: "Capital e influencia internacional muy altos; rechazo rural, conflictividad y decisiones mineras mucho más sensibles.",
     effects: { approval: -6, influence: 8, cleanMoney: 360000, legalRisk: 6, ideology: 12 }, hiddenEffects: { businessSupport: 17, internationalReputation: 14, ruralApproval: -16, regionalSupport: -8, polarization: 8 },
@@ -92,7 +92,7 @@ export const BACKGROUNDS = [
   },
 
   {
-    id: "podcaster-investigacion", originId: "podcaster", initialEvent: "fuente-del-pasado", shortName: "Periodismo", name: "Reportero de investigación independiente",
+    id: "podcaster-investigacion", originId: "podcaster", initialEvent: "fuente-del-pasado", initialRole: "Reportero independiente", shortName: "Periodismo", name: "Reportero de investigación independiente",
     eyebrow: "Documentos y fuentes", history: "Dejaste IDL-Reportajes cuando una investigación sobre los Cuellos Almidonados fue frenada. Llegas al canal con audios, fuentes fiscales y la obligación de no convertir una filtración en sentencia.",
     impact: "Credibilidad y respaldo periodístico altos; más riesgo legal, costos y exposición de fuentes.",
     effects: { approval: 2, influence: 3, cleanMoney: -5000, legalRisk: 6 }, hiddenEffects: { credibility: 19, pressSupport: 15, leakExposure: 13, mediaNotoriety: 5 },
@@ -100,7 +100,7 @@ export const BACKGROUNDS = [
     eventWeights: { "filtracion-podcast": 1.65, "practicas-periodismo": 1.45, "programa-dominical": 1.25, "fuente-del-pasado": 2.6, "rumor-ataud-garnica": 1.8, "pagina-once": 1.55, "diarios-chicha": 1.5 },
   },
   {
-    id: "podcaster-viral", originId: "podcaster", initialEvent: "patrocinador-viral", shortName: "Entretenimiento viral", name: "Comediante y streamer convertido en comentarista",
+    id: "podcaster-viral", originId: "podcaster", initialEvent: "patrocinador-viral", initialRole: "Comentarista digital", shortName: "Entretenimiento viral", name: "Comediante y streamer convertido en comentarista",
     eyebrow: "Audiencia masiva", history: "Construiste el Diario de Churwen con humor, sátira y clips antes de entrar en política. Una campaña tecnocrática ya usó tus entrevistas para llegar a jóvenes; la audiencia discute si eres medio, influencer o militante.",
     impact: "Máxima notoriedad, aprobación e ingresos publicitarios; credibilidad menor y polarización más alta.",
     effects: { approval: 9, influence: 8, cleanMoney: 22000, legalRisk: 3 }, hiddenEffects: { mediaNotoriety: 20, credibility: -13, polarization: 12, urbanApproval: 10, pressSupport: -9 },
@@ -108,7 +108,7 @@ export const BACKGROUNDS = [
     eventWeights: { "redes-viral": 1.7, "publicidad-politica": 1.55, "guerra-de-redes": 1.45, "patrocinador-viral": 2.7, "rumor-ataud-garnica": 1.4, "remix-bebito-chu-chu": 1.8, "cilicio-candidato": 1.35 },
   },
   {
-    id: "podcaster-academico", originId: "podcaster", initialEvent: "debate-universitario", shortName: "Divulgación académica", name: "Profesor y divulgador de políticas públicas",
+    id: "podcaster-academico", originId: "podcaster", initialEvent: "debate-universitario", initialRole: "Profesor universitario", shortName: "Divulgación académica", name: "Profesor y divulgador de políticas públicas",
     eyebrow: "Ideas antes que espectáculo", history: "Tus clases sobre economía y Estado alimentaron al partido Morado Claro, lleno de técnicos y corto de comités. Tienes especialistas, universidades y planes; todavía no tienes personeros en todo el país.",
     impact: "Credibilidad e influencia técnica altas; crecimiento mediático lento, menor polarización y menos dinero inmediato.",
     effects: { approval: -2, influence: -3, cleanMoney: 9000, legalRisk: -2 }, statMultipliers: { ideology: 0.45 }, hiddenEffects: { credibility: 21, internationalReputation: 11, mediaNotoriety: -9, polarization: -12, pressSupport: 7 },

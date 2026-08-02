@@ -1,5 +1,5 @@
 export const GAME_CONFIG = {
-  name: "Probabify",
+  name: "¿Hasta dónde llegarías?",
   subtitle: "Tu carrera política en el Perú",
   minAge: 18,
   maxAge: 70,
@@ -64,6 +64,14 @@ export const GAME_CONFIG = {
     { id: "auge-tecnologico", label: "Auge tecnológico", effects: { growth: 2, investment: 12, unemployment: -2 } },
     { id: "descontento-juvenil", label: "Descontento juvenil", effects: { socialConflict: 8 } },
     { id: "corrupcion", label: "Corrupción generalizada", effects: { investment: -5, socialConflict: 8 } },
+    { id: "nino-costero", label: "Emergencia por El Niño Costero", eventOnly: true },
+    { id: "emergencia-sismica", label: "Emergencia sísmica nacional", eventOnly: true },
+    { id: "sequia-andina", label: "Sequía prolongada en el sur", eventOnly: true },
+    { id: "incendios-amazonia", label: "Incendios y humo en la Amazonía", eventOnly: true },
+    { id: "emergencia-sanitaria", label: "Emergencia sanitaria nacional", eventOnly: true },
+    { id: "derrame-amazonico", label: "Derrame petrolero en la Amazonía", eventOnly: true },
+    { id: "tension-fronteriza", label: "Tensión diplomática en la frontera", eventOnly: true },
+    { id: "crisis-salud", label: "Colapso del sistema nacional de salud", eventOnly: true },
   ],
   debug: false,
 };

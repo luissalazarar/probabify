@@ -131,10 +131,10 @@ export const decadeExtraEvents = [
 
   // Cincuentas: políticas nacionales, altos cargos y decisiones de Estado.
   {
-    id: "oferta-vicepresidencia", maxOccurrences: 1, group: "eleccion", groupCooldown: 2, weight: 8, requirements: { all: [{ age: { min: 48, max: 64 } }, { stat: "influence", min: 48 }, { missingTag: "presidente-actual" }] }, category: "election",
+    id: "oferta-vicepresidencia", directedOnly: true, maxOccurrences: 1, group: "eleccion", groupCooldown: 2, weight: 8, requirements: { all: [{ age: { min: 48, max: 64 } }, { stat: "influence", min: 48 }, { missingTag: "presidente-actual" }] }, category: "election",
     title: "Una fórmula presidencial busca tu nombre", kicker: "Poder sin encabezar la boleta", description: "El favorito propone que integres su fórmula como vicepresidente. Tendrás acceso a la campaña, pero el proyecto no será completamente tuyo.",
     options: [
-      { id: "aceptar-vicepresidencia", label: "Aceptar la fórmula", hint: "Alta probabilidad de cargo · menor autonomía", effects: { cleanMoney: -24000, influence: 9 }, hiddenEffects: { partyCohesion: 9, congressSupport: 6 }, outcomes: [{ id: "formula-gana", weight: 54, headline: "La fórmula gana la elección presidencial", text: "Asumes la vicepresidencia y quedas a un paso de Palacio.", setRole: "Vicepresidente del Perú", roleDuration: 5, effects: { approval: 7, influence: 12 }, addTags: ["fue-vicepresidente"] }, { id: "formula-pierde", weight: 46, headline: "La fórmula pierde en segunda vuelta", text: "Conservas una red nacional y quedas asociado a la derrota.", setRole: "Excandidato a vicepresidente", effects: { approval: -5, influence: 4 } }] },
+      { id: "aceptar-vicepresidencia", label: "Aceptar la fórmula", hint: "Acceso a la campaña · menor autonomía", effects: { cleanMoney: -24000, influence: 9 }, hiddenEffects: { partyCohesion: 9, congressSupport: 6 }, outcomes: [{ id: "formula-gana", weight: 54, headline: "La fórmula gana la elección presidencial", text: "Asumes la vicepresidencia y quedas a un paso de Palacio.", setRole: "Vicepresidente del Perú", roleDuration: 5, effects: { approval: 7, influence: 12 }, addTags: ["fue-vicepresidente"] }, { id: "formula-pierde", weight: 46, headline: "La fórmula pierde en segunda vuelta", text: "Conservas una red nacional y quedas asociado a la derrota.", setRole: "Excandidato a vicepresidente", effects: { approval: -5, influence: 4 } }] },
       { id: "rechazar-vicepresidencia", label: "Rechazar y preparar candidatura propia", hint: "Autonomía · oportunidad perdida", effects: { influence: 3, cleanMoney: -6000 }, hiddenEffects: { credibility: 5 }, outcomes: [{ id: "formula-sin-ti", weight: 100, headline: "Rechazas integrar una fórmula ajena", text: "La decisión preserva tu proyecto para el próximo ciclo." }] },
     ],
   },
@@ -148,7 +148,7 @@ export const decadeExtraEvents = [
     ],
   },
   {
-    id: "censura-ministerial", repeatable: true, cooldown: 5, group: "congreso", groupCooldown: 2, weight: 10, requirements: { roleIncludes: "Ministro" }, category: "office",
+    id: "censura-ministerial", repeatable: true, cooldown: 5, group: "congreso", groupCooldown: 2, weight: 10, requirements: { role: "Ministro de Estado" }, category: "office",
     title: "El Congreso prepara tu censura", kicker: "El cargo depende de votos ajenos", description: "Una interpelación terminó mal y varias bancadas anuncian una moción. Puedes renunciar, negociar votos o desafiar al pleno.",
     options: [
       { id: "renunciar-ministerio", label: "Renunciar antes de la censura", hint: "Protege reputación · pierde cargo", effects: { approval: 3, influence: -7 }, hiddenEffects: { credibility: 7, congressSupport: 3 }, setRole: "Exministro", outcomes: [{ id: "renuncia-antes-censura", weight: 100, headline: "Renuncias antes del voto de censura", text: "La salida ordenada evita una derrota formal y deja abierta una futura candidatura." }] },

@@ -60,7 +60,7 @@ export const twentiesEvents = [
     repeatable: true,
     cooldown: 4,
     weight: 10,
-    requirements: { age: { max: 45 } },
+    requirements: { all: [{ age: { max: 45 } }, { not: { careerTrack: "publicAuthority" } }] },
     title: "Una campaña ajena",
     kicker: "Experiencia a sueldo",
     description: "Un candidato municipal te contrata para ordenar su campaña. Descubres que asesorar puede ser tan rentable como postular.",
@@ -70,7 +70,7 @@ export const twentiesEvents = [
     ],
   },
   {
-    id: "eleccion-universitaria", maxOccurrences: 1, weight: 12, requirements: { age: { max: 31 } }, category: "early-career",
+    id: "eleccion-universitaria", maxOccurrences: 1, weight: 12, requirements: { all: [{ age: { max: 31 } }, { not: { careerTrack: "publicAuthority" } }] }, category: "early-career",
     title: "La primera elección", kicker: "Un campus como laboratorio político", description: "Una lista estudiantil te propone encabezarla. No hay sueldo, pero sí una primera maquinaria y adversarios que recordarás durante años.",
     options: [
       { id: "lista-estudiantil", label: "Encabezar la lista", hint: "Experiencia temprana · alta exposición", effects: { cleanMoney: -2500, influence: 6 }, hiddenEffects: { mediaNotoriety: 5, credibility: 4 }, outcomes: [{ id: "centro-federado-gana", weight: 54, headline: "Tu primera campaña termina en victoria", text: "Aprendes a organizar votos y construyes una pequeña red de cuadros.", effects: { approval: 6, influence: 7 }, addTags: ["experiencia-electoral"] }, { id: "centro-federado-pierde", weight: 46, headline: "Una derrota estudiantil deja lecciones útiles", text: "Pierdes por poco, pero varios voluntarios permanecen contigo.", effects: { influence: 3 }, addAllies: [{ id: "cuadros-universitarios", label: "Antiguos dirigentes estudiantiles" }] }] },
@@ -78,7 +78,7 @@ export const twentiesEvents = [
     ],
   },
   {
-    id: "practicas-congreso", maxOccurrences: 1, weight: 11, requirements: { age: { max: 35 } }, category: "office",
+    id: "practicas-congreso", maxOccurrences: 1, weight: 11, requirements: { all: [{ age: { max: 35 } }, { not: { careerTrack: "publicAuthority" } }] }, category: "office",
     title: "Un escritorio en el Congreso", kicker: "La política vista desde dentro", description: "Te ofrecen un puesto temporal en una comisión. El trabajo paga poco, pero permite conocer expedientes, asesores y rutinas del poder.",
     options: [
       { id: "aprender-comision", label: "Trabajar técnicamente", hint: "Credibilidad y contactos institucionales", effects: { cleanMoney: 9000, influence: 5 }, hiddenEffects: { credibility: 10, congressSupport: 6 }, outcomes: [{ id: "informe-congreso", weight: 100, headline: "Un informe técnico lleva tu firma", text: "La comisión usa tu trabajo y varios congresistas aprenden tu nombre.", setRole: "Asesor parlamentario", addTags: ["asesor"] }] },
@@ -87,7 +87,7 @@ export const twentiesEvents = [
   },
   {
     id: "voluntariado-desastre", repeatable: true, cooldown: 8, weight: 8, requirements: { age: { max: 40 } }, category: "social",
-    title: "Una emergencia revela liderazgos", kicker: "Ayuda antes que discurso", description: "Lluvias destruyen viviendas en una provincia. Puedes organizar ayuda directamente o convertir la campaña solidaria en una vitrina política.",
+    title: "Un deslizamiento local revela liderazgos", kicker: "Una provincia aislada · ayuda antes que discurso", description: "Un deslizamiento destruye viviendas y corta una carretera provincial sin activar una emergencia nacional. Puedes organizar ayuda directamente o convertir la campaña solidaria en una vitrina política.",
     options: [
       { id: "ayuda-sin-logo", label: "Organizar ayuda sin propaganda", hint: "Costo alto · reputación personal", effects: { cleanMoney: -12000, approval: 7 }, hiddenEffects: { ruralApproval: 12, personalReputation: 12, credibility: 8 }, outcomes: [{ id: "brigada-solidaria", weight: 100, headline: "Una brigada ciudadana llega antes que el Estado", text: "La comunidad recuerda tu presencia aunque casi no aparezca en televisión." }] },
       { id: "ayuda-con-camaras", label: "Llevar cámaras y símbolos", hint: "Mayor notoriedad · posible rechazo", effects: { cleanMoney: -7000, influence: 4 }, hiddenEffects: { mediaNotoriety: 11 }, outcomes: [{ id: "teleton-politica", weight: 57, headline: "La campaña solidaria moviliza miles de aportes", text: "La transmisión recauda fondos y eleva tu perfil.", effects: { approval: 9 } }, { id: "ayuda-oportunista", weight: 43, headline: "Damnificados rechazan la propaganda", text: "Una discusión frente a cámaras instala la idea de oportunismo.", effects: { approval: -10 }, hiddenEffects: { credibility: -7 } }] },

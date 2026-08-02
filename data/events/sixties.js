@@ -87,7 +87,7 @@ export const sixtiesEvents = [
     ],
   },
   {
-    id: "archivo-de-legado", repeatable: true, cooldown: 6, weight: 10, requirements: { all: [{ age: { min: 62 } }, { any: [{ state: "presidentialRuns", min: 1 }, { hasTag: "fue-ministro" }, { hasTag: "congresista" }] }] }, category: "legacy",
+    id: "archivo-de-legado", repeatable: true, cooldown: 6, weight: 10, requirements: { all: [{ age: { min: 62 } }, { any: [{ state: "presidentialRuns", min: 1 }, { hasTag: "fue-ministro" }, { hasAnyTag: ["congresista", "fue-congresista"] }] }] }, category: "legacy",
     title: "Una universidad pide tu archivo", kicker: "Quién contará tu versión", description: "Cartas, agendas y documentos podrían convertirse en un archivo público. Algunos también contienen acuerdos que nunca fueron conocidos.",
     options: [
       { id: "archivo-completo", label: "Entregar el archivo completo", hint: "Credibilidad · posibles revelaciones", effects: { approval: 5, cleanMoney: 12000 }, hiddenEffects: { credibility: 14, internationalReputation: 7, leakExposure: -8 }, outcomes: [{ id: "archivo-historico-abre", weight: 74, headline: "Un archivo político queda abierto a investigadores", text: "Los documentos mejoran la comprensión de tu carrera y confirman varias versiones." }, { id: "documento-incomodo-legado", weight: 26, headline: "Un documento reabre una antigua controversia", text: "La transparencia también revela un acuerdo que habías omitido.", effects: { approval: -7 }, addScandals: [{ id: "documento-legado", label: "Documento incómodo encontrado en el archivo" }] }] },

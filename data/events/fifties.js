@@ -55,11 +55,18 @@ export const fiftiesEvents = [
         outcomes: [{ id: "diputados-electo", weight: 58, text: "Obtienes un escaño en Diputados y una base para el siguiente ciclo.", effects: { influence: 11, cleanMoney: 16000 }, setRole: "Diputado de la República", roleDuration: 5, addTags: ["diputado", "congresista"] }, { id: "diputados-derrota", weight: 42, text: "No obtienes el escaño, pero el recorrido fortalece tu organización.", effects: { approval: -4 }, setRole: "Dirigente político" }],
       },
       {
+        id: "negociar-formula-vicepresidencial",
+        label: "Integrar una fórmula como vicepresidente",
+        hint: "Elección nacional · menor autonomía",
+        requirements: { all: [{ careerTrack: "candidateReady" }, { age: { min: 48, max: 64 } }, { stat: "influence", min: 48 }, { missingTag: "presidente-actual" }] },
+        outcomes: [{ id: "formula-vicepresidencial-abierta", weight: 100, headline: "El favorito reserva un lugar en su fórmula", text: "Antes de inscribirla, exige que definas cuánto control conservarás dentro del proyecto.", nextEvent: "oferta-vicepresidencia", sameYear: true }],
+      },
+      {
         id: "guardar-fuerzas",
         label: "No postular esta vez",
         hint: "Ahorrar recursos para el próximo ciclo",
         requirements: { missingTag: "presidente-actual" },
-        effects: { cleanMoney: 12000, influence: -5 },
+        effects: { influence: -5 },
         outcomes: [{ id: "eleccion-espera", weight: 100, text: "Observas la elección desde fuera y empiezas a planificar el siguiente intento." }],
       },
     ],
@@ -135,7 +142,7 @@ export const fiftiesEvents = [
     kicker: "El gabinete necesita un nombre",
     description: "El gobierno te ofrece una cartera ministerial en medio de una crisis. El cargo puede elevarte o convertirte en fusible.",
     options: [
-      { id: "aceptar-ministerio", label: "Aceptar el ministerio", hint: "Poder ejecutivo y máxima exposición", effects: { influence: 12, approval: 3 }, outcomes: [{ id: "gestion-ministerial", weight: 58, text: "Tus primeras medidas estabilizan el sector y elevan tu perfil.", effects: { approval: 10, cleanMoney: 22000 }, setRole: "Ministro de Estado", addTags: ["fue-ministro"] }, { id: "ministro-fusible", weight: 42, text: "La crisis te supera y el presidente acepta tu renuncia.", effects: { approval: -12, influence: -5 }, setRole: "Exministro", addTags: ["fue-ministro"] }] },
+      { id: "aceptar-ministerio", label: "Aceptar el ministerio", hint: "Poder ejecutivo y máxima exposición", effects: { influence: 12, approval: 3 }, outcomes: [{ id: "gestion-ministerial", weight: 58, text: "Tus primeras medidas estabilizan el sector y elevan tu perfil.", effects: { approval: 10, cleanMoney: 22000 }, setRole: "Ministro de Estado", roleDuration: 2, addTags: ["fue-ministro"] }, { id: "ministro-fusible", weight: 42, text: "La crisis te supera y el presidente acepta tu renuncia.", effects: { approval: -12, influence: -5 }, setRole: "Exministro", addTags: ["fue-ministro"] }] },
       { id: "rechazar-ministerio", label: "Rechazar y mantener independencia", hint: "Evitar el desgaste del gobierno", effects: { approval: 5, influence: -3 }, outcomes: [{ id: "voz-independiente", weight: 100, text: "Tu negativa refuerza la imagen de autonomía.", addTags: ["independiente"] }] },
     ],
   },
@@ -163,8 +170,8 @@ export const fiftiesEvents = [
     kicker: "Gobernar también tiene consecuencias",
     description: "Una protesta nacional bloquea carreteras y el Congreso amenaza con una moción. Tu respuesta definirá el resto del mandato.",
     options: [
-      { id: "dialogo-nacional", label: "Abrir una mesa nacional", hint: "Ceder para recuperar estabilidad", effects: { influence: -8, cleanMoney: -18000 }, outcomes: [{ id: "dialogo-funciona", weight: 64, text: "Los bloqueos se levantan y tu aprobación se recupera.", effects: { approval: 12 } }, { id: "dialogo-fracasa", weight: 36, text: "La mesa fracasa y la oposición interpreta debilidad.", effects: { approval: -12, influence: -7 } }] },
-      { id: "mano-dura", label: "Imponer el estado de emergencia", hint: "Orden inmediato, alto costo político", effects: { influence: 10, legalRisk: 12 }, outcomes: [{ id: "orden-restaurado", weight: 58, text: "Las vías se despejan y una parte del país respalda la firmeza.", effects: { approval: 6 } }, { id: "represion-fatal", weight: 42, text: "La operación deja víctimas y una investigación constitucional.", effects: { approval: -24, legalRisk: 30 }, addTags: ["investigado"] }] },
+      { id: "dialogo-nacional", label: "Abrir una mesa nacional", hint: "Ceder para recuperar estabilidad", effects: { influence: -8, cleanMoney: -18000 }, hiddenEffects: { armedForcesSupport: -7, unionSupport: 6 }, outcomes: [{ id: "dialogo-funciona", weight: 64, text: "Los bloqueos se levantan y tu aprobación se recupera.", effects: { approval: 12 } }, { id: "dialogo-fracasa", weight: 36, text: "La mesa fracasa y la oposición interpreta debilidad.", effects: { approval: -12, influence: -7 } }] },
+      { id: "mano-dura", label: "Imponer el estado de emergencia", hint: "Orden inmediato, alto costo político", effects: { influence: 10, legalRisk: 12 }, hiddenEffects: { armedForcesSupport: 8, unionSupport: -8 }, outcomes: [{ id: "orden-restaurado", weight: 58, text: "Las vías se despejan y una parte del país respalda la firmeza.", effects: { approval: 6 } }, { id: "represion-fatal", weight: 42, text: "La operación deja víctimas y una investigación constitucional.", effects: { approval: -24, legalRisk: 30 }, hiddenEffects: { armedForcesSupport: -10, internationalReputation: -10 }, addTags: ["investigado"] }] },
     ],
   },
   {
@@ -182,7 +189,7 @@ export const fiftiesEvents = [
     ],
   },
   {
-    id: "oferta-premier", repeatable: true, cooldown: 8, weight: 9, requirements: { all: [{ age: { min: 48, max: 68 } }, { stat: "influence", min: 55 }, { hasTag: "fue-ministro" }, { missingTag: "presidente-actual" }] }, category: "office",
+    id: "oferta-premier", repeatable: true, cooldown: 8, weight: 9, requirements: { all: [{ age: { min: 48, max: 68 } }, { stat: "influence", min: 55 }, { hasTag: "fue-ministro" }, { missingTag: ["presidente-actual", "en-exilio", "en-prision", "arresto-domiciliario", "retiro-definitivo"] }] }, category: "office",
     title: "El gobierno necesita un premier", kicker: "Coordinar un gabinete o preparar el futuro", description: "Una crisis obliga al presidente a buscar una figura con experiencia. El cargo ofrece poder nacional, pero dependerá de un Congreso hostil.",
     options: [
       { id: "aceptar-premierato", label: "Aceptar la Presidencia del Consejo", hint: "Máximo poder ministerial · riesgo de censura", effects: { influence: 14, approval: 4 }, hiddenEffects: { congressSupport: 6, cabinetLoyalty: 10, governmentStability: 8 }, setRole: "Premier", roleDuration: 2, outcomes: [{ id: "premier-confianza", weight: 56, weightModifiers: [{ when: { hidden: "congressSupport", min: 55 }, multiply: 1.5 }], headline: "El Congreso otorga el voto de confianza", text: "El gabinete inicia con respaldo suficiente para negociar reformas.", effects: { influence: 9 }, addTags: ["fue-premier"] }, { id: "premier-sin-confianza", weight: 44, headline: "El Congreso niega la confianza al gabinete", text: "Tu gestión dura semanas y sales convertido en posible líder opositor.", effects: { approval: 5, influence: -7 }, hiddenEffects: { congressSupport: -12 }, setRole: "Expremier", addTags: ["fue-premier"], addCrises: [{ id: "gabinete-censurado", label: "Gabinete sin voto de confianza" }] }] },
@@ -190,7 +197,7 @@ export const fiftiesEvents = [
     ],
   },
   {
-    id: "embajada-estrategica", maxOccurrences: 1, weight: 8, requirements: { all: [{ age: { min: 48, max: 68 } }, { hidden: "internationalReputation", min: 50 }, { missingTag: "presidente-actual" }] }, category: "international",
+    id: "embajada-estrategica", maxOccurrences: 1, weight: 8, requirements: { all: [{ age: { min: 48, max: 68 } }, { hidden: "internationalReputation", min: 50 }, { missingTag: ["presidente-actual", "en-exilio", "en-prision", "arresto-domiciliario", "retiro-definitivo"] }] }, category: "international",
     title: "Una embajada ofrece distancia y prestigio", kicker: "Salir del país sin abandonar la política", description: "El gobierno propone enviarte como embajador a un socio comercial. Podrías construir relaciones internacionales o usar el puesto como refugio temporal.",
     options: [
       { id: "aceptar-embajada", label: "Aceptar la embajada", hint: "Reputación internacional · menor presencia local", effects: { cleanMoney: 32000, influence: -5 }, hiddenEffects: { internationalReputation: 18, mediaNotoriety: -8 }, setRole: "Embajador", roleDuration: 3, outcomes: [{ id: "acuerdo-embajador", weight: 67, headline: "Una misión diplomática abre un acuerdo comercial", text: "El éxito mejora tu perfil y genera contactos para una etapa posterior.", effects: { influence: 8 }, nationalEffects: { investment: 4, growth: 1 }, addTags: ["experiencia-internacional"] }, { id: "incidente-embajada", weight: 33, headline: "Una declaración diplomática provoca una protesta", text: "La cancillería te llama a consultas y el episodio reduce tu prestigio.", effects: { approval: -5 }, hiddenEffects: { internationalReputation: -12 }, setRole: "Exembajador" }] },
@@ -215,7 +222,7 @@ export const fiftiesEvents = [
     ],
   },
   {
-    id: "asesoria-expresidente", repeatable: true, cooldown: 6, weight: 12, requirements: { all: [{ hasTag: "fue-presidente" }, { missingTag: "presidente-actual" }] }, category: "post-presidency",
+    id: "asesoria-expresidente", repeatable: true, cooldown: 6, weight: 12, requirements: { all: [{ hasTag: "fue-presidente" }, { missingTag: ["presidente-actual", "en-exilio", "en-prision", "arresto-domiciliario", "retiro-definitivo"] }] }, category: "post-presidency",
     title: "El sucesor todavía necesita tu red", kicker: "La vida después de Palacio", description: "El nuevo gobierno pide consejos informales. Puedes ayudar discretamente, intentar controlarlo o dedicarte a conferencias internacionales.",
     options: [
       { id: "asesorar-sucesor", label: "Asesorar sin imponer", hint: "Influencia discreta · reputación estable", effects: { influence: 6, cleanMoney: 18000 }, hiddenEffects: { internationalReputation: 5, credibility: 4 }, outcomes: [{ id: "consejo-expresidente", weight: 100, headline: "El expresidente se convierte en consejero informal", text: "El sucesor escucha algunas recomendaciones y conserva autonomía.", setRole: "Asesor presidencial" }] },

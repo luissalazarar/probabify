@@ -4,18 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#f2efe7">
-    <meta name="description" content="Probabify: un simulador de carrera política en el Perú.">
-    <title>Probabify — Tu carrera política</title>
+    <meta name="description" content="¿Hasta dónde llegarías?: un simulador de carrera política en el Perú.">
+    <title>¿Hasta dónde llegarías? — Simulador político peruano</title>
     <script>document.documentElement.dataset.theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";</script>
     <link rel="stylesheet" href="./css/theme.css">
     <link rel="stylesheet" href="./css/styles.css">
   </head>
   <body>
     <header class="site-header">
-      <a class="brand" href="./" aria-label="Probabify, inicio">
-        <span class="brand__mark">P</span>
-        <span>PROBABI<span>FY</span></span>
+      <a class="brand" href="./" aria-label="¿Hasta dónde llegarías?, inicio">
+        <span class="brand__mark">?</span>
+        <span class="brand__name">¿HASTA DÓNDE <span>LLEGARÍAS?</span></span>
       </a>
+      <nav class="site-nav" aria-label="Guías del juego">
+        <a href="./como-jugar.html" target="_blank" rel="noopener">Cómo jugar</a>
+        <a href="./sistema-de-valoracion.html" target="_blank" rel="noopener">Valoración</a>
+        <a href="./legado-y-logros.html" target="_blank" rel="noopener">Legado</a>
+        <a href="./preguntas-frecuentes.html" target="_blank" rel="noopener">Preguntas</a>
+      </nav>
       <div class="header-actions">
         <button class="theme-button" type="button" data-theme-toggle aria-label="Activar tema oscuro" title="Cambiar tema">
           <span class="theme-button__icon" aria-hidden="true">◐</span><span class="theme-button__text">Tema</span>
@@ -50,8 +56,21 @@
 
         <aside class="disclaimer">
           <span>i</span>
-          <p><strong>Esta es una obra de ficción.</strong> Todos los personajes, medios, partidos y expedientes pertenecen al universo de Probabify.</p>
+          <p><strong>Esta es una obra de ficción.</strong> Todos los personajes, medios, partidos y expedientes pertenecen al universo ficticio del juego.</p>
         </aside>
+
+        <section class="knowledge-section" aria-labelledby="conoce-el-juego">
+          <div class="knowledge-section__heading">
+            <div><p class="section-label">Antes y después de jugar</p><h2 id="conoce-el-juego">Conoce el juego</h2></div>
+            <p>Guías independientes para entender la trayectoria, interpretar tus estadísticas y comparar el legado de cada vida política.</p>
+          </div>
+          <div class="knowledge-grid">
+            <a href="./como-jugar.html" target="_blank" rel="noopener"><small>01 · Guía</small><strong>Cómo jugar</strong><span>Orígenes, decisiones, elecciones y guardado automático.</span><b>Leer guía →</b></a>
+            <a href="./sistema-de-valoracion.html" target="_blank" rel="noopener"><small>02 · Sistema</small><strong>Cómo se valora tu carrera</strong><span>Qué representan el dinero, la influencia, el riesgo y los apoyos.</span><b>Ver sistema →</b></a>
+            <a href="./legado-y-logros.html" target="_blank" rel="noopener"><small>03 · Archivo final</small><strong>Legado y logros</strong><span>Por qué el desenlace depende de toda tu historia y no solo del último cargo.</span><b>Descubrir →</b></a>
+            <a href="./preguntas-frecuentes.html" target="_blank" rel="noopener"><small>04 · Ayuda</small><strong>Preguntas frecuentes</strong><span>Duración, variedad de partidas, privacidad y funcionamiento general.</span><b>Resolver dudas →</b></a>
+          </div>
+        </section>
       </section>
 
       <section class="setup-view" id="setup-view" hidden>
@@ -71,6 +90,10 @@
             <div class="background-picker__heading"><span><b>02</b> Antecedente</span><p>Tu pasado cambia recursos, contactos, riesgos y las situaciones que aparecerán.</p></div>
             <div class="background-grid" id="background-grid" role="radiogroup" aria-label="Antecedentes disponibles"></div>
           </div>
+          <label class="pace-option" for="express-mode">
+            <input id="express-mode" name="express-mode" type="checkbox">
+            <span><b>03 · Partida express</b><small>Las decisiones ordinarias avanzan hasta dos años. Las elecciones y cadenas narrativas conservan su calendario.</small></span>
+          </label>
           <div class="setup-submit">
             <p><strong>Obra ficticia.</strong> La violencia política forma parte del conflicto narrativo y no es justificada ni glorificada.</p>
             <button class="primary-button" id="start-character" type="submit" disabled>Comenzar trayectoria <span>→</span></button>
@@ -90,7 +113,22 @@
           <div class="player-strip__seal" aria-hidden="true"><span>PE</span><small>República<br>del Perú</small></div>
         </div>
 
-        <div class="stats-grid" id="stats" aria-label="Estadísticas de la partida"></div>
+        <div class="stats-area" id="stats-area">
+          <div class="stats-area__bar">
+            <span>Indicadores principales</span>
+            <button class="all-stats-toggle" id="all-stats-toggle" type="button" aria-expanded="false" aria-controls="all-stats-panel">
+              Ver todas las estadísticas <i aria-hidden="true">+</i>
+            </button>
+          </div>
+          <div class="stats-grid" id="stats" aria-label="Estadísticas principales de la partida"></div>
+          <aside class="all-stats-panel" id="all-stats-panel" role="dialog" aria-label="Todas las estadísticas de la partida" hidden>
+            <header class="all-stats-panel__header">
+              <div><small>Estado actual</small><strong>Todas las estadísticas</strong></div>
+              <button type="button" data-close-stats aria-label="Cerrar estadísticas">×</button>
+            </header>
+            <div class="all-stats-panel__content" id="all-stats-content"></div>
+          </aside>
+        </div>
         <section class="context-panel" id="context-panel" aria-label="Contexto de la partida"></section>
 
         <div class="game-layout">
@@ -123,9 +161,9 @@
     </main>
 
     <footer class="site-footer">
-      <span>PROBABI<span>FY</span></span>
-      <p>El poder no se hereda. A veces se negocia.</p>
-      <small>Proyecto ficticio · 2026</small>
+      <span>¿HASTA DÓNDE <span>LLEGARÍAS?</span></span>
+      <nav aria-label="Información legal y del proyecto"><a href="./como-jugar.html" target="_blank" rel="noopener">Guías</a><a href="./privacidad.html" target="_blank" rel="noopener">Privacidad</a></nav>
+      <small>Contacto y sugerencias: <a href="mailto:contacto@sarecorp.com">contacto@sarecorp.com</a></small>
     </footer>
 
     <script type="module" src="./js/app.js"></script>

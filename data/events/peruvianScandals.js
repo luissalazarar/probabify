@@ -32,7 +32,7 @@ export const peruvianScandalEvents = [
   },
   {
     id: "cantante-ricardo-sway", repeatable: false, weight: 11, maxOccurrences: 1,
-    requirements: { all: [{ age: { min: 35 } }, { careerTrack: "nationalInstitution" }] }, category: "scandal",
+    requirements: { all: [{ age: { min: 35 } }, { hasTag: "presidente-actual" }] }, category: "scandal",
     title: "Ricardo Sway cobra por hablar de liderazgo", kicker: "Cultura contrata a la estrella de campaña",
     description: "El Ministerio de Cultura pagó varias consultorías a Ricardo Sway, cantante y animador que participó en tu campaña. Sus informes mezclan frases motivacionales, videos caseros y páginas copiadas.",
     options: [
@@ -82,7 +82,7 @@ export const peruvianScandalEvents = [
   },
   {
     id: "relojes-wayki", repeatable: false, weight: 12, maxOccurrences: 1,
-    requirements: { all: [{ age: { min: 38 } }, { careerTrack: "nationalInstitution" }] }, category: "scandal",
+    requirements: { all: [{ age: { min: 38 } }, { hasTag: "presidente-actual" }] }, category: "scandal",
     title: "Los relojes prestados del wayki", kicker: "Un gobernador generoso · presupuestos extraordinarios",
     description: "El gobernador Wilfredo Osochima te presta relojes de lujo y una pulsera. Poco después, su región solicita ampliaciones presupuestales y proyectos aprobados por decreto.",
     options: [
@@ -112,7 +112,7 @@ export const peruvianScandalEvents = [
   },
   {
     id: "casa-sarratea", repeatable: false, weight: 11, maxOccurrences: 1,
-    requirements: { all: [{ age: { min: 35 } }, { careerTrack: "nationalInstitution" }] }, category: "scandal",
+    requirements: { all: [{ age: { min: 35 } }, { hasTag: "presidente-actual" }] }, category: "scandal",
     title: "La casa de Sarratea", kicker: "Despacho paralelo · proveedores sin registro",
     description: "Empresarios, sobrinos y dirigentes prefieren reunirse contigo en una casa de Breña. No hay actas ni control de visitas, pero después de cada noche aparecen nombres nuevos en ministerios y licitaciones.",
     options: [
@@ -122,7 +122,7 @@ export const peruvianScandalEvents = [
   },
   {
     id: "dinero-bano-palacio", repeatable: false, weight: 10, maxOccurrences: 1,
-    requirements: { all: [{ age: { min: 35 } }, { careerTrack: "nationalInstitution" }] }, category: "investigation",
+    requirements: { all: [{ age: { min: 35 } }, { hasTag: "presidente-actual" }] }, category: "investigation",
     title: "Veinte mil dólares en el baño de Palacio", kicker: "El secretario dice que eran ahorros",
     description: "Fiscales encuentran fajos de dólares dentro del baño del secretario Bruno Pacheco. Él asegura que ahorró durante años, aunque sus mensajes mencionan ascensos y presión sobre la administración tributaria.",
     options: [
@@ -132,7 +132,7 @@ export const peruvianScandalEvents = [
   },
   {
     id: "petroaudios-faenon", repeatable: false, weight: 11, maxOccurrences: 1,
-    requirements: { all: [{ age: { min: 38 } }, { careerTrack: "nationalInstitution" }] }, category: "investigation",
+    requirements: { all: [{ age: { min: 38 } }, { any: [{ hasTag: "presidente-actual" }, { role: ["Premier", "Ministro de Estado"] }] }] }, category: "investigation",
     title: "El faenón de los lotes petroleros", kicker: "Un audio celebra la concesión antes del concurso",
     description: "Dos operadores hablan por teléfono sobre cómo entregar lotes petroleros a Discoveri Petroleum. Se ríen de la comisión, mencionan honorarios y aseguran que el negocio ya está cerrado.",
     options: [
@@ -152,7 +152,7 @@ export const peruvianScandalEvents = [
   },
   {
     id: "los-ninos-obras", repeatable: true, cooldown: 8, maxOccurrences: 2, weight: 9,
-    requirements: { all: [{ age: { min: 32 } }, { careerTrack: "nationalInstitution" }] }, category: "congress",
+    requirements: { all: [{ age: { min: 32 } }, { any: [{ hasTag: "presidente-actual" }, { role: ["Premier", "Ministro de Estado"] }] }] }, category: "congress",
     title: "Los Niños piden ministerios y obras", kicker: "Una bancada obediente · un pliego por provincia",
     description: "Seis legisladores ofrecen respaldar al Ejecutivo en censuras e interpelaciones. A cambio quieren directores regionales, contratos y obras administradas por alcaldes aliados.",
     options: [
@@ -192,7 +192,7 @@ export const peruvianScandalEvents = [
   },
   {
     id: "narcoindultos", repeatable: false, weight: 9, maxOccurrences: 1,
-    requirements: { all: [{ age: { min: 40 } }, { careerTrack: "nationalInstitution" }] }, category: "justice",
+    requirements: { all: [{ age: { min: 40 } }, { hasTag: "presidente-actual" }] }, category: "justice",
     title: "La comisión de los narcoindultos", kicker: "Conmutaciones rápidas · expedientes con tarifa",
     description: "Una comisión presidencial ofrece reducir penas a condenados por narcotráfico. Intermediarios cobran por acelerar informes y prometen que las firmas quedarán cubiertas por razones humanitarias.",
     options: [
@@ -272,7 +272,7 @@ export const peruvianScandalEvents = [
   },
   {
     id: "comunicore-municipal", repeatable: false, weight: 10, maxOccurrences: 1,
-    requirements: { careerTrack: "localGovernment" }, category: "regional",
+    requirements: { role: "Alcalde" }, category: "regional",
     title: "Comunicobra cobra la deuda en una semana", kicker: "Empresa recién creada · millones en efectivo",
     description: "La municipalidad vende una deuda a una empresa desconocida llamada Comunicobra. Días después le paga el monto completo y el dinero sale del banco en fajos retirados por personas sin experiencia.",
     options: [
@@ -282,12 +282,12 @@ export const peruvianScandalEvents = [
   },
   {
     id: "campana-no-revocatoria", repeatable: false, weight: 10, maxOccurrences: 1,
-    requirements: { all: [{ careerTrack: "localGovernment" }, { stat: "approval", max: 55 }] }, category: "campaign",
+    requirements: { all: [{ role: "Alcalde" }, { stat: "approval", max: 55 }] }, category: "campaign",
     title: "La campaña del NO necesita millones", kicker: "Constructoras con peajes ofrecen salvar la alcaldía",
-    description: "La alcaldesa Susana Vía enfrenta una revocatoria. Odebrasa y OASis ofrecen financiar publicidad por el NO mientras negocian peajes, una línea amarilla y adendas de largo plazo.",
+    description: "Tu gestión enfrenta una revocatoria. Odebrasa y OASis ofrecen financiar publicidad por el NO mientras negocian peajes, una línea amarilla y adendas de largo plazo.",
     options: [
-      { id: "no-ciudadano", label: "Financiar el NO con aportes declarados", hint: "Campaña pequeña · independencia contractual", effects: { cleanMoney: -24000, approval: 5 }, hiddenEffects: { credibility: 11, urbanApproval: 7 }, outcomes: [{ id: "no-ajustado", weight: 52, headline: "El NO gana por un margen estrecho", text: "La alcaldía sobrevive sin deber contratos a las constructoras." }, { id: "si-revoca", weight: 48, headline: "La ciudad vota por revocar a Susana Vía", text: "La gestión termina y las concesiones pasan al siguiente gobierno." }] },
-      { id: "no-constructoras", label: "Aceptar la campaña de Odebrasa y OASis", hint: "Publicidad masiva · peajes hipotecados", effects: { dirtyMoney: 120000, influence: 10, legalRisk: 17 }, hiddenEffects: { businessSupport: 12, leakExposure: 22, credibility: -15 }, addFavors: [{ id: "no-revocatoria-constructoras", label: "Campaña del NO pagada por concesionarias" }], outcomes: [{ id: "no-gana-millones", weight: 72, headline: "Una campaña millonaria salva a Susana Vía", text: "Rostros, artistas y paneles inclinan la votación; las constructoras presentan sus adendas." }, { id: "no-barata", weight: 28, headline: "Un ejecutivo confirma quién pagó el NO", text: "La victoria electoral queda conectada con peajes y concesiones.", effects: { legalRisk: 22, approval: -14 } }] },
+      { id: "no-ciudadano", label: "Financiar el NO con aportes declarados", hint: "Campaña pequeña · independencia contractual", effects: { cleanMoney: -24000, approval: 5 }, hiddenEffects: { credibility: 11, urbanApproval: 7 }, outcomes: [{ id: "no-ajustado", weight: 52, headline: "El NO gana por un margen estrecho", text: "La alcaldía sobrevive sin deber contratos a las constructoras." }, { id: "si-revoca", weight: 48, headline: "La ciudad vota por revocarte", text: "Tu gestión termina y las concesiones pasan al siguiente gobierno.", setRole: "Exalcalde", removeTags: ["cargo-ejecutivo-local"], addTags: ["fue-alcalde"] }] },
+      { id: "no-constructoras", label: "Aceptar la campaña de Odebrasa y OASis", hint: "Publicidad masiva · peajes hipotecados", effects: { dirtyMoney: 120000, influence: 10, legalRisk: 17 }, hiddenEffects: { businessSupport: 12, leakExposure: 22, credibility: -15 }, addFavors: [{ id: "no-revocatoria-constructoras", label: "Campaña del NO pagada por concesionarias" }], outcomes: [{ id: "no-gana-millones", weight: 72, headline: "Una campaña millonaria salva tu alcaldía", text: "Rostros, artistas y paneles inclinan la votación; las constructoras presentan sus adendas." }, { id: "no-barata", weight: 28, headline: "Un ejecutivo confirma quién pagó el NO", text: "La victoria electoral queda conectada con peajes y concesiones.", effects: { legalRisk: 22, approval: -14 } }] },
     ],
   },
   {
@@ -302,7 +302,7 @@ export const peruvianScandalEvents = [
   },
   {
     id: "audio-amor-premier", repeatable: false, weight: 10, maxOccurrences: 1,
-    requirements: { careerTrack: "nationalInstitution" }, category: "personal",
+    requirements: { hasTag: "presidente-actual" }, category: "personal",
     title: "El premier pide un currículum a su amor", kicker: "Un audio mezcla romance y contratación pública",
     description: "El premier Alberto Otorongo llama «amor» a Yasmín Pineda y le pide su currículum. Semanas después ella obtiene contratos en Defensa sin un procedimiento regular.",
     options: [
@@ -312,7 +312,7 @@ export const peruvianScandalEvents = [
   },
   {
     id: "cilicio-candidato", repeatable: false, weight: 8, maxOccurrences: 1,
-    requirements: { all: [{ careerTrack: "candidateReady" }, { ideology: { min: 30 } }] }, category: "campaign",
+    requirements: { all: [{ careerTrack: "candidateReady" }, { stat: "ideology", min: 30 }] }, category: "campaign",
     title: "Porki Ramírez habla de su cilicio", kicker: "Celibato, fe y una entrevista imposible de controlar",
     description: "El candidato Porki Ramírez cuenta que practica el celibato, usa un cilicio desde hace décadas y está enamorado de una figura religiosa. El clip desplaza por completo su plan económico.",
     options: [

@@ -13,7 +13,7 @@ const THEME_EVENTS = {
     "empresario-confirmacion", "archivo-palacio", "secreto-familiar", "canal-publico", "narcoavion-presidencial",
   ],
   prensa_y_poder: [
-    "debate-televisado", "radio-regional", "programa-dominical", "filtracion-podcast", "guerra-de-redes", "documental-biografico", "cantante-ricardo-sway", "diarios-chicha",
+    "debate-televisado", "radio-regional", "programa-dominical", "filtracion-podcast", "guerra-de-redes", "documental-biografico", "cantante-ricardo-sway", "diarios-chicha", "cerco-mediatico",
   ],
   transicion_2000: [
     "voluntariado-desastre", "mediacion-nacional", "reconciliacion-historica",
@@ -25,7 +25,7 @@ const THEME_EVENTS = {
     "contrato-municipal", "concesion-transporte", "provincia-favor-cobrado", "auditoria-municipal", "adenda-heredada", "comunicore-municipal",
   ],
   lava_jato: [
-    "fiscalia-cerca", "cena-donantes", "investigacion-avanzada", "comision-anticorrupcion", "agendas-primera-dama", "petroaudios-faenon", "ecoteva-suegra", "campana-no-revocatoria",
+    "fiscalia-cerca", "cena-donantes", "investigacion-avanzada", "comision-anticorrupcion", "agendas-primera-dama", "petroaudios-faenon", "ecoteva-suegra", "campana-no-revocatoria", "patrimonio-inexplicable",
   ],
   justicia_capturada: [
     "comision-investigadora", "nombramiento-judicial", "orden-captura", "narcoindultos", "repartija-institucional", "mochasueldos-despacho",
@@ -47,7 +47,7 @@ const THEME_EVENTS = {
   ],
   vacancias_y_confianza: [
     "crisis-presidencial", "oferta-premier", "censura-ministerial", "mocion-vacancia", "coalicion-congreso", "gabinete-presidencial",
-    "chifa-encapuchado", "casa-sarratea", "dinero-bano-palacio", "mamanivideos-obras", "los-ninos-obras", "hermano-en-la-sombra",
+    "chifa-encapuchado", "casa-sarratea", "dinero-bano-palacio", "mamanivideos-obras", "los-ninos-obras", "hermano-en-la-sombra", "fractura-altos-mandos",
   ],
   protestas_y_sucesion: [
     "seguridad-ciudadana", "crisis-fronteriza", "consejo-de-estado",
@@ -58,6 +58,10 @@ const THEME_EVENTS = {
   ],
   estado_social: [
     "huelga-servicios", "conflicto-docente", "reforma-salud", "ano-perfil-bajo", "vacunagate-vip",
+  ],
+  emergencias_nacionales: [
+    "nino-costero-nacional", "terremoto-costa-central", "sequia-sur-andino", "incendios-amazonia-nacional",
+    "epidemia-respiratoria-nacional", "derrame-petroleo-amazonia",
   ],
   vida_privada: [
     "pareja-militante", "credito-vivienda", "familiar-contratado", "emprendimiento-familiar", "separacion-equipo", "escandalo-pareja", "relojes-wayki", "cirugia-secreta-palacio", "audio-amor-premier",
@@ -98,9 +102,9 @@ const COPY_OVERRIDES = {
     description: "Una alianza sin candidato te propone convertir tu prestigio empresarial en campaña presidencial. Ofrecen técnicos y símbolo; esperan que tu grupo pague la operación y no pregunte demasiado por los aportantes.",
   },
   "podcaster-lanzamiento": {
-    title: "Nace el Diario de Churwen",
-    kicker: "Un micrófono, sátira y ninguna línea editorial",
-    description: "El canal empieza explicando expedientes con humor y clips. Una denuncia multiplica la audiencia, mientras periodistas, marcas y comandos descubren que tu estudio llega a jóvenes que ya no miran mítines.",
+    title: "El Diario de Churwen define su línea política",
+    kicker: "Audiencia, sátira y poder editorial",
+    description: "El canal ya convirtió expedientes, humor y clips en una audiencia propia. Periodistas, marcas y comandos esperan saber si Churwen será medio, tribuna militante o maquinaria personal.",
   },
   "redes-viral": {
     title: "El Diario de Churwen comparte tu minuto viral",
@@ -216,7 +220,7 @@ const COPY_OVERRIDES = {
   "memoria-mrta": {
     title: "La residencia del embajador nunca cerró del todo",
     kicker: "Tu pasado · rehenes, operación y memoria",
-    description: "Una exrehén de Todos Amigos pide hablar. Para ella, la crisis de la residencia no es una hazaña ni una serie: son meses de cautiverio y una herida todavía discutida.",
+    description: "Una exrehén del Movimiento Revolucionario Todos Amigos (MRTA) pide hablar. Para ella, la crisis de la residencia no es una hazaña ni una serie: son meses de cautiverio y una herida todavía discutida.",
   },
   "memoria-sl": {
     title: "Una comunidad de Ayacucho reconoce tu alias",
@@ -242,6 +246,26 @@ const COPY_OVERRIDES = {
     title: "Tu plataforma conoce cómo votan sus usuarios",
     kicker: "Fortuna digital · datos antes que padrones",
     description: "El comando descubre que tus datos de consumo permiten inferir distrito, ingresos e intereses políticos. Usarlos ofrece una campaña precisa, aunque los usuarios nunca autorizaron propaganda.",
+  },
+  "conflicto-docente": {
+    options: {
+      "enfrentar-sindicato-docente": { hint: "Respaldo técnico · conflicto sindical" },
+    },
+  },
+  "tesis-copiada": {
+    options: {
+      "blindar-tesis": { hint: "Conserva credenciales · aumenta la exposición" },
+    },
+  },
+  "dinero-bano-palacio": {
+    options: {
+      "proteger-secretario": { hint: "Conserva la red · riesgo de fuga" },
+    },
+  },
+  "mamanivideos-obras": {
+    options: {
+      "rechazar-compra-votos": { hint: "Riesgo de vacancia · evita compra de votos" },
+    },
   },
 };
 
