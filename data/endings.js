@@ -1,0 +1,38 @@
+export const ENDINGS = [
+  {
+    id: "prision",
+    priority: 100,
+    title: "La celda cierra la campaña",
+    label: "Prisión",
+    description: "La justicia llegó antes que la siguiente elección. Tu carrera termina entre expedientes, titulares y puertas de metal.",
+    icon: "▦",
+    requirements: { any: [{ stat: "legalRisk", min: 100 }, { hasTag: "condenado" }] },
+  },
+  {
+    id: "presidente",
+    priority: 90,
+    title: "La banda presidencial",
+    label: "Presidente del Perú",
+    description: "Contra todos los pronósticos, alcanzaste Palacio. El país que prometiste cambiar ahora espera que gobiernes.",
+    icon: "★",
+    requirements: { hasTag: "electo-presidente" },
+  },
+  {
+    id: "ministro",
+    priority: 80,
+    title: "Una cartera en tus manos",
+    label: "Ministro de Estado",
+    description: "No llegaste a Palacio por elección, pero una llamada te sentó en el Consejo de Ministros. Tu poder ya es nacional.",
+    icon: "◆",
+    requirements: { hasTag: "nombrado-ministro" },
+  },
+  {
+    id: "retiro",
+    priority: 1,
+    title: "La política sigue sin ti",
+    label: "Retiro político",
+    description: "Tu nombre queda en algunas placas, noticias y recuerdos. En política, sobrevivir también cuenta como un resultado.",
+    icon: "○",
+    requirements: { any: [{ hasTag: "retiro" }, { age: { min: 70 } }] },
+  },
+];

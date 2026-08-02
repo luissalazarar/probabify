@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f2efe7">
+    <meta name="description" content="Probabify: un simulador de carrera política en el Perú.">
+    <title>Probabify — Tu carrera política</title>
+    <link rel="stylesheet" href="./css/theme.css">
+    <link rel="stylesheet" href="./css/styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="Probabify, inicio">
+        <span class="brand__mark">P</span>
+        <span>PROBABI<span>FY</span></span>
+      </a>
+      <p id="seed-label">Cada decisión puede cambiarlo todo</p>
+      <button class="ghost-button" type="button" data-restart>
+        <span aria-hidden="true">↻</span> Reiniciar
+      </button>
+    </header>
+
+    <main>
+      <section class="origin-view" id="origin-view">
+        <div class="hero-copy">
+          <p class="section-label"><span></span> Simulador político peruano</p>
+          <h1>¿Hasta dónde<br><em>llegarías?</em></h1>
+          <p class="hero-copy__intro">En política no existe una ruta limpia. Elige de dónde vienes y descubre qué estás dispuesto a hacer para llegar al poder.</p>
+        </div>
+
+        <div class="origin-heading">
+          <div>
+            <span class="origin-heading__step">01</span>
+            <div><p class="section-label">El punto de partida</p><h2>Elige tu origen</h2></div>
+          </div>
+          <p>Cada historia comienza con ventajas, deudas y enemigos diferentes.</p>
+        </div>
+        <div class="origin-grid" id="origin-grid" aria-label="Orígenes disponibles"></div>
+
+        <aside class="disclaimer">
+          <span>i</span>
+          <p><strong>Esta es una obra de ficción.</strong> Los personajes y situaciones son imaginarios, aunque la política a veces se empeñe en parecerse.</p>
+        </aside>
+      </section>
+
+      <section class="game-view" id="game-view" hidden>
+        <div class="player-strip">
+          <div class="player-strip__age"><small>Edad</small><strong id="player-age">—</strong><span>años</span></div>
+          <div class="player-strip__identity">
+            <p id="player-origin">—</p>
+            <h1 id="player-role">—</h1>
+          </div>
+          <div class="player-strip__seal" aria-hidden="true"><span>PE</span><small>República<br>del Perú</small></div>
+        </div>
+
+        <div class="stats-grid" id="stats" aria-label="Estadísticas de la partida"></div>
+
+        <div class="game-layout">
+          <div class="decision-column">
+            <div class="result-banner" id="result-banner" hidden></div>
+
+            <article class="decision-card">
+              <div class="decision-card__flag"><i></i><i></i><i></i></div>
+              <p class="section-label" id="event-kicker">Decisión anual</p>
+              <h2 id="event-title">—</h2>
+              <p class="decision-card__description" id="event-description">—</p>
+              <div class="options" id="options"></div>
+              <small class="decision-card__footnote">La consecuencia puede depender de tu trayectoria y del azar.</small>
+            </article>
+
+            <article class="ending-card" id="ending-card" hidden></article>
+          </div>
+
+          <aside class="history-panel">
+            <div class="history-panel__heading">
+              <div><p class="section-label">Archivo personal</p><h2>Tu trayectoria</h2></div>
+              <span aria-hidden="true">⌁</span>
+            </div>
+            <ol class="history-list" id="history-list"></ol>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>PROBABI<span>FY</span></span>
+      <p>El poder no se hereda. A veces se negocia.</p>
+      <small>Proyecto ficticio · 2026</small>
+    </footer>
+
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>

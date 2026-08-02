@@ -1,0 +1,70 @@
+@font-face {
+  font-family: "Montserrat";
+  src: url("../assets/fonts/Montserrat-Regular.ttf") format("truetype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Montserrat";
+  src: url("../assets/fonts/Montserrat-Medium.ttf") format("truetype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 500 900;
+}
+
+:root {
+  --font-display: "Montserrat", "Arial Black", sans-serif;
+  --font-body: "Montserrat", Arial, sans-serif;
+
+  --paper: #f2efe7;
+  --paper-deep: #e8e3d7;
+  --paper-light: #fbfaf6;
+  --ink: #171817;
+  --ink-soft: #4f504c;
+  --muted: #77766f;
+  --line: #cbc5b8;
+  --line-dark: #9d978b;
+  --red: #d62f35;
+  --red-dark: #a41920;
+  --red-soft: #f4d7d6;
+  --green: #365f4c;
+  --gold: #b99147;
+  --white: #ffffff;
+
+  --page-width: 1240px;
+  --radius-sm: 3px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --shadow-soft: 0 18px 50px rgba(37, 31, 23, 0.08);
+  --shadow-card: 0 8px 25px rgba(37, 31, 23, 0.07);
+
+  --text-xs: 0.68rem;
+  --text-sm: 0.78rem;
+  --text-base: 0.95rem;
+  --text-lg: 1.2rem;
+  --text-xl: clamp(1.65rem, 3vw, 2.5rem);
+  --text-hero: clamp(3.6rem, 8.7vw, 7.6rem);
+}
+
+* { box-sizing: border-box; }
+
+html { color-scheme: light; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select { font: inherit; }
+
+button { color: inherit; }
+
+::selection { background: var(--red); color: var(--white); }
