@@ -238,7 +238,7 @@ const COPY_OVERRIDES = {
   "memoria-sl": {
     title: "Una comunidad de Ayacucho reconoce tu alias",
     kicker: "Tu pasado · la violencia no fue una abstracción",
-    description: "Familiares de víctimas vinculan tu antiguo alias con una columna de Somos Lunáticos. La Comisión de Verdad dejó testimonios; ahora debes decidir si entregas información o sostienes la negación.",
+    description: "Familiares de víctimas vinculan tu antiguo alias con una columna del Sindicato Luciérnaga. La Comisión de Verdad dejó testimonios; ahora debes decidir si entregas información o sostienes la negación.",
   },
   "archivo-subversivo": {
     title: "Un tomo perdido de la Comisión de Verdad",

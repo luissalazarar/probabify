@@ -55,7 +55,7 @@ function readSavedGame() {
 
 function setTheme(theme) {
   document.documentElement.dataset.theme = theme;
-  document.querySelector('meta[name="theme-color"]').content = theme === "dark" ? "#11130f" : "#f2efe7";
+  document.querySelector('meta[name="theme-color"]').content = theme === "dark" ? "#141412" : "#e8dfcd";
   const nextTheme = theme === "dark" ? "claro" : "oscuro";
   elements.themeButton.setAttribute("aria-label", `Activar tema ${nextTheme}`);
   elements.themeButton.querySelector(".theme-button__icon").textContent = theme === "dark" ? "☀" : "◐";

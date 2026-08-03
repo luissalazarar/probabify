@@ -27,7 +27,7 @@ const stableHash = (value) => {
 
 const ROLE_RANK = {
   "Creador de contenido político": 1, "Dirigente vecinal": 1, "Asesor independiente": 2,
-  "Reincorporado a la vida civil": 0, "Exmilitante del MRTA": 0, "Excuadro de Somos Lunáticos": 0,
+  "Reincorporado a la vida civil": 0, "Exmilitante del MRTA": 0, "Excuadro del Sindicato Luciérnaga": 0,
   "Heredera de una dinastía": 1, "Heredera de una familia presidencial": 1, "Heredera de un clan regional": 1, "Heredera de un linaje parlamentario": 1,
   "Referente provincial": 1, "Dirigente de rondas campesinas": 2, "Gestor municipal": 2, "Vocero de un frente ambiental": 2,
   "Empresario": 2, "Director de una constructora": 3, "Fundador tecnológico": 3, "Ejecutivo minero": 3,
@@ -47,6 +47,9 @@ const ROLE_CANONICAL = {
   "Exsenador de la República": "Senador de la República", "Exsenadora de la República": "Senadora de la República",
   "Exvicepresidente del Perú": "Vicepresidente del Perú", "Exministro": "Ministro de Estado", "Expremier": "Premier",
   "Exembajador": "Embajador", "Expresidente del Perú": "Presidente del Perú",
+};
+const LEGACY_ROLE_NAMES = {
+  "Excuadro de Somos Lunáticos": "Excuadro del Sindicato Luciérnaga",
 };
 const TERM_END_ROLES = {
   "Alcalde": { role: "Exalcalde", removeTags: ["cargo-ejecutivo-local"], addTag: "fue-alcalde" },
@@ -420,6 +423,11 @@ export class GameEngine {
     this.state.outcomes = Array.isArray(this.state.outcomes) ? this.state.outcomes : [];
     this.state.gameMode = this.state.gameMode === "express" ? "express" : "standard";
     this.state.history = Array.isArray(this.state.history) ? this.state.history : [];
+    this.state.role = LEGACY_ROLE_NAMES[this.state.role] ?? this.state.role;
+    this.state.highestRole = LEGACY_ROLE_NAMES[this.state.highestRole] ?? this.state.highestRole;
+    if (this.state.currentOffice?.role) this.state.currentOffice.role = LEGACY_ROLE_NAMES[this.state.currentOffice.role] ?? this.state.currentOffice.role;
+    if (Array.isArray(this.state.career)) for (const entry of this.state.career) entry.role = LEGACY_ROLE_NAMES[entry.role] ?? entry.role;
+    for (const entry of this.state.history) entry.role = LEGACY_ROLE_NAMES[entry.role] ?? entry.role;
     this.state.eventCounts ??= {};
     this.state.lastEventYear ??= {};
     this.state.lastEventGroupYear ??= {};

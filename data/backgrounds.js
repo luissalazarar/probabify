@@ -8,8 +8,8 @@ export const BACKGROUNDS = [
     eventWeights: { "reinsercion-mesa-democratica": 1.45, "protesta-regional": 1.2, "archivo-subversivo": 1.35, "memoria-mrta": 2.4 },
   },
   {
-    id: "reinsercion-sl", originId: "reinsercion", initialEvent: "memoria-sl", initialRole: "Excuadro de Somos Lunáticos", shortName: "SL", name: "Somos Lunáticos (SL)",
-    eyebrow: "Organización totalitaria", history: "Fuiste cuadro regional de Somos Lunáticos. Su violencia devastó comunidades rurales y convirtió el terror en método; tu retorno empieza bajo rechazo extremo y memoria documentada.",
+    id: "reinsercion-sl", originId: "reinsercion", initialEvent: "memoria-sl", initialRole: "Excuadro del Sindicato Luciérnaga", shortName: "SL", name: "Sindicato Luciérnaga (SL)",
+    eyebrow: "Organización subversiva", history: "Fuiste cuadro regional del Sindicato Luciérnaga. Su violencia devastó comunidades rurales y convirtió el terror en método; tu retorno empieza bajo rechazo extremo y memoria documentada.",
     impact: "Conservas una red disciplinada, pero empiezas con más riesgo judicial, polarización extrema y muy poca confianza rural.",
     effects: { approval: -9, influence: 11, legalRisk: 19, ideology: -16 }, hiddenEffects: { ruralApproval: -20, credibility: -16, polarization: 22, prosecutionRelation: -14, mediaNotoriety: 9, personalReputation: -15 },
     tags: ["background-sl", "estigma-extremo"], relations: { "Rubén Páucar": { role: "Antiguo cuadro clandestino", score: 46, loyalty: 78, knows: ["mandos regionales y archivos ocultos"] } },
