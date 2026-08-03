@@ -288,6 +288,8 @@ function openCase(state, descriptor, event) {
     baselineMetrics: null,
     terminalBaselineMetrics: null,
     usedBriefs: [],
+    lastActionDecisionCount: null,
+    actionHistory: [],
     metrics: definition.metrics.map((metric) => ({ ...metric, value: 50, previousValue: null })),
     news: [],
     timeline: [],
@@ -332,6 +334,10 @@ function sanitizeCase(activeCase) {
   activeCase.baselineMetrics = activeCase.baselineMetrics && typeof activeCase.baselineMetrics === "object" ? activeCase.baselineMetrics : null;
   activeCase.terminalBaselineMetrics = activeCase.terminalBaselineMetrics && typeof activeCase.terminalBaselineMetrics === "object" ? activeCase.terminalBaselineMetrics : null;
   activeCase.usedBriefs = Array.isArray(activeCase.usedBriefs) ? [...new Set(activeCase.usedBriefs.map(String))] : [];
+  activeCase.lastActionDecisionCount = activeCase.lastActionDecisionCount == null
+    ? null
+    : Number.isFinite(Number(activeCase.lastActionDecisionCount)) ? Number(activeCase.lastActionDecisionCount) : null;
+  activeCase.actionHistory = Array.isArray(activeCase.actionHistory) ? activeCase.actionHistory.filter((entry) => entry && typeof entry === "object").slice(-8) : [];
   activeCase.metrics = definition.metrics.map((definitionMetric) => {
     const saved = Array.isArray(activeCase.metrics) ? activeCase.metrics.find((metric) => metric.id === definitionMetric.id) : null;
     return { ...definitionMetric, value: round(saved?.value ?? 50), previousValue: saved?.previousValue == null ? null : round(saved.previousValue) };
@@ -419,6 +425,34 @@ export function applyCasePayload(state, event, payload = {}) {
     }
     refreshCaseMetrics(activeCase, state);
   }
+}
+
+export function recordCaseAction(state, { caseId: targetId, action, outcome }) {
+  const activeCase = state?.activeCases?.find((entry) => entry.id === targetId && entry.status !== "Resuelto");
+  if (!activeCase) throw new Error("El expediente ya no está activo.");
+  const previousValues = Object.fromEntries(activeCase.metrics.map((metric) => [metric.id, metric.value]));
+  applyAdjustments(activeCase, action.caseEffects);
+  applyAdjustments(activeCase, outcome.caseEffects);
+  refreshCaseMetrics(activeCase, state);
+  for (const metric of activeCase.metrics) metric.previousValue = previousValues[metric.id] ?? null;
+  activeCase.lastActionDecisionCount = state.decisions.length;
+  activeCase.actionHistory ??= [];
+  activeCase.actionHistory.push({
+    year: state.year,
+    actionId: action.id,
+    actionLabel: action.label,
+    outcomeId: outcome.id,
+    headline: outcome.headline,
+  });
+  activeCase.actionHistory = activeCase.actionHistory.slice(-8);
+  addNews(state, activeCase, {
+    headline: outcome.headline,
+    text: outcome.text,
+    causeLabel: `Decidiste: ${action.label}`,
+    tone: outcome.tone ?? "neutral",
+  });
+  sortCases(state);
+  return activeCase;
 }
 
 function caseStrength(activeCase) {

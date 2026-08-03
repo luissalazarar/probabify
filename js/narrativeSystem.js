@@ -244,7 +244,7 @@ export function buildEndingNarrative(snapshot, _legacy) {
 
   if (hasFamilyStrain(snapshot)) sections.push(pickText(ENDING_NARRATIVE_BANKS.relations.family, snapshot, "ending-relations-family", values));
   else sections.push(pickText(ENDING_NARRATIVE_BANKS.bases[baseType], snapshot, `ending-base-${baseType}`, values));
-  return sections.filter(Boolean).join(" ");
+  return sections.filter(Boolean).join(" ").replace(/[«»]/g, "");
 }
 
 function metricFavorability(metric) {

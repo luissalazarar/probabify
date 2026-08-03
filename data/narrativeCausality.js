@@ -56,7 +56,7 @@ const EVENT_PATCHES = {
   "fundacion-legado": {
     requirements: { all: [{ age: { min: 58 } }, { any: [{ hasTag: "fue-presidente" }, { stat: "influence", min: 50 }, { personality: ["líder internacional", "tecnócrata", "figura mediática"] }] }] },
     title: "Tu equipo propone una fundación con tu nombre",
-    description: "Exasesores ofrecen reunir donantes, archivos y formación. Debes elegir entre trabajo público verificable o conservar operadores fuera del partido.",
+    description: "Exasesores ofrecen reunir donantes, archivos y formación. Parte del equipo propone trabajo público verificable; otros quieren conservar operadores fuera del partido.",
   },
   "archivo-de-legado": { weightModifiers: [{ when: { decision: "destruir-documentos" }, multiply: 1.8 }, { when: { scandal: "control-canal-publico" }, multiply: 1.3 }, { when: { eventCount: { id: "archivo-de-legado", min: 1 } }, multiply: 0.55 }] },
   "pareja-militante": { description: "Tu pareja empieza a coordinar agenda, equipo y aportantes. Debes mantenerla fuera de la organización o darle un cargo visible." },

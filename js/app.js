@@ -355,6 +355,7 @@ function renderActiveCases(snapshot) {
     const stageCurrent = Number.isFinite(stageCurrentRaw) ? Math.max(0, Math.min(stageTotal, Math.round(stageCurrentRaw))) : 0;
     const stageProgress = Math.round((stageCurrent / stageTotal) * 100);
     const titleId = `case-file-title-${caseIndex}`;
+    const caseActions = snapshot.ending ? [] : engine.getAvailableCaseActions(activeCase.id);
 
     return `<article class="case-file case-file--${family}${caseIndex === 0 ? " case-file--primary" : " case-file--secondary"}" aria-labelledby="${titleId}">
       <header class="case-file__header">
@@ -387,9 +388,13 @@ function renderActiveCases(snapshot) {
           </dd>
         </div>`;
       }).join("")}</dl>` : ""}
-      ${timeline.length ? `<div class="case-file__timeline"><small>Cronología reciente</small><ol>${timeline.map((entry) => `
+      ${caseActions.length ? `<div class="case-file__actions"><small>Actuar en este expediente</small><div>${caseActions.map((action) => `
+        <button type="button" data-case-id="${escapeHtml(activeCase.id)}" data-case-action="${escapeHtml(action.id)}" ${action.available ? "" : "disabled"}>
+          <strong>${escapeHtml(action.label)}</strong><span>${escapeHtml(action.available ? action.hint : action.unavailableReason)}</span>
+        </button>`).join("")}</div></div>` : ""}
+      ${timeline.length ? `<details class="case-file__timeline"><summary>Ver historial (${timeline.length})</summary><ol>${timeline.map((entry) => `
         <li><time>${escapeHtml(entry.year ?? "Ahora")}</time><div><strong>${escapeHtml(entry.headline ?? entry.label ?? entry.title)}</strong>${entry.text ?? entry.description ? `<p>${escapeHtml(entry.text ?? entry.description)}</p>` : ""}${entry.causeLabel ? `<span>↳ ${escapeHtml(entry.causeLabel)}</span>` : ""}</div></li>
-      `).join("")}</ol></div>` : ""}
+      `).join("")}</ol></details>` : ""}
     </article>`;
   }).join("");
 }
@@ -409,7 +414,7 @@ function renderEvent(snapshot) {
     return `
     <button class="decision-option" type="button" data-option="${option.id}" ${option.available ? "" : "disabled"}>
       <span class="decision-option__letter">${String.fromCharCode(65 + index)}</span>
-      <span class="decision-option__copy"><strong>${option.label}</strong><small>${option.available ? option.hint ?? "Consecuencias variables" : unavailableHint}</small></span>
+      <span class="decision-option__copy"><strong>${option.label}</strong>${option.available && !option.hint ? "" : `<small>${option.available ? option.hint : unavailableHint}</small>`}</span>
       <span class="decision-option__arrow" aria-hidden="true">→</span>
     </button>
   `;
@@ -505,7 +510,7 @@ function renderEnding(snapshot) {
     .sort((left, right) => Number(casePriority[right.kind] ?? 0) - Number(casePriority[left.kind] ?? 0)
       || Number(right.resolvedYear ?? right.updatedYear ?? 0) - Number(left.resolvedYear ?? left.updatedYear ?? 0));
   const specialCaseSummary = specialCases.slice(0, 4).map((activeCase) => {
-    const cause = activeCase.originDecision ? `, tras «${activeCase.originDecision}»` : "";
+    const cause = activeCase.originDecision ? `, después de ${activeCase.originDecision}` : "";
     return `${activeCase.title}: ${activeCase.resolution ?? activeCase.status}${cause}`;
   }).join(" · ");
   elements.ending.hidden = false;
@@ -613,6 +618,20 @@ function makeChoice(optionId) {
   }
 }
 
+function makeCaseChoice(caseId, actionId) {
+  if (choiceLocked) return;
+  choiceLocked = true;
+  document.querySelectorAll("[data-case-action]").forEach((button) => { button.disabled = true; });
+  try {
+    const result = engine.chooseCaseAction(caseId, actionId);
+    elements.result.hidden = true;
+    render(result.snapshot);
+    persist(result.snapshot);
+  } finally {
+    window.setTimeout(() => { choiceLocked = false; }, 220);
+  }
+}
+
 function showOriginScreen({ newSeed = false } = {}) {
   if (newSeed) activeSeed = createSeed();
   engine = new GameEngine({ seed: activeSeed });
@@ -648,8 +667,10 @@ document.addEventListener("click", (event) => {
   else if (!elements.statsPanel.hidden && !event.target.closest("#all-stats-panel")) setAllStatsOpen(false);
   const originButton = event.target.closest("[data-origin]");
   const optionButton = event.target.closest("[data-option]");
+  const caseActionButton = event.target.closest("[data-case-action]");
   if (originButton) openCharacterSetup(originButton.dataset.origin);
   if (optionButton && !optionButton.disabled) makeChoice(optionButton.dataset.option);
+  if (caseActionButton && !caseActionButton.disabled) makeCaseChoice(caseActionButton.dataset.caseId, caseActionButton.dataset.caseAction);
   if (event.target.closest("[data-theme-toggle]")) {
     const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
     storageSet(THEME_KEY, nextTheme);

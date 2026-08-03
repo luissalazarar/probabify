@@ -9,7 +9,7 @@ export const originBranchEvents = [
   },
   {
     id: "dinastia-gira-propia", directedOnly: true, category: "community",
-    title: "Una gira sin el apellido en los afiches", kicker: "Continuación de origen · construir base propia", description: "Sin la maquinaria familiar, debes elegir entre escuchar organizaciones locales o contratar un equipo que fabrique una imagen independiente.",
+    title: "Una gira sin el apellido en los afiches", kicker: "Continuación de origen · construir base propia", description: "Sin la maquinaria familiar, organizaciones locales piden ser escuchadas mientras un equipo ofrece fabricar una imagen independiente.",
     options: [
       { id: "gira-territorial-propia", label: "Recorrer barrios y provincias", hint: "Base lenta · mayor credibilidad", effects: { cleanMoney: -14000, approval: 8 }, hiddenEffects: { ruralApproval: 10, regionalSupport: 9, credibility: 7 }, addTags: ["base-territorial"], outcomes: [{ id: "red-propia-dinastia", weight: 100, headline: "Una red territorial empieza a responder a tu nombre", text: "Dirigentes locales se suman sin pedir permiso a la familia." }] },
       { id: "marca-independiente", label: "Contratar una estrategia de imagen", hint: "Notoriedad rápida · alto costo", effects: { cleanMoney: -26000, influence: 7 }, hiddenEffects: { mediaNotoriety: 12, credibility: -3 }, addTags: ["figura-mediatica"], outcomes: [{ id: "apellido-reinventado", weight: 100, headline: "La campaña intenta separar tu rostro del apellido", text: "La nueva imagen gana atención, aunque los rivales recuerdan de dónde vienes." }] },

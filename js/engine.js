@@ -4,6 +4,7 @@ import { EVENTS } from "../data/events/index.js";
 import { ENDINGS } from "../data/endings.js";
 import { EVENT_CAREER_GATES } from "../data/eventLogic.js";
 import { BACKGROUNDS, backgroundsForOrigin } from "../data/backgrounds.js";
+import { SPECIAL_CASE_ACTIONS } from "../data/specialCases.js";
 import {
   applyCasePayload,
   buildCaseChanges,
@@ -11,6 +12,7 @@ import {
   getCaseOutcomeMultiplier,
   initializeCaseState,
   migrateCaseState,
+  recordCaseAction,
   recordCaseDecision,
   syncActiveCases,
 } from "./caseSystem.js";
@@ -509,6 +511,49 @@ export class GameEngine {
     return event.options
       .map((option) => ({ ...clone(option), available: this.isOptionAvailable(option) }))
       .filter((option) => option.available || !option.hideWhenUnavailable);
+  }
+
+  getAvailableCaseActions(caseId) {
+    if (!this.state || this.state.endingId) return [];
+    const activeCase = this.state.activeCases?.find((entry) => entry.id === caseId && entry.status !== "Resuelto");
+    if (!activeCase) return [];
+    const alreadyActed = activeCase.lastActionDecisionCount === this.state.decisions.length;
+    return (SPECIAL_CASE_ACTIONS[activeCase.kind] ?? []).map((action) => {
+      const alreadyUsed = activeCase.actionHistory?.some((entry) => entry.actionId === action.id);
+      const cleanCost = Math.max(0, -Number(action.effects?.cleanMoney ?? 0));
+      const dirtyCost = Math.max(0, -Number(action.effects?.dirtyMoney ?? 0));
+      const meetsRequirements = this.meetsRequirements(action.requirements);
+      let unavailableReason = "";
+      if (alreadyUsed) unavailableReason = "Esta medida ya fue tomada";
+      else if (alreadyActed) unavailableReason = "Ya actuaste · continúa la historia";
+      else if (cleanCost > this.state.stats.cleanMoney) unavailableReason = `Necesitas S/${cleanCost.toLocaleString("es-PE")}`;
+      else if (dirtyCost > this.state.stats.dirtyMoney) unavailableReason = `Necesitas S/${dirtyCost.toLocaleString("es-PE")} de dinero sucio`;
+      else if (!meetsRequirements) unavailableReason = "No disponible ahora";
+      return { ...clone(action), available: !alreadyUsed && !alreadyActed && meetsRequirements && cleanCost <= this.state.stats.cleanMoney && dirtyCost <= this.state.stats.dirtyMoney, unavailableReason };
+    });
+  }
+
+  chooseCaseAction(caseId, actionId) {
+    if (!this.state || this.state.endingId) throw new Error("No hay una partida activa.");
+    const activeCase = this.state.activeCases?.find((entry) => entry.id === caseId && entry.status !== "Resuelto");
+    if (!activeCase) throw new Error("El expediente ya no está activo.");
+    const action = (SPECIAL_CASE_ACTIONS[activeCase.kind] ?? []).find((entry) => entry.id === actionId);
+    const available = this.getAvailableCaseActions(caseId).find((entry) => entry.id === actionId);
+    if (!action || !available?.available) throw new Error(available?.unavailableReason || "Esta acción no está disponible.");
+
+    const before = this.getSnapshot();
+    this.applyPayload(action);
+    this.normalizeAll();
+    const afterActionStats = clone(this.state.stats);
+    const outcome = this.pickOutcome(action.outcomes);
+    this.applyPayload(outcome);
+    this.normalizeAll();
+    recordCaseAction(this.state, { caseId, action, outcome });
+    this.normalizeAll();
+    this.recordStatChanges(before, afterActionStats, { title: activeCase.title }, action, outcome);
+    this.state.personality = this.derivePersonality();
+    const snapshot = this.getSnapshot();
+    return { snapshot, outcome: clone(outcome), changes: this.buildChanges(before, snapshot), headline: outcome.headline };
   }
 
   choose(optionId) {
