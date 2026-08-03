@@ -1414,6 +1414,8 @@ body::before {
 .legacy-index,
 .achievement-grid { border: 3px solid var(--ink); }
 .legacy-index__total { background: var(--red); color: var(--on-magenta); }
+.legacy-index__total small,
+.legacy-index__total span { color: var(--on-magenta); }
 .achievement-grid article:nth-child(n) { background: var(--paper-light); }
 
 .primary-button,
