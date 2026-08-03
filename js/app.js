@@ -503,7 +503,6 @@ function renderEnding(snapshot) {
   const ideology = ideologyLabel(snapshot.stats.ideology);
   const legacy = deriveLegacyProfile(snapshot);
   const achievements = deriveAchievements(snapshot);
-  const allies = collectNarrativeAllies(snapshot);
   const enemies = collectNarrativeEnemies(snapshot);
   const casePriority = { prison: 100, trial: 95, exile: 90, vacancy: 85, disaster: 75, campaign: 65 };
   const specialCases = [...(snapshot.caseArchive ?? []), ...(snapshot.activeCases ?? [])]
@@ -531,7 +530,7 @@ function renderEnding(snapshot) {
       <span><small>Dinero limpio</small><b>${formatMoney(snapshot.stats.cleanMoney)}</b></span><span><small>Dinero sucio</small><b>${formatMoney(snapshot.stats.dirtyMoney)}</b></span>
       <span><small>Aceptación</small><b>${snapshot.stats.approval}%</b></span><span><small>Tendencia</small><b>${ideology}</b></span>
     </div>
-    <div class="legacy-list"><p><b>Aliados registrados:</b> ${allies.slice(0, 4).map(escapeHtml).join(", ") || "ninguno estable"}</p><p><b>Enemigos registrados:</b> ${enemies.slice(0, 4).map(escapeHtml).join(", ") || "ninguno declarado"}</p><p><b>Expediente:</b> ${snapshot.memory.scandals.length} escándalos · ${snapshot.memory.investigations.length} investigaciones · ${snapshot.memory.wars.length} conflictos</p><p><b>Historias especiales:</b> ${specialCases.length ? escapeHtml(specialCaseSummary) : "ningún expediente especial registrado"}</p></div>
+    <div class="legacy-list"><p><b>Enemigos registrados:</b> ${enemies.slice(0, 4).map(escapeHtml).join(", ") || "ninguno declarado"}</p><p><b>Expediente:</b> ${snapshot.memory.scandals.length} escándalos · ${snapshot.memory.investigations.length} investigaciones · ${snapshot.memory.wars.length} conflictos</p><p><b>Historias especiales:</b> ${specialCases.length ? escapeHtml(specialCaseSummary) : "ningún expediente especial registrado"}</p></div>
     <div class="ending-actions"><button class="primary-button" type="button" data-share-ending>Copiar resumen <span>⧉</span></button><button class="secondary-button" type="button" data-replay-origin="${snapshot.originId}">Repetir origen</button><button class="secondary-button" type="button" data-new-life>Jugar otra vida</button></div>
   `;
 }

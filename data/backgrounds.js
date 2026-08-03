@@ -101,7 +101,7 @@ export const BACKGROUNDS = [
   },
   {
     id: "podcaster-viral", originId: "podcaster", initialEvent: "patrocinador-viral", initialRole: "Comentarista digital", shortName: "Entretenimiento viral", name: "Comediante y streamer convertido en comentarista",
-    eyebrow: "Audiencia masiva", history: "Construiste el Diario de Churwen con humor, sátira y clips antes de entrar en política. Una campaña tecnocrática ya usó tus entrevistas para llegar a jóvenes; la audiencia discute si eres medio, influencer o militante.",
+    eyebrow: "Audiencia masiva", history: "Construiste El Jornal de Churwen con humor, sátira y clips antes de entrar en política. Una campaña tecnocrática ya usó tus entrevistas para llegar a jóvenes; la audiencia discute si eres medio, influencer o militante.",
     impact: "Máxima notoriedad, aprobación e ingresos publicitarios; credibilidad menor y polarización más alta.",
     effects: { approval: 9, influence: 8, cleanMoney: 22000, legalRisk: 3 }, hiddenEffects: { mediaNotoriety: 20, credibility: -13, polarization: 12, urbanApproval: 10, pressSupport: -9 },
     tags: ["background-viral", "figura-de-culto"], relations: { "Nico Barrón": { role: "Productor de transmisiones", score: 75, loyalty: 61, knows: ["patrocinadores y chats privados"] } },

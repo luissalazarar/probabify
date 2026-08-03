@@ -19,6 +19,11 @@ import {
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const clamp = (value, min = -Infinity, max = Infinity) => Math.max(min, Math.min(max, value));
+const stableHash = (value) => {
+  let hash = 2166136261;
+  for (const character of String(value)) hash = Math.imul(hash ^ character.charCodeAt(0), 16777619);
+  return hash >>> 0;
+};
 
 const ROLE_RANK = {
   "Creador de contenido político": 1, "Dirigente vecinal": 1, "Asesor independiente": 2,
@@ -513,23 +518,32 @@ export class GameEngine {
       .filter((option) => option.available || !option.hideWhenUnavailable);
   }
 
+  getCaseActionPool(activeCase) {
+    return [...(SPECIAL_CASE_ACTIONS[activeCase.kind] ?? [])]
+      .sort((left, right) => stableHash(`${this.state.seed}|${activeCase.id}|${left.id}`) - stableHash(`${this.state.seed}|${activeCase.id}|${right.id}`)
+        || left.id.localeCompare(right.id))
+      .slice(0, 2);
+  }
+
   getAvailableCaseActions(caseId) {
     if (!this.state || this.state.endingId) return [];
     const activeCase = this.state.activeCases?.find((entry) => entry.id === caseId && entry.status !== "Resuelto");
     if (!activeCase) return [];
     const alreadyActed = activeCase.lastActionDecisionCount === this.state.decisions.length;
-    return (SPECIAL_CASE_ACTIONS[activeCase.kind] ?? []).map((action) => {
+    const reachedLimit = Number(activeCase.actionHistory?.length ?? 0) >= 2;
+    return this.getCaseActionPool(activeCase).map((action) => {
       const alreadyUsed = activeCase.actionHistory?.some((entry) => entry.actionId === action.id);
       const cleanCost = Math.max(0, -Number(action.effects?.cleanMoney ?? 0));
       const dirtyCost = Math.max(0, -Number(action.effects?.dirtyMoney ?? 0));
       const meetsRequirements = this.meetsRequirements(action.requirements);
       let unavailableReason = "";
       if (alreadyUsed) unavailableReason = "Esta medida ya fue tomada";
+      else if (reachedLimit) unavailableReason = "Ya tomaste dos medidas";
       else if (alreadyActed) unavailableReason = "Ya actuaste · continúa la historia";
       else if (cleanCost > this.state.stats.cleanMoney) unavailableReason = `Necesitas S/${cleanCost.toLocaleString("es-PE")}`;
       else if (dirtyCost > this.state.stats.dirtyMoney) unavailableReason = `Necesitas S/${dirtyCost.toLocaleString("es-PE")} de dinero sucio`;
       else if (!meetsRequirements) unavailableReason = "No disponible ahora";
-      return { ...clone(action), available: !alreadyUsed && !alreadyActed && meetsRequirements && cleanCost <= this.state.stats.cleanMoney && dirtyCost <= this.state.stats.dirtyMoney, unavailableReason };
+      return { ...clone(action), available: !reachedLimit && !alreadyUsed && !alreadyActed && meetsRequirements && cleanCost <= this.state.stats.cleanMoney && dirtyCost <= this.state.stats.dirtyMoney, unavailableReason };
     });
   }
 
@@ -772,8 +786,10 @@ export class GameEngine {
     if (Number.isFinite(explicitAdvance) && explicitAdvance > 0) {
       return Math.max(1, Math.min(Math.floor(explicitAdvance), maxByAge, electionLimit));
     }
-    if (event.directedOnly || event.category === "presidential-election" || option.nextEvent || outcome.nextEvent) return 1;
-    const pace = this.state.gameMode === "express" ? 4 : 2;
+    if (event.category === "presidential-election") return 1;
+    const directedPace = this.state.gameMode === "express" ? 3 : 2;
+    if (event.directedOnly || option.nextEvent || outcome.nextEvent) return Math.max(1, Math.min(directedPace, maxByAge, electionLimit));
+    const pace = this.state.gameMode === "express" ? 5 : 3;
     return Math.max(1, Math.min(pace, maxByAge, electionLimit));
   }
 

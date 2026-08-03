@@ -1,3 +1,11 @@
+const ACTIVE_CANDIDACY = {
+  any: [
+    { hasTag: "en-campana-presidencial" },
+    { hasAnyTag: ["candidata-congreso", "candidato-interno"] },
+    { role: "Candidato a Diputado" },
+  ],
+};
+
 export const peruvianScandalEvents = [
   {
     id: "rumor-ataud-garnica", repeatable: false, weight: 12, maxOccurrences: 1,
@@ -12,9 +20,9 @@ export const peruvianScandalEvents = [
   },
   {
     id: "cocteles-naranjas", repeatable: false, weight: 13, maxOccurrences: 1,
-    requirements: { all: [{ age: { min: 30 } }, { careerTrack: "candidateReady" }] }, category: "finance",
+    requirements: { all: [{ age: { min: 30 } }, { origin: "dinastia" }, { careerTrack: "politicalOrganization" }] }, category: "finance",
     title: "Los cócteles que vendieron entradas imposibles", kicker: "Cientos de aportantes · una sola bolsa de dinero",
-    description: "Fuerza Mandarina declara que sus cócteles financiaron la campaña de Keka Del Pino. Varias personas de la lista niegan haber comprado entradas y un ejecutivo brasileño conserva una anotación con sus iniciales.",
+    description: "Tu partido, Fuerza Mandarina, propone financiar la campaña con cócteles. Varias personas de la lista ya niegan haber comprado entradas y un ejecutivo brasileño ofrece una gran entrega en efectivo.",
     options: [
       { id: "coctel-auditable", label: "Registrar entradas y aportantes reales", hint: "Menos recaudación · cuentas defendibles", effects: { cleanMoney: 22000, influence: -3, legalRisk: -4 }, hiddenEffects: { credibility: 10, prosecutionRelation: 6 }, outcomes: [{ id: "coctel-cuentas-claras", weight: 100, headline: "El cóctel recauda poco y deja recibos completos", text: "La campaña pierde despliegue, pero ningún aportante necesita memorizar una donación ajena." }] },
       { id: "coctel-pitufeo", label: "Fraccionar la bolsa entre falsos aportantes", hint: "Caja grande · investigación futura", effects: { dirtyMoney: 110000, influence: 9, legalRisk: 16 }, hiddenEffects: { leakExposure: 23, credibility: -12 }, addScandals: [{ id: "cocteles-pitufeo", label: "Aportes fraccionados en los Cócteles Mandarina" }], outcomes: [{ id: "coctel-maquinaria", weight: 67, headline: "Los cócteles financian una maquinaria nacional", text: "Cientos de fichas pequeñas convierten una gran entrega empresarial en ingresos partidarios." }, { id: "coctel-aportantes-niegan", weight: 33, headline: "Los aportantes de Fuerza Mandarina no recuerdan haber aportado", text: "Firmas repetidas y domicilios imposibles llevan el caso a una fiscalía de lavado.", effects: { approval: -12, legalRisk: 24 }, addInvestigations: [{ id: "caso-cocteles-mandarina", label: "Investigación por los Cócteles Mandarina" }] }] },
@@ -42,7 +50,7 @@ export const peruvianScandalEvents = [
   },
   {
     id: "tesis-copiada", repeatable: false, weight: 9, maxOccurrences: 1,
-    requirements: { all: [{ age: { min: 30 } }, { any: [{ careerTrack: "candidateReady" }, { background: "podcaster-academico" }] }] }, category: "scandal",
+    requirements: { all: [{ age: { min: 30 } }, { any: [{ origin: "dinastia" }, { background: "podcaster-academico" }] }] }, category: "scandal",
     title: "La tesis tiene páginas de demasiados autores", kicker: "El grado académico entra a la campaña",
     description: "Un verificador encuentra párrafos completos sin citar en tu tesis. La universidad del clan ofrece declarar reservado el documento y emitir un informe favorable.",
     options: [
@@ -52,12 +60,12 @@ export const peruvianScandalEvents = [
   },
   {
     id: "agendas-primera-dama", repeatable: false, weight: 10, maxOccurrences: 1,
-    requirements: { all: [{ age: { min: 35 } }, { careerTrack: "politicalOrganization" }] }, category: "investigation",
+    requirements: { all: [{ age: { min: 35 } }, { origin: "dinastia" }, { careerTrack: "politicalOrganization" }] }, category: "investigation",
     title: "Las agendas de Nadina Heredera", kicker: "Iniciales, montos y una letra conocida",
-    description: "Cuatro agendas atribuidas a la lideresa Nadina Heredera registran aportes extranjeros, entregas empresariales y gastos de campaña. Ella primero niega la letra y luego denuncia que los cuadernos fueron robados.",
+    description: "Cuatro agendas atribuidas al entorno de Nadina Heredera registran aportes extranjeros y gastos de tu partido. Fiscalía te pide entregar los originales y explicar cada inicial.",
     options: [
       { id: "entregar-agendas", label: "Entregar originales y explicar cada inicial", hint: "Aliados expuestos · menor riesgo propio", effects: { influence: -8, legalRisk: -8 }, hiddenEffects: { credibility: 11, prosecutionRelation: 9 }, outcomes: [{ id: "agendas-peritaje", weight: 100, headline: "El peritaje confirma la letra de Nadina", text: "La transparencia evita una obstrucción, pero varios aportantes rompen con el partido." }] },
-      { id: "negar-agendas", label: "Negar la letra y atacar al fiscal", hint: "Mantiene la red · contradicciones futuras", effects: { influence: 8, legalRisk: 13 }, hiddenEffects: { credibility: -14, leakExposure: 18, polarization: 9 }, outcomes: [{ id: "agendas-versiones", weight: 64, headline: "Nadina ofrece tres versiones sobre las agendas", text: "El cambio de relato se vuelve más importante que varias anotaciones." }, { id: "agendas-archivo", weight: 36, headline: "Un tribunal excluye parte del caso de las agendas", text: "La defensa gana tiempo y convierte el proceso en bandera política.", effects: { legalRisk: -7, approval: 3 } }] },
+      { id: "negar-agendas", label: "Negar su autenticidad y atacar al fiscal", hint: "Mantiene la red · contradicciones futuras", effects: { influence: 8, legalRisk: 13 }, hiddenEffects: { credibility: -14, leakExposure: 18, polarization: 9 }, outcomes: [{ id: "agendas-versiones", weight: 64, headline: "Nadina ofrece tres versiones sobre las agendas", text: "El cambio de relato se vuelve más importante que varias anotaciones." }, { id: "agendas-archivo", weight: 36, headline: "Un tribunal excluye parte del caso de las agendas", text: "La defensa gana tiempo y convierte el proceso en bandera política.", effects: { legalRisk: -7, approval: 3 } }] },
     ],
   },
   {
@@ -151,7 +159,7 @@ export const peruvianScandalEvents = [
     ],
   },
   {
-    id: "los-ninos-obras", repeatable: true, cooldown: 8, maxOccurrences: 2, weight: 9,
+    id: "los-ninos-obras", repeatable: false, maxOccurrences: 1, weight: 9,
     requirements: { all: [{ age: { min: 32 } }, { any: [{ hasTag: "presidente-actual" }, { role: ["Premier", "Ministro de Estado"] }] }] }, category: "congress",
     title: "Los Niños piden ministerios y obras", kicker: "Una bancada obediente · un pliego por provincia",
     description: "Seis legisladores ofrecen respaldar al Ejecutivo en censuras e interpelaciones. A cambio quieren directores regionales, contratos y obras administradas por alcaldes aliados.",
@@ -221,7 +229,7 @@ export const peruvianScandalEvents = [
     ],
   },
   {
-    id: "repartija-institucional", repeatable: true, cooldown: 9, maxOccurrences: 2, weight: 8,
+    id: "repartija-institucional", repeatable: false, maxOccurrences: 1, weight: 8,
     requirements: { careerTrack: "nationalInstitution" }, category: "congress",
     title: "La repartija", kicker: "Tribunal, Defensoría y Banco Central en una sola mesa",
     description: "Las bancadas acuerdan repartirse nombramientos según su número de votos. Cada partido lleva candidatos propios y promete no revisar los antecedentes de los demás.",
@@ -312,17 +320,17 @@ export const peruvianScandalEvents = [
   },
   {
     id: "cilicio-candidato", repeatable: false, weight: 8, maxOccurrences: 1,
-    requirements: { all: [{ careerTrack: "candidateReady" }, { stat: "ideology", min: 30 }] }, category: "campaign",
-    title: "Porki Ramírez habla de su cilicio", kicker: "Celibato, fe y una entrevista imposible de controlar",
-    description: "El candidato Porki Ramírez cuenta que practica el celibato, usa un cilicio desde hace décadas y está enamorado de una figura religiosa. El clip desplaza por completo su plan económico.",
+    requirements: { all: [ACTIVE_CANDIDACY, { stat: "ideology", min: 30 }] }, category: "campaign",
+    title: "Una confesión desplaza tu plan de gobierno", kicker: "Fe, vida privada y una entrevista imposible de controlar",
+    description: "Durante una entrevista hablas de celibato, disciplina religiosa y sacrificio personal. El clip desplaza por completo tu plan económico.",
     options: [
-      { id: "convertir-cilicio-marca", label: "Convertir la confesión en marca de campaña", hint: "Base leal · fuerte polarización", effects: { approval: 4, influence: 7 }, hiddenEffects: { polarization: 15, mediaNotoriety: 15, credibility: -3 }, outcomes: [{ id: "porki-tendencia", weight: 100, headline: "Porki y el cilicio dominan la campaña", text: "Seguidores celebran su disciplina y críticos convierten cada frase en meme." }] },
-      { id: "volver-plan-cilicio", label: "Cerrar el tema y volver al plan de gobierno", hint: "Menos viralidad · mayor seriedad", effects: { influence: -2 }, hiddenEffects: { credibility: 9, mediaNotoriety: -4, polarization: -5 }, outcomes: [{ id: "porki-plan", weight: 100, headline: "Porki deja el cilicio fuera de las siguientes entrevistas", text: "La campaña pierde espectáculo y recupera espacio para propuestas." }] },
+      { id: "convertir-cilicio-marca", label: "Convertir la confesión en marca de campaña", hint: "Base leal · fuerte polarización", effects: { approval: 4, influence: 7 }, hiddenEffects: { polarization: 15, mediaNotoriety: 15, credibility: -3 }, outcomes: [{ id: "porki-tendencia", weight: 100, headline: "La confesión domina tu campaña", text: "Seguidores celebran tu disciplina y críticos convierten cada frase en meme." }] },
+      { id: "volver-plan-cilicio", label: "Cerrar el tema y volver al plan de gobierno", hint: "Menos viralidad · mayor seriedad", effects: { influence: -2 }, hiddenEffects: { credibility: 9, mediaNotoriety: -4, polarization: -5 }, outcomes: [{ id: "porki-plan", weight: 100, headline: "La campaña regresa a las propuestas", text: "Pierdes espectáculo y recuperas espacio para explicar tu plan." }] },
     ],
   },
   {
-    id: "taperes-campana", repeatable: true, cooldown: 7, maxOccurrences: 2, weight: 9,
-    requirements: { careerTrack: "candidateReady" }, category: "campaign",
+    id: "taperes-campana", repeatable: false, maxOccurrences: 1, weight: 9,
+    requirements: ACTIVE_CANDIDACY, category: "campaign",
     title: "Un táper, arroz y diez soles", kicker: "La campaña reparte ayuda junto al símbolo",
     description: "Los coordinadores proponen entregar comida y dinero en un mitin. Cada táper lleva tu rostro, número de lista y una instrucción sencilla para el día de la elección.",
     options: [

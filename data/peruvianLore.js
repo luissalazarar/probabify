@@ -115,17 +115,17 @@ const COPY_OVERRIDES = {
     description: "Una alianza sin candidato te propone convertir tu prestigio empresarial en campaña presidencial. Ofrecen técnicos y símbolo; esperan que tu grupo pague la operación y no pregunte demasiado por los aportantes.",
   },
   "podcaster-lanzamiento": {
-    title: "El Diario de Churwen define su línea política",
+    title: "El Jornal de Churwen define su línea política",
     kicker: "Audiencia, sátira y poder editorial",
-    description: "El canal ya convirtió expedientes, humor y clips en una audiencia propia. Periodistas, marcas y comandos esperan saber si Churwen será medio, tribuna militante o maquinaria personal.",
+    description: "El canal ya convirtió expedientes, humor y clips en una audiencia propia. Periodistas, marcas y comandos esperan saber si El Jornal de Churwen será medio, tribuna militante o maquinaria personal.",
   },
   "redes-viral": {
-    title: "El Diario de Churwen comparte tu minuto viral",
+    title: "El Jornal de Churwen comparte tu minuto viral",
     kicker: "La política pasa del mitin al clip",
-    description: "Churwen convierte tu cruce con un funcionario en el video político del día. El equipo del candidato Julio Gizmán pregunta si puede usarlo como puente informal hacia votantes jóvenes.",
+    description: "El Jornal de Churwen convierte tu cruce con un funcionario en el video político del día. El equipo del candidato Junio Gizman pregunta si puede usarlo como puente informal hacia votantes jóvenes.",
   },
   "publicidad-politica": {
-    title: "Julio Gizmán llega al estudio de Churwen",
+    title: "Junio Gizman llega al estudio del Jornal de Churwen",
     kicker: "Entrevista, pauta o brazo digital",
     description: "La candidatura morada ofrece financiar una temporada completa si el candidato aparece como invitado recurrente. El contrato es legal, pero puede borrar la frontera entre medio, influencer y comando de campaña.",
     options: {
@@ -134,23 +134,23 @@ const COPY_OVERRIDES = {
     },
   },
   "testaferro-mediatico": {
-    title: "Gizmán quiere usar a Churwen como testaferro",
+    title: "Gizman quiere usar al Jornal de Churwen como testaferro",
     kicker: "La campaña necesita ocultar bienes y gastos",
-    description: "Julio Gizmán propone poner vehículos, una oficina de campaña y contratos de producción a nombre de Churwen. A cambio recibirás una mensualidad y acceso directo a su comando.",
+    description: "Junio Gizman propone poner vehículos, una oficina de campaña y contratos de producción a nombre del Jornal de Churwen. A cambio recibirás una mensualidad y acceso directo a su comando.",
     options: {
       "prestar-nombre": {
-        label: "Aceptar ser el testaferro de Gizmán",
+        label: "Aceptar ser el testaferro de Gizman",
         hint: "Dinero y acceso · alto riesgo judicial",
         outcomes: {
-          "bienes-ocultos": { headline: "Churwen se convierte en la caja patrimonial de la campaña", text: "Los vehículos, la oficina y varios pagos quedan a tu nombre mientras Gizmán conserva distancia formal." },
-          "registro-cruzado": { headline: "Fiscalía conecta los bienes de Churwen con Gizmán", text: "Contratos, transferencias y mensajes revelan que el canal ocultó parte de la estructura patrimonial de la campaña." },
+          "bienes-ocultos": { headline: "El Jornal de Churwen se convierte en la caja patrimonial de la campaña", text: "Los vehículos, la oficina y varios pagos quedan a tu nombre mientras Gizman conserva distancia formal." },
+          "registro-cruzado": { headline: "Fiscalía conecta los bienes del Jornal de Churwen con Gizman", text: "Contratos, transferencias y mensajes revelan que el canal ocultó parte de la estructura patrimonial de la campaña." },
         },
       },
       "rechazar-testaferro": {
         label: "Rechazarlo y guardar los mensajes",
         hint: "Pierdes acceso · conservas una exclusiva",
         outcomes: {
-          "operador-se-aleja": { headline: "Gizmán busca otro nombre para sus bienes", text: "El comando corta la relación con Churwen, pero los mensajes quedan listos para una futura investigación." },
+          "operador-se-aleja": { headline: "Gizman busca otro nombre para sus bienes", text: "El comando corta la relación con el Jornal de Churwen, pero los mensajes quedan listos para una futura investigación." },
         },
       },
     },

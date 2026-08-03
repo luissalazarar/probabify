@@ -178,6 +178,107 @@ export const SPECIAL_CASE_ACTIONS = {
   ],
 };
 
+const VARIABLE_SPECIAL_CASE_ACTIONS = {
+  trial: [
+    {
+      id: "trial-independent-review", label: "Pedir un peritaje", hint: "Una revisión externa puede cambiar la prueba.", effects: { cleanMoney: -5500 }, caseEffects: { defense: 4 },
+      outcomes: [
+        { id: "trial-review-finds-gap", weight: 57, headline: "El peritaje encuentra una falla", text: "Un informe debilita la principal prueba fiscal.", effects: { legalRisk: -5 }, hiddenEffects: { judiciaryRelation: 4 }, caseEffects: { evidence: -9, defense: 8, court: 5 }, tone: "positive", caseOutcome: { kind: "trial", polarity: "favorable" } },
+        { id: "trial-review-confirms-proof", weight: 43, headline: "El peritaje confirma la prueba", text: "La revisión externa respalda la acusación.", effects: { legalRisk: 5 }, caseEffects: { evidence: 9, defense: -4, media: 4 }, tone: "danger", caseOutcome: { kind: "trial", polarity: "adverse" } },
+      ],
+    },
+    {
+      id: "trial-limit-accusation", label: "Negociar con Fiscalía", hint: "Busca reducir el caso a cambio de colaborar.", hiddenEffects: { prosecutionRelation: 3 }, caseEffects: { court: 3 },
+      outcomes: [
+        { id: "trial-deal-limits-case", weight: 53, headline: "Fiscalía reduce la acusación", text: "Tu colaboración cierra una parte del expediente.", effects: { legalRisk: -7 }, hiddenEffects: { prosecutionRelation: 7 }, caseEffects: { evidence: -7, court: 8, media: 2 }, tone: "positive", caseOutcome: { kind: "trial", polarity: "favorable" } },
+        { id: "trial-deal-seen-admission", weight: 47, headline: "La negociación parece una admisión", text: "La filtración de la reunión aumenta la presión.", effects: { approval: -3, legalRisk: 4 }, hiddenEffects: { leakExposure: 5 }, caseEffects: { evidence: 6, media: 8 }, tone: "danger", caseOutcome: { kind: "trial", polarity: "adverse" } },
+      ],
+    },
+  ],
+  campaign: [
+    {
+      id: "campaign-digital-push", label: "Lanzar pauta digital", hint: "Busca alcance rápido entre votantes jóvenes.", effects: { cleanMoney: -6000 }, hiddenEffects: { mediaNotoriety: 4 }, caseEffects: { resources: -5 },
+      outcomes: [
+        { id: "campaign-digital-connects", weight: 59, headline: "La campaña domina las redes", text: "Un mensaje simple amplía tu intención de voto.", effects: { approval: 4 }, caseEffects: { intention: 8, rejection: -2 }, tone: "positive", caseOutcome: { kind: "campaign", polarity: "favorable" } },
+        { id: "campaign-digital-backfires", weight: 41, headline: "La pauta se vuelve una burla", text: "Los rivales convierten el anuncio en un meme.", effects: { approval: -3 }, hiddenEffects: { credibility: -4 }, caseEffects: { intention: -5, rejection: 7 }, tone: "danger", caseOutcome: { kind: "campaign", polarity: "adverse" } },
+      ],
+    },
+    {
+      id: "campaign-regional-spokesperson", label: "Sumar una voz regional", hint: "Amplía la fórmula fuera de Lima.", hiddenEffects: { regionalSupport: 5 }, caseEffects: { organization: 4 },
+      outcomes: [
+        { id: "campaign-spokesperson-expands", weight: 61, headline: "La nueva vocería abre regiones", text: "La campaña gana equipos y respaldo territorial.", hiddenEffects: { ruralApproval: 5, partyCohesion: 3 }, caseEffects: { intention: 6, organization: 8 }, tone: "positive", caseOutcome: { kind: "campaign", polarity: "favorable" } },
+        { id: "campaign-spokesperson-scandal", weight: 39, headline: "El nuevo vocero arrastra una denuncia", text: "Un expediente local obliga a defender la alianza.", effects: { legalRisk: 3, approval: -3 }, caseEffects: { rejection: 7, organization: -3 }, tone: "danger", caseOutcome: { kind: "campaign", polarity: "adverse" } },
+      ],
+    },
+  ],
+  vacancy: [
+    {
+      id: "vacancy-address-country", label: "Hablarle al país", hint: "Explica la crisis en cadena nacional.", caseEffects: { street: 4 },
+      outcomes: [
+        { id: "vacancy-address-calms", weight: 55, headline: "El mensaje reduce la tensión", text: "La calle pide estabilidad y baja la presión.", effects: { approval: 4 }, hiddenEffects: { governmentStability: 5, vacancyRisk: -5 }, caseEffects: { street: 10, institutions: 4 }, tone: "positive", caseOutcome: { kind: "vacancy", polarity: "favorable" } },
+        { id: "vacancy-address-angers", weight: 45, headline: "El mensaje enciende protestas", text: "La oposición presenta el discurso como una amenaza.", effects: { approval: -5 }, hiddenEffects: { polarization: 6, vacancyRisk: 6 }, caseEffects: { street: -10, institutions: -5 }, tone: "danger", caseOutcome: { kind: "vacancy", polarity: "adverse" } },
+      ],
+    },
+    {
+      id: "vacancy-institutional-bridge", label: "Buscar un mediador", hint: "Convoca a una figura aceptada por ambos bloques.", hiddenEffects: { congressSupport: 2 }, caseEffects: { institutions: 5 },
+      outcomes: [
+        { id: "vacancy-mediator-opens-talks", weight: 58, headline: "El mediador abre una salida", text: "Gobierno y Congreso acuerdan reglas para continuar.", hiddenEffects: { governmentStability: 7, vacancyRisk: -7 }, caseEffects: { survival: 7, institutions: 10 }, tone: "positive", caseOutcome: { kind: "vacancy", polarity: "favorable" } },
+        { id: "vacancy-mediator-withdraws", weight: 42, headline: "El mediador abandona las conversaciones", text: "Los dos bloques endurecen sus posiciones.", hiddenEffects: { governmentStability: -6, vacancyRisk: 6 }, caseEffects: { survival: -6, institutions: -9 }, tone: "danger", caseOutcome: { kind: "vacancy", polarity: "adverse" } },
+      ],
+    },
+  ],
+  disaster: [
+    {
+      id: "disaster-coordinate-mayors", label: "Coordinar municipios", hint: "Reparte tareas y rutas de entrega.", caseEffects: { response: 5 },
+      outcomes: [
+        { id: "disaster-mayors-coordinate", weight: 62, headline: "Los municipios coordinan la ayuda", text: "Las rutas locales aceleran rescates y entregas.", nationalEffects: { socialConflict: -2 }, caseEffects: { severity: -4, response: 9, supplies: 6 }, tone: "positive", caseOutcome: { kind: "disaster", polarity: "favorable" } },
+        { id: "disaster-mayors-clash", weight: 38, headline: "Las autoridades pelean por recursos", text: "La disputa retrasa la atención en zonas aisladas.", nationalEffects: { socialConflict: 2 }, caseEffects: { severity: 5, response: -7, trust: -5 }, tone: "danger", caseOutcome: { kind: "disaster", polarity: "adverse" } },
+      ],
+    },
+    {
+      id: "disaster-audit-purchases", label: "Revisar las compras", hint: "Evita desvíos, pero puede retrasar entregas.", hiddenEffects: { credibility: 3 }, caseEffects: { trust: 4 },
+      outcomes: [
+        { id: "disaster-audit-stops-diversion", weight: 56, headline: "La revisión frena un desvío", text: "Los insumos vuelven a las zonas afectadas.", hiddenEffects: { credibility: 5 }, caseEffects: { supplies: 8, trust: 9 }, tone: "positive", caseOutcome: { kind: "disaster", polarity: "favorable" } },
+        { id: "disaster-audit-delays-aid", weight: 44, headline: "La revisión paraliza entregas", text: "El control llega tarde y deja almacenes cerrados.", effects: { approval: -3 }, caseEffects: { response: -5, supplies: -6, trust: -4 }, tone: "danger", caseOutcome: { kind: "disaster", polarity: "adverse" } },
+      ],
+    },
+  ],
+  prison: [
+    {
+      id: "prison-study-file", label: "Estudiar el expediente", hint: "Busca errores junto con tu defensa.", caseEffects: { appeal: 5 },
+      outcomes: [
+        { id: "prison-file-error-found", weight: 55, headline: "La defensa encuentra un error", text: "Una diligencia mal hecha fortalece la apelación.", hiddenEffects: { judiciaryRelation: 4 }, caseEffects: { appeal: 11, outside: 3 }, tone: "positive", caseOutcome: { kind: "prison", polarity: "favorable" } },
+        { id: "prison-file-holds", weight: 45, headline: "El expediente resiste la revisión", text: "La defensa no encuentra una falla decisiva.", hiddenEffects: { familyStress: 3 }, caseEffects: { appeal: -7, family: -3 }, tone: "danger", caseOutcome: { kind: "prison", polarity: "adverse" } },
+      ],
+    },
+    {
+      id: "prison-low-profile", label: "Mantener perfil bajo", hint: "Reduce conflictos dentro del penal.", caseEffects: { inside: -3, family: 3 },
+      outcomes: [
+        { id: "prison-low-profile-helps", weight: 63, headline: "La tensión dentro del penal baja", text: "El nuevo perfil protege visitas y rutina.", hiddenEffects: { familyStress: -5 }, caseEffects: { family: 8, inside: 2 }, tone: "positive", caseOutcome: { kind: "prison", polarity: "favorable" } },
+        { id: "prison-low-profile-isolates", weight: 37, headline: "Tu red interpreta silencio", text: "Los operadores dejan de esperar instrucciones.", effects: { influence: -4 }, hiddenEffects: { partyCohesion: -4 }, caseEffects: { outside: -8, inside: -5 }, tone: "danger", caseOutcome: { kind: "prison", polarity: "adverse" } },
+      ],
+    },
+  ],
+  exile: [
+    {
+      id: "exile-local-team", label: "Formar un equipo local", hint: "Organiza tu defensa desde el país de acogida.", effects: { cleanMoney: -4500 }, caseEffects: { resources: -4, remote: 4 },
+      outcomes: [
+        { id: "exile-team-builds-network", weight: 60, headline: "El equipo abre una red de apoyo", text: "Abogados y organizaciones sostienen tu caso.", hiddenEffects: { internationalReputation: 5 }, caseEffects: { international: 7, remote: 7, resources: 3 }, tone: "positive", caseOutcome: { kind: "exile", polarity: "favorable" } },
+        { id: "exile-team-leaks", weight: 40, headline: "Un asesor filtra tus planes", text: "La estrategia de retorno llega a tus adversarios.", effects: { legalRisk: 3 }, hiddenEffects: { leakExposure: 6 }, caseEffects: { legalPath: -6, remote: -4, resources: -5 }, tone: "danger", caseOutcome: { kind: "exile", polarity: "adverse" } },
+      ],
+    },
+    {
+      id: "exile-prepare-return", label: "Preparar el retorno", hint: "Solicita garantías antes de viajar.", effects: { cleanMoney: -5500 }, caseEffects: { legalPath: 5 },
+      outcomes: [
+        { id: "exile-return-date", weight: 54, headline: "La defensa consigue una fecha", text: "El tribunal acepta revisar las condiciones de retorno.", hiddenEffects: { judiciaryRelation: 5 }, caseEffects: { legalPath: 11, international: 4 }, tone: "positive", caseOutcome: { kind: "exile", polarity: "favorable" } },
+        { id: "exile-return-order-hardens", weight: 46, headline: "La orden de captura se endurece", text: "Fiscalía usa el anuncio para pedir nuevas restricciones.", effects: { legalRisk: 5 }, hiddenEffects: { prosecutionRelation: -4 }, caseEffects: { legalPath: -9, resources: -3 }, tone: "danger", caseOutcome: { kind: "exile", polarity: "adverse" } },
+      ],
+    },
+  ],
+};
+
+for (const [kind, actions] of Object.entries(VARIABLE_SPECIAL_CASE_ACTIONS)) SPECIAL_CASE_ACTIONS[kind].push(...actions);
+
 export const NATIONAL_EMERGENCY_CASES = {
   "nino-costero-nacional": { title: "El Niño Costero", kicker: "Lluvias, huaicos y reconstrucción", severity: 70 },
   "terremoto-costa-central": { title: "Terremoto en la costa central", kicker: "Rescate, réplicas y vivienda", severity: 82 },
