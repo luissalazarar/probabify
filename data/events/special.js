@@ -81,24 +81,25 @@ export const specialEvents = [
     ],
   },
   {
-    id: "prision-decision", directedOnly: true, category: "prison",
+    id: "prision-decision", directedOnly: true, allowDirectedRepeat: true, maxOccurrences: 2, category: "prison",
     title: "La política detrás de los muros", kicker: "Una carrera bajo custodia",
     description: "Tu organización no desaparece. Desde prisión puedes escribir, negociar información o designar a alguien que mantenga vivo el movimiento.",
     options: [
-      { id: "libro-prision", label: "Escribir un libro desde prisión", hint: "Reputación y una fuente de ingresos", effects: { cleanMoney: 18000, approval: 4 }, hiddenEffects: { mediaNotoriety: 12, credibility: 5 }, outcomes: [{ id: "manuscrito-prision", weight: 100, headline: "Tus memorias desde prisión se vuelven un éxito", text: "El libro mantiene tu nombre en la conversación pública." }] },
-      { id: "negociar-informacion-prision", label: "Negociar información", hint: "Reducir condena, perder aliados", effects: { legalRisk: -28, influence: -12 }, hiddenEffects: { prosecutionRelation: 18 }, addEnemies: [{ id: "red-delatada", label: "Red política afectada por tu testimonio" }], outcomes: [{ id: "beneficio-penitenciario", weight: 55, headline: "Tu información abre la puerta a una liberación futura", text: "Fiscalía valida una parte del testimonio y revisa tu situación.", removeTags: ["en-prision"], setRole: "Político en libertad vigilada", addTags: ["libertad-vigilada"] }, { id: "informacion-insuficiente", weight: 45, headline: "La fiscalía rechaza el acuerdo", text: "Permaneces en prisión y tus antiguos aliados ya conocen la oferta." }] },
-      { id: "sucesor-desde-prision", label: "Dirigir el partido mediante un sucesor", hint: "Influencia indirecta", effects: { influence: 8, cleanMoney: -10000 }, hiddenEffects: { partyCohesion: 6 }, outcomes: [{ id: "partido-carcel", weight: 62, headline: "El movimiento sigue tus instrucciones desde prisión", text: "El sucesor mantiene la disciplina y repite tu narrativa." }, { id: "sucesor-rompe", weight: 38, headline: "Tu sucesor toma control y se distancia", text: "La organización conserva tus símbolos, pero deja de obedecerte.", effects: { influence: -16 }, addEnemies: [{ id: "sucesor-traidor", label: "Sucesor que tomó el partido" }] }] },
+      { id: "libro-prision", label: "Escribir un libro desde prisión", hint: "Reputación y una fuente de ingresos", requirements: { not: { decision: "libro-prision" } }, hideWhenUnavailable: true, effects: { cleanMoney: 18000, approval: 4 }, hiddenEffects: { mediaNotoriety: 12, credibility: 5 }, outcomes: [{ id: "manuscrito-prision", weight: 100, headline: "Tus memorias desde prisión se vuelven un éxito", text: "El libro mantiene tu nombre en la conversación pública." }] },
+      { id: "negociar-informacion-prision", label: "Negociar información", hint: "Reducir condena, perder aliados", requirements: { all: [{ not: { decision: "negociar-informacion-prision" } }, { eventCount: { id: "juicio-en-libertad", max: 0 } }, { missingTag: "condena-final" }] }, hideWhenUnavailable: true, effects: { legalRisk: -28, influence: -12 }, hiddenEffects: { prosecutionRelation: 18 }, addEnemies: [{ id: "red-delatada", label: "Red política afectada por tu testimonio" }], outcomes: [{ id: "beneficio-penitenciario", weight: 55, headline: "Tu información abre la puerta a una liberación futura", text: "Fiscalía valida una parte del testimonio y revisa tu situación.", removeTags: ["en-prision"], setRole: "Político en libertad vigilada", addTags: ["libertad-vigilada"] }, { id: "informacion-insuficiente", weight: 45, headline: "La fiscalía rechaza el acuerdo", text: "Permaneces en prisión y tus antiguos aliados ya conocen la oferta." }] },
+      { id: "sucesor-desde-prision", label: "Dirigir el partido mediante un sucesor", hint: "Influencia indirecta", requirements: { not: { decision: "sucesor-desde-prision" } }, hideWhenUnavailable: true, effects: { influence: 8, cleanMoney: -10000 }, hiddenEffects: { partyCohesion: 6 }, outcomes: [{ id: "partido-carcel", weight: 62, headline: "El movimiento sigue tus instrucciones desde prisión", text: "El sucesor mantiene la disciplina y repite tu narrativa." }, { id: "sucesor-rompe", weight: 38, headline: "Tu sucesor toma control y se distancia", text: "La organización conserva tus símbolos, pero deja de obedecerte.", effects: { influence: -16 }, addEnemies: [{ id: "sucesor-traidor", label: "Sucesor que tomó el partido" }] }] },
     ],
   },
   {
     id: "vida-prision", repeatable: true, cooldown: 2, forced: true, priority: 98, weight: 100,
     requirements: { hasTag: "en-prision" }, category: "prison",
-    title: "Otro año bajo custodia", kicker: "La trayectoria continúa",
-    description: "El proceso se prolonga. Puedes insistir en una apelación, dar entrevistas o aceptar una condena reducida y continuar influyendo desde prisión.",
+    title: "La siguiente etapa bajo custodia", kicker: "Apelación, sentencia o vida penitenciaria",
+    description: "El expediente avanza durante los siguientes años. Si todavía no existe sentencia puedes apelar una sola vez; con condena firme, debes decidir qué hacer con el tiempo y los vínculos que conservas.",
     options: [
       { id: "apelar-prision", label: "Apelar y mantener la organización", hint: "Costoso, resultado incierto", requirements: { missingTag: "condena-final" }, effects: { cleanMoney: -22000, influence: 3 }, outcomes: [{ id: "apelacion-libera", weight: 34, headline: "Una sala revoca la prisión preventiva", text: "Recuperas la libertad y prometes volver a la vida pública.", removeTags: ["en-prision"], setRole: "Líder opositor", addTags: ["regreso-politico"], effects: { approval: 5 } }, { id: "apelacion-denegada", weight: 66, headline: "La sala confirma la medida", text: "Permaneces en prisión, pero el proceso todavía no concluye." }] },
       { id: "entrevista-prision", label: "Dar una entrevista desde prisión", hint: "Movilizar seguidores", effects: { approval: 3, influence: 5 }, hiddenEffects: { mediaNotoriety: 8, polarization: 10 }, outcomes: [{ id: "culto-prision", weight: 100, headline: "La entrevista convierte tu caso en bandera política", text: "Seguidores organizan una campaña por tu liberación.", addTags: ["figura-de-culto"] }] },
       { id: "aceptar-condena", label: "Aceptar una condena reducida", hint: "Sin nuevas candidaturas · influencia desde prisión", requirements: { missingTag: "condena-final" }, effects: { legalRisk: -20 }, addTags: ["condena-final"], outcomes: [{ id: "sentencia-firme", weight: 100, headline: "Una sentencia firme cambia tu trayectoria", text: "Aceptas responsabilidad a cambio de una pena menor. Ya no postulas, pero conservas voz, aliados y decisiones hasta el final de tu vida pública.", setRole: "Exdirigente en prisión", highlight: true }] },
+      { id: "reparar-desde-prision", label: "Trabajar, estudiar y reconstruir vínculos", hint: "Reduce conflicto familiar · legado menos polarizante", requirements: { hasTag: "condena-final" }, hiddenEffects: { familyStress: -12, personalReputation: 8, polarization: -6, credibility: 5 }, outcomes: [{ id: "rutina-reparacion-prision", weight: 100, headline: "Los años de condena cambian tu relación con el pasado", text: "El trabajo penitenciario y las visitas familiares reducen la confrontación, aunque la inhabilitación política se mantiene." }] },
     ],
   },
   {
@@ -165,13 +166,25 @@ export const specialEvents = [
     ],
   },
   {
-    id: "ano-perfil-bajo", fallbackOnly: true, repeatable: true, weight: 1,
+    id: "ano-perfil-bajo", fallbackOnly: true, repeatable: true, cooldown: 2, weight: 1,
     requirements: { age: { max: 69 } }, category: "transition",
     title: "Un año fuera del centro de atención", kicker: "Reordenar antes del siguiente movimiento",
     description: "No aparece una oportunidad decisiva y varias puertas siguen cerradas. Puedes usar el año para recomponer tu vida económica o conservar activa tu red.",
     options: [
       { id: "trabajo-perfil-bajo", label: "Aceptar trabajo fuera de la primera línea", hint: "Recuperar dinero limpio · perder presencia", effects: { cleanMoney: 24000, influence: -3 }, hiddenEffects: { credibility: 3, mediaNotoriety: -4 }, outcomes: [{ id: "ingresos-discretos", weight: 70, headline: "Un año discreto ordena tus cuentas", text: "Consultorías, clases o trabajo privado sostienen tu trayectoria sin grandes titulares." }, { id: "contrato-termina", weight: 30, headline: "El trabajo dura menos de lo previsto", text: "El ingreso ayuda, aunque debes volver a buscar una oportunidad política.", effects: { cleanMoney: -7000 } }] },
       { id: "mantener-red-perfil-bajo", label: "Mantener reuniones y recorrer bases", hint: "Conservar influencia · asumir el costo", effects: { cleanMoney: -9000, influence: 4 }, hiddenEffects: { partyCohesion: 4, regionalSupport: 3 }, outcomes: [{ id: "red-resiste", weight: 100, headline: "La red sobrevive a un año sin cargos", text: "No ocupas portadas, pero antiguos contactos siguen contestando tus llamadas." }] },
+    ],
+  },
+  {
+    id: "ano-balance-publico", fallbackOnly: true, repeatable: true, cooldown: 2, weight: 1,
+    requirements: { all: [{ age: { max: 69 } }, { missingTag: ["en-prision", "en-exilio", "arresto-domiciliario"] }] }, category: "transition",
+    title: "Un año para ordenar lo que dejas",
+    kicker: "Sin cargo, pero con decisiones pendientes",
+    description: "No tienes una campaña inmediata. Puedes explicar tus cuentas, formar nuevos cuadros o reparar una relación familiar dañada por la política.",
+    options: [
+      { id: "publicar-balance-trayectoria", label: "Publicar un balance con documentos", hint: "Credibilidad · pueden aparecer omisiones", effects: { cleanMoney: -4000 }, hiddenEffects: { credibility: 8, leakExposure: 5 }, outcomes: [{ id: "balance-publico-resiste", weight: 64, weightModifiers: [{ when: { hidden: "credibility", min: 60 }, multiply: 1.35 }], headline: "El balance ordena los principales hechos de tu carrera", text: "Documentos y fechas aclaran decisiones que seguían bajo versiones enfrentadas.", hiddenEffects: { personalReputation: 6 } }, { id: "balance-publico-omite", weight: 36, weightModifiers: [{ when: { hidden: "leakExposure", min: 65 }, multiply: 1.5 }], headline: "Un archivo ausente debilita tu balance público", text: "Periodistas encuentran una decisión importante que no aparecía en el documento.", effects: { approval: -6, legalRisk: 4 }, hiddenEffects: { credibility: -7 }, addScandals: [{ id: "omision-balance-final", label: "Omisión detectada en el balance público" }] }] },
+      { id: "formar-relevo-politico", label: "Formar dirigentes más jóvenes", hint: "Organización duradera · cedes protagonismo", effects: { cleanMoney: 9000, influence: -3 }, hiddenEffects: { partyCohesion: 8, personalReputation: 5 }, outcomes: [{ id: "relevo-politico-aprende", weight: 100, headline: "Una nueva promoción empieza a tomar decisiones", text: "Talleres y recorridos dejan dirigentes capaces de actuar sin esperar tus instrucciones.", addAllies: [{ id: "promocion-relevo", label: "Nueva promoción de dirigentes" }] }] },
+      { id: "reparar-vinculos-finales", label: "Dedicar el año a la familia", hint: "Reduce tensión · pierdes presencia", requirements: { hidden: "familyStress", min: 55 }, hideWhenUnavailable: true, effects: { influence: -4 }, hiddenEffects: { familyStress: -16, personalReputation: 4, mediaNotoriety: -5 }, outcomes: [{ id: "familia-recupera-tiempo", weight: 100, headline: "La familia recupera una rutina fuera de campaña", text: "El año sin cargos permite reparar vínculos que llevaban demasiado tiempo bajo presión." }] },
     ],
   },
 ];

@@ -18,31 +18,39 @@
   --font-display: "Montserrat", "Arial Black", sans-serif;
   --font-body: "Montserrat", Arial, sans-serif;
 
-  --paper: #f2efe7;
-  --paper-deep: #e8e3d7;
-  --paper-light: #fbfaf6;
-  --ink: #171817;
-  --ink-soft: #4f504c;
-  --muted: #77766f;
-  --line: #cbc5b8;
-  --line-dark: #9d978b;
-  --red: #d62f35;
-  --red-dark: #a41920;
-  --red-soft: #f4d7d6;
-  --green: #365f4c;
-  --gold: #b99147;
-  --white: #ffffff;
-  --surface-translucent: rgba(251, 250, 246, 0.52);
-  --result-bg: #e2ebe4;
-  --result-ink: #254333;
-  --texture-dot: rgba(23, 24, 23, 0.07);
+  --paper: #f7edc8;
+  --paper-deep: #ecd98c;
+  --paper-light: #fffaf0;
+  --ink: #17100e;
+  --ink-soft: #4b342d;
+  --muted: #756155;
+  --line: #b28b71;
+  --line-dark: #54372d;
+  --red: #ec087b;
+  --red-dark: #a60059;
+  --red-soft: #ffd0e7;
+  --green: #3d7809;
+  --gold: #c58c00;
+  --white: #fffdf2;
+  --cyan: #00a4c7;
+  --cyan-dark: #006d84;
+  --orange: #ff5c1f;
+  --purple: #6a20d9;
+  --lime: #9edb21;
+  --sun: #ffd900;
+  --peru-red: #d91023;
+  --on-magenta: #fff8db;
+  --surface-translucent: rgba(255, 250, 236, 0.78);
+  --result-bg: #dff5b4;
+  --result-ink: #244b08;
+  --texture-dot: rgba(23, 16, 14, 0.11);
 
   --page-width: 1240px;
   --radius-sm: 3px;
   --radius-md: 8px;
   --radius-lg: 14px;
-  --shadow-soft: 0 18px 50px rgba(37, 31, 23, 0.08);
-  --shadow-card: 0 8px 25px rgba(37, 31, 23, 0.07);
+  --shadow-soft: 7px 7px 0 rgba(23, 16, 14, 0.18);
+  --shadow-card: 5px 5px 0 rgba(23, 16, 14, 0.2);
 
   --text-xs: 0.68rem;
   --text-sm: 0.78rem;
@@ -54,26 +62,34 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --paper: #11130f;
-  --paper-deep: #191b16;
-  --paper-light: #1c1f19;
-  --ink: #f1eee5;
-  --ink-soft: #c4c1b7;
-  --muted: #999b91;
-  --line: #373a32;
-  --line-dark: #62655a;
-  --red: #ff4b50;
-  --red-dark: #ff7376;
-  --red-soft: #482528;
-  --green: #77aa8d;
-  --gold: #d5ab5d;
-  --white: #242720;
-  --surface-translucent: rgba(28, 31, 25, 0.62);
-  --result-bg: #20352a;
-  --result-ink: #b9ddc7;
-  --texture-dot: rgba(241, 238, 229, 0.055);
-  --shadow-soft: 0 18px 50px rgba(0, 0, 0, 0.3);
-  --shadow-card: 0 8px 25px rgba(0, 0, 0, 0.28);
+  --paper: #100b0f;
+  --paper-deep: #21141c;
+  --paper-light: #2a1923;
+  --ink: #fff4cd;
+  --ink-soft: #ead6b5;
+  --muted: #b69b8c;
+  --line: #70445f;
+  --line-dark: #c58bae;
+  --red: #ff31a1;
+  --red-dark: #ff81c7;
+  --red-soft: #55203e;
+  --green: #a5e641;
+  --gold: #ffd73a;
+  --white: #160b11;
+  --cyan: #3ee0ff;
+  --cyan-dark: #00afd2;
+  --orange: #ff783e;
+  --purple: #a675ff;
+  --lime: #b8f044;
+  --sun: #ffe14a;
+  --peru-red: #ff3347;
+  --on-magenta: #fff8db;
+  --surface-translucent: rgba(42, 25, 35, 0.82);
+  --result-bg: #263b18;
+  --result-ink: #dcffac;
+  --texture-dot: rgba(255, 244, 205, 0.075);
+  --shadow-soft: 7px 7px 0 rgba(0, 0, 0, 0.56);
+  --shadow-card: 5px 5px 0 rgba(0, 0, 0, 0.62);
 }
 
 * { box-sizing: border-box; }
@@ -82,7 +98,9 @@ html { color-scheme: light; }
 
 body {
   margin: 0;
-  background: var(--paper);
+  background:
+    linear-gradient(132deg, color-mix(in srgb, var(--sun) 9%, transparent) 0 11%, transparent 11% 84%, color-mix(in srgb, var(--cyan) 7%, transparent) 84%),
+    var(--paper);
   color: var(--ink);
   font-family: var(--font-body);
   font-size: var(--text-base);

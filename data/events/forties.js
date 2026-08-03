@@ -34,13 +34,21 @@ export const fortiesEvents = [
   },
   {
     id: "fiscalia-cerca",
-    directedOnly: true,
-    title: "La fiscalía toca la puerta",
-    kicker: "El expediente ya tiene tu nombre",
-    description: "Tus abogados ven dos salidas: colaborar y reconstruir tu carrera, o usar todo tu poder para bloquear el caso.",
+    maxOccurrences: 1,
+    forced: true,
+    priority: 84,
+    weight: 100,
+    group: "proceso-judicial",
+    groupCooldown: 1,
+    requirements: { all: [{ stat: "legalRisk", min: 48 }, { hasTag: "investigado" }, { missingTag: ["en-prision", "en-exilio", "arresto-domiciliario", "caso-principal-cerrado"] }] },
+    category: "investigation",
+    title: "Fiscalía te cita por primera vez",
+    kicker: "Un expediente ya contiene tu nombre",
+    description: "Un fiscal abre diligencias y te entrega los hechos que investiga. Puedes colaborar, presentar descargos o intentar bloquear la pesquisa.",
     options: [
-      { id: "colaborar", label: "Colaborar con la investigación", hint: "Perder poder para reducir el riesgo", allowDirtyShortfall: true, effects: { legalRisk: -45, influence: -20, dirtyMoney: -25000, approval: -4 }, addTags: ["colaborador"], outcomes: [{ id: "retiro-colaborador", weight: 100, text: "Entregas información y abandonas temporalmente la primera línea. Con los años podrás regresar.", setRole: "Asesor independiente" }] },
-      { id: "obstruir", label: "Obstruir la investigación", hint: "Todo o nada", effects: { dirtyMoney: -40000, influence: -8, legalRisk: 35 }, outcomes: [{ id: "prision-preventiva", weight: 58, headline: "Un juez dicta prisión preventiva", text: "Los intentos de obstrucción quedan registrados. La carrera continuará desde prisión.", effects: { legalRisk: 18 }, addTags: ["en-prision"], addInvestigations: [{ id: "obstruccion", label: "Investigación por obstrucción" }], setRole: "Interno penitenciario", nextEvent: "prision-decision" }, { id: "caso-archivado", weight: 42, headline: "Una nulidad derrumba el caso", text: "El archivo evita la prisión, pero el costo político y económico es enorme.", effects: { legalRisk: -28, approval: -16, cleanMoney: -18000 }, addTags: ["sobrevivio-investigacion"] }] },
+      { id: "colaborar", label: "Entregar información verificable", hint: "Pierdes aliados · puedes cerrar el caso", allowDirtyShortfall: true, effects: { legalRisk: -45, influence: -20, dirtyMoney: -25000, approval: -4 }, addTags: ["colaborador"], outcomes: [{ id: "retiro-colaborador", weight: 100, headline: "Fiscalía acepta tu colaboración", text: "Los documentos permiten separar tu responsabilidad y cierran el expediente principal. Varios antiguos aliados rompen contigo.", setRole: "Asesor independiente", addTags: ["caso-principal-cerrado"], removeTags: ["investigado"] }] },
+      { id: "presentar-descargos", label: "Presentar documentos y peritajes", hint: "Defensa institucional · el caso puede avanzar", effects: { cleanMoney: -26000, legalRisk: -8 }, hiddenEffects: { judiciaryRelation: 6, prosecutionRelation: 5, credibility: 4 }, outcomes: [{ id: "acusacion-ampliada", weight: 48, weightModifiers: [{ when: { hidden: "leakExposure", min: 55 }, multiply: 1.4 }, { when: { hidden: "prosecutionRelation", max: 35 }, multiply: 1.35 }], headline: "Fiscalía encuentra base para formalizar el caso", text: "Los descargos no explican dos transferencias y el fiscal solicita nuevas medidas judiciales.", addTags: ["investigacion-formalizada"], nextEvent: "investigacion-avanzada" }, { id: "diligencias-archivadas", weight: 52, weightModifiers: [{ when: { hidden: "credibility", min: 60 }, multiply: 1.35 }, { when: { hidden: "prosecutionRelation", min: 60 }, multiply: 1.3 }], headline: "Los peritajes cierran las diligencias", text: "Fiscalía no encuentra sustento para acusarte y archiva el expediente principal.", effects: { legalRisk: -24, approval: 5 }, addTags: ["caso-principal-cerrado"], removeTags: ["investigado"] }] },
+      { id: "obstruir", label: "Ocultar pruebas y presionar testigos", hint: "Alto riesgo · posible prisión preventiva", effects: { dirtyMoney: -40000, influence: -8, legalRisk: 35 }, outcomes: [{ id: "prision-preventiva", weight: 58, headline: "Un juez dicta prisión preventiva", text: "Mensajes sobre testigos convencen al juez de que puedes alterar las pruebas.", effects: { legalRisk: 18 }, addTags: ["en-prision", "proceso-judicial-abierto"], addInvestigations: [{ id: "obstruccion", label: "Investigación por obstrucción" }], setRole: "Interno penitenciario", nextEvent: "prision-decision" }, { id: "caso-archivado", weight: 42, headline: "Una prueba ilícita invalida el expediente", text: "El juez excluye la evidencia principal. Evitas la prisión, pero la maniobra destruye tu credibilidad.", effects: { legalRisk: -28, approval: -16, cleanMoney: -18000 }, addTags: ["sobrevivio-investigacion", "caso-principal-cerrado"], removeTags: ["investigado"] }] },
     ],
   },
   {
@@ -82,7 +90,7 @@ export const fortiesEvents = [
     description: "Un socio propone abrir una consultora que trabajará con gobiernos regionales. Puede financiar tu carrera o convertirse en otro flanco.",
     options: [
       { id: "consultora-transparente", label: "Crear una consultora transparente", hint: "Inversión alta, ingresos legítimos", effects: { cleanMoney: -30000 }, outcomes: [{ id: "consultora-crece", weight: 62, text: "Los primeros contratos llegan y el negocio se sostiene.", effects: { cleanMoney: 78000, influence: 5 }, addTags: ["empresario"] }, { id: "consultora-falla", weight: 38, text: "Los contratos no llegan y pierdes buena parte de la inversión.", effects: { cleanMoney: -18000 } }] },
-      { id: "consultora-fachada", label: "Usarla para triangular contratos", hint: "Rentabilidad rápida, riesgo judicial", effects: { dirtyMoney: 110000, legalRisk: 26, influence: 8 }, outcomes: [{ id: "triangulacion-rentable", weight: 66, text: "La red de facturas funciona y acumulas una reserva opaca." }, { id: "proveedor-confiesa", weight: 34, text: "Un proveedor confiesa el esquema ante la fiscalía.", effects: { legalRisk: 44, approval: -17 }, addTags: ["investigado"], nextEvent: "fiscalia-cerca" }] },
+      { id: "consultora-fachada", label: "Usarla para triangular contratos", hint: "Rentabilidad rápida, riesgo judicial", requirements: { eventCount: { id: "fiscalia-cerca", max: 0 } }, hideWhenUnavailable: true, effects: { dirtyMoney: 110000, legalRisk: 26, influence: 8 }, outcomes: [{ id: "triangulacion-rentable", weight: 66, text: "La red de facturas funciona y acumulas una reserva opaca." }, { id: "proveedor-confiesa", weight: 34, text: "Un proveedor confiesa el esquema ante la fiscalía.", effects: { legalRisk: 44, approval: -17 }, addTags: ["investigado"], nextEvent: "fiscalia-cerca" }] },
     ],
   },
   {
@@ -98,7 +106,7 @@ export const fortiesEvents = [
     options: [
       { id: "buscar-inversionistas", label: "Buscar inversionistas", hint: "Ceder influencia a cambio de oxígeno", effects: { cleanMoney: 65000, influence: -6 }, outcomes: [{ id: "inversores-entran", weight: 70, text: "Un grupo empresarial cubre tus deudas y obtiene acceso a tu agenda.", addTags: ["deuda-inversores"] }, { id: "inversores-rechazan", weight: 30, text: "Nadie quiere apostar por ti. Solo consigues un préstamo caro.", effects: { cleanMoney: 18000, approval: -4 }, addTags: ["endeudado"] }] },
       { id: "trabajo-consultoria", label: "Volver al trabajo privado", hint: "Menos política por un año", effects: { cleanMoney: 42000, influence: -9, approval: -3 }, outcomes: [{ id: "consultoria-rescate", weight: 100, text: "Los honorarios estabilizan tus cuentas, aunque pierdes presencia pública." }] },
-      { id: "negocio-ilicito", label: "Entrar a un negocio ilícito", hint: "Dinero abundante y consecuencias graves", effects: { dirtyMoney: 140000, cleanMoney: 25000, legalRisk: 28 }, addTags: ["red-ilicita"], outcomes: [{ id: "negocio-oculto", weight: 64, text: "La operación genera efectivo y permanece fuera del radar." }, { id: "socio-capturado", weight: 36, text: "Un socio es capturado y ofrece tu nombre para reducir su condena.", effects: { legalRisk: 55, approval: -18 }, addTags: ["investigado"], nextEvent: "fiscalia-cerca" }] },
+      { id: "negocio-ilicito", label: "Entrar a un negocio ilícito", hint: "Dinero abundante y consecuencias graves", requirements: { eventCount: { id: "fiscalia-cerca", max: 0 } }, hideWhenUnavailable: true, effects: { dirtyMoney: 140000, cleanMoney: 25000, legalRisk: 28 }, addTags: ["red-ilicita"], outcomes: [{ id: "negocio-oculto", weight: 64, text: "La operación genera efectivo y permanece fuera del radar." }, { id: "socio-capturado", weight: 36, text: "Un socio es capturado y ofrece tu nombre para reducir su condena.", effects: { legalRisk: 55, approval: -18 }, addTags: ["investigado"], nextEvent: "fiscalia-cerca" }] },
     ],
   },
   {

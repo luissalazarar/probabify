@@ -58,7 +58,7 @@ export const fiftiesEvents = [
         id: "negociar-formula-vicepresidencial",
         label: "Integrar una fórmula como vicepresidente",
         hint: "Elección nacional · menor autonomía",
-        requirements: { all: [{ careerTrack: "candidateReady" }, { age: { min: 48, max: 64 } }, { stat: "influence", min: 48 }, { missingTag: "presidente-actual" }] },
+        requirements: { all: [{ careerTrack: "candidateReady" }, { age: { min: 48, max: 64 } }, { stat: "influence", min: 48 }, { missingTag: "presidente-actual" }, { eventCount: { id: "oferta-vicepresidencia", max: 0 } }] },
         outcomes: [{ id: "formula-vicepresidencial-abierta", weight: 100, headline: "El favorito reserva un lugar en su fórmula", text: "Antes de inscribirla, exige que definas cuánto control conservarás dentro del proyecto.", nextEvent: "oferta-vicepresidencia", sameYear: true }],
       },
       {

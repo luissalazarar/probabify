@@ -1,25 +1,32 @@
 const THEME_EVENTS = {
   reforma_y_retorno: [
     "debate-ideologico-joven", "reforma-economica", "reforma-pensiones", "reforma-constitucional", "ley-pulpin", "pagina-once",
+    "pensiones-cobran-reforma",
   ],
   conflicto_interno: [
     "reinsercion-regreso", "archivo-subversivo", "asamblea-comunal", "reinsercion-mesa-democratica", "reinsercion-red-radical",
     "memoria-mrta", "memoria-sl", "justicia-rondas", "archivo-de-legado", "reinsercion-testigo-regresa", "reinsercion-red-investigada",
+    "reinsercion-reparacion-territorial", "reinsercion-generacion-sucesora", "reinsercion-archivo-final",
   ],
   crisis_economica: [
     "negocio-expansion", "directorio-en-crisis", "ultima-empresa", "dolar-muc-amigos",
+    "empresario-fideicomiso-politico", "empresario-contratos-auditoria", "empresario-sucesion-patrimonial",
   ],
   autogolpe_y_archivos: [
     "empresario-confirmacion", "archivo-palacio", "secreto-familiar", "canal-publico", "narcoavion-presidencial",
   ],
   prensa_y_poder: [
     "debate-televisado", "radio-regional", "programa-dominical", "filtracion-podcast", "guerra-de-redes", "documental-biografico", "cantante-ricardo-sway", "diarios-chicha", "cerco-mediatico",
+    "debate-antiguo-regresa",
   ],
   transicion_2000: [
     "voluntariado-desastre", "mediacion-nacional", "reconciliacion-historica",
+    "voluntariado-rinde-cuentas",
   ],
   descentralizacion: [
     "provincia-obra", "salto-regional", "presupuesto-participativo", "herencia-regional", "provincia-control-obra", "promesa-provincial-pendiente", "cabildo-juvenil", "dinamicos-del-centro", "centralita-regional",
+    "provincia-obra-envejece", "provincia-red-nacional", "provincia-legado-territorial",
+    "presupuesto-participativo-balance",
   ],
   obras_y_adendas: [
     "contrato-municipal", "concesion-transporte", "provincia-favor-cobrado", "auditoria-municipal", "adenda-heredada", "comunicore-municipal",
@@ -29,13 +36,16 @@ const THEME_EVENTS = {
   ],
   justicia_capturada: [
     "comision-investigadora", "nombramiento-judicial", "orden-captura", "narcoindultos", "repartija-institucional", "mochasueldos-despacho",
+    "revision-arresto-domiciliario", "juicio-en-libertad",
   ],
   conflictos_extractivos: [
     "protesta-regional", "proyecto-minero", "lobby-extranjero", "retorno-minera", "pasivo-minero",
+    "protesta-cobra-acuerdo", "fondo-extranjero-auditoria",
   ],
   partidos_alquiler: [
     "juventud-partidaria", "eleccion-universitaria", "practicas-congreso", "cambio-partido", "alianza-rival", "control-partido",
     "primaria-partidaria", "archivo-parlamentario", "dinastia-bancada", "dinastia-gira-propia", "tesis-copiada", "dinastia-operador-cobra", "dinastia-familia-se-divide", "partido-despues-palacio",
+    "dinastia-primera-deuda", "dinastia-ruptura-generacional", "dinastia-archivo-familiar-final",
   ],
   financiamiento_electoral: [
     "asesoria-campana", "primer-financista", "financista-cobra-deuda", "empresario-campana", "caja-vacia", "credito-campana-banco", "oferta-vicepresidencia", "cocteles-naranjas", "plata-como-estadio", "taperes-campana",
@@ -44,6 +54,8 @@ const THEME_EVENTS = {
     "redes-viral", "podcaster-lanzamiento", "publicidad-politica", "testaferro-mediatico", "salto-voceria", "ruta-figura-culto",
     "practicas-periodismo", "fondo-ong", "podcast-ruta-ideologica", "podcast-ruta-sensacional", "podcast-ruta-independiente",
     "datos-plataforma", "fuente-del-pasado", "patrocinador-viral", "debate-universitario", "rumor-ataud-garnica", "remix-bebito-chu-chu",
+    "podcaster-medio-cubre-carrera", "podcaster-archivo-regresa", "podcaster-sucesion-medio",
+    "red-digital-pide-lugar",
   ],
   vacancias_y_confianza: [
     "crisis-presidencial", "oferta-premier", "censura-ministerial", "mocion-vacancia", "coalicion-congreso", "gabinete-presidencial",
@@ -57,7 +69,7 @@ const THEME_EVENTS = {
     "debate-presidencial", "escrutinio-presidencial", "segunda-vuelta", "cilicio-candidato",
   ],
   estado_social: [
-    "huelga-servicios", "conflicto-docente", "reforma-salud", "ano-perfil-bajo", "vacunagate-vip",
+    "huelga-servicios", "conflicto-docente", "reforma-salud", "ano-perfil-bajo", "ano-balance-publico", "vacunagate-vip",
   ],
   emergencias_nacionales: [
     "nino-costero-nacional", "terremoto-costa-central", "sequia-sur-andino", "incendios-amazonia-nacional",
@@ -174,9 +186,9 @@ const COPY_OVERRIDES = {
     description: "El partido declara una cena multitudinaria, pero las cuentas no explican el monto recaudado. Empresarios ofrecen completar la diferencia mediante aportantes pequeños y agendas sin membrete.",
   },
   "fiscalia-cerca": {
-    title: "Un colaborador eficaz entrega la agenda",
-    kicker: "La caja dos empieza a tener iniciales",
-    description: "Un antiguo operador presenta registros de aportes, reuniones y contratos posteriores. La fiscalía todavía no prueba el circuito completo, pero varias anotaciones coinciden con tu campaña.",
+    title: "Fiscalía te cita por primera vez",
+    kicker: "Un expediente ya contiene tu nombre",
+    description: "Un fiscal abre diligencias y te entrega los hechos que investiga. Puede tratarse de aportes, contratos, patrimonio o testimonios acumulados durante tu carrera.",
   },
   "nombramiento-judicial": {
     title: "Los Cuellos Almidonados llaman desde el Puerto",
@@ -189,7 +201,7 @@ const COPY_OVERRIDES = {
     description: "La empresa asegura que el nuevo expediente protege el agua y crea empleo. Agricultores recuerdan protestas anteriores, muertos y compromisos incumplidos; el Gobierno exige una decisión rápida.",
   },
   "retorno-minera": {
-    title: "Conga Clara regresa con otro estudio",
+    title: "Ponga regresa con otro estudio",
     kicker: "Tu antecedente · la laguna sigue en el mapa",
     description: "La minera rediseñó el proyecto y promete reservorios, canon y empleo. Las comunidades que detuvieron la primera versión creen que solo cambió el lenguaje del mismo conflicto.",
   },
@@ -266,6 +278,226 @@ const COPY_OVERRIDES = {
   "mamanivideos-obras": {
     options: {
       "rechazar-compra-votos": { hint: "Riesgo de vacancia · evita compra de votos" },
+    },
+  },
+  "caja-vacia": {
+    title: "No queda ni para el pasaje del equipo",
+    kicker: "Caja en cuidados intensivos · alguien tendrá que pagar",
+    options: {
+      "buscar-inversionistas": { label: "Pasar el sombrero entre empresarios", hint: "Entra plata limpia · salen favores futuros" },
+      "trabajo-consultoria": { label: "Volver a chambear y bajar el perfil", hint: "Caja honesta · desapareces del radar político" },
+      "negocio-ilicito": { label: "Aceptar la plata que no hace preguntas", hint: "Efectivo rápido · Fiscalía puede preguntar después" },
+    },
+  },
+  "investigacion-avanzada": {
+    title: "Fiscalía ya no manda cartita: prepara operativo",
+    kicker: "Colaboradores citados · maletas vigiladas",
+    options: {
+      "defensa-institucional": { label: "Llegar con peritos, papeles y buenos abogados", hint: "Carísimo · puede tumbar parte del caso" },
+      "preparar-fuga": { label: "Armar la maleta antes del amanecer", hint: "Posible exilio · pésima foto si te atrapan" },
+    },
+  },
+  "orden-captura": {
+    title: "Tu nombre amaneció en una orden judicial",
+    kicker: "Tocas la puerta del juez o buscas la frontera",
+    options: {
+      "entrega-justicia": { label: "Entregarte con cámaras y abogado", hint: "Defensa pública · arresto o prisión" },
+      "colaboracion-eficaz-propia": { label: "Cantar antes que canten los demás", hint: "Posible libertad · enemigos para siempre" },
+      "fuga-clandestina": { label: "Salir por donde no sellan pasaporte", hint: "Asilo o captura · sin punto medio" },
+    },
+  },
+  "vida-exilio": {
+    title: "Hacer política por videollamada y con horario ajeno",
+    kicker: "Exilio · buena señal, mala distancia",
+    options: {
+      "entrevista-exilio": { label: "Denunciar persecución en todos los canales", hint: "La base despierta · el Gobierno protesta" },
+      "retorno-negociado": { label: "Llamar a Fiscalía y tantear el regreso", hint: "Puede abrir la puerta · también confirmar la orden" },
+      "asesor-internacional": { label: "Cobrar por arreglar la política de otro país", hint: "Buen sueldo · tu movimiento queda lejos" },
+    },
+  },
+  "prision-decision": {
+    title: "La campaña entró al penal con visita y manuscrito",
+    kicker: "Muros altos · operadores con señal",
+    options: {
+      "libro-prision": { label: "Escribir el best seller del pabellón", hint: "Plata y tribuna · el expediente sigue ahí" },
+      "negociar-informacion-prision": { label: "Contar lo que sabes y pedir rebaja", hint: "Menos encierro · aliados furiosos" },
+      "sucesor-desde-prision": { label: "Gobernar el partido por recados", hint: "Influencia indirecta · sucesor con ambición" },
+    },
+  },
+  "reinsercion-reparacion-territorial": {
+    title: "¡Habla de una vez! La comunidad exige nombres",
+    kicker: "Cero floro · hay expedientes, testigos y viejos camaradas",
+    options: {
+      "abrir-archivos-reinsercion": { label: "Soltar nombres y documentos verificables", hint: "Verdad completa · la vieja red te declara traidor" },
+      "pactar-silencio-reinsercion": { label: "Cerrar filas y negar que exista algo más", hint: "Operadores fieles · un testigo puede cantar" },
+    },
+  },
+  "reinsercion-generacion-sucesora": {
+    title: "La nueva generación no se compra tu versión",
+    kicker: "Víctimas, viejos cuadros y una silla para el sucesor",
+    options: {
+      "respaldar-lideresa-reparacion": { label: "Darle las llaves a la lideresa de reparación", hint: "Renovación real · dejas de mandar" },
+      "entregar-mando-antiguo-cuadro": { label: "Devolverle la maquinaria al viejo cuadro", hint: "Disciplina brava · regresan todos los fantasmas" },
+    },
+  },
+  "reinsercion-archivo-final": {
+    title: "Cuarenta cajas pueden hundirte o explicar tu vida",
+    kicker: "Último archivo · la historia viene sin botón de borrar",
+    options: {
+      "ceder-archivo-reinsercion": { label: "Abrir hasta la última caja", hint: "Verdad duradera · pierdes el control del cuento" },
+      "controlar-memorias-reinsercion": { label: "Publicar la versión bonita del movimiento", hint: "Protege aliados · alguien guarda las páginas cortadas" },
+    },
+  },
+  "dinastia-primera-deuda": {
+    title: "La familia saca la libreta: todo favor tiene precio",
+    kicker: "Apellido con yapa · aportes, puestos y parientes en fila",
+    options: {
+      "auditar-deudas-dinastia": { label: "Sacar los trapitos y las cuentas al sol", hint: "Partido abierto · bronca familiar garantizada" },
+      "pagar-cuotas-dinastia": { label: "Pagar la deuda con puestos en la lista", hint: "La familia aplaude · la militancia toma nota" },
+    },
+  },
+  "dinastia-ruptura-generacional": {
+    title: "Guerra de herederos: el apellido solo tiene un timón",
+    kicker: "Vieja guardia contra sangre nueva",
+    options: {
+      "primaria-generacional-dinastia": { label: "Que las urnas decidan al heredero", hint: "Legitimidad · también puedes perder" },
+      "imponer-heredero-dinastia": { label: "Poner al heredero a dedo", hint: "Mando rápido · partido partido" },
+    },
+  },
+  "dinastia-archivo-familiar-final": {
+    title: "Las cajas del clan guardan décadas de roche",
+    kicker: "Archivo familiar · logros arriba, pactos debajo",
+    options: {
+      "abrir-archivo-dinastia": { label: "Mandar todas las cajas a la biblioteca", hint: "Historia verificable · la familia queda expuesta" },
+      "fundacion-familiar-archivo": { label: "Armar un museo con vitrina y llave propia", hint: "Bonita exhibición · archivo completo bajo siete llaves" },
+    },
+  },
+  "provincia-obra-envejece": {
+    title: "¡Se cae la obra que te lanzó a la fama!",
+    kicker: "Lluvia, huecos y una constructora con buena memoria",
+    options: {
+      "mantenimiento-comunal-obra": { label: "Abrir las cuentas y reparar con la comunidad", hint: "Cuesta limpio · la obra vuelve a servir" },
+      "adenda-constructora-provincia": { label: "Firmar otra adenda con los mismos de siempre", hint: "Parche veloz · deuda política recargada" },
+    },
+  },
+  "provincia-red-nacional": {
+    title: "Lima llega con logo, puestos y chequera",
+    kicker: "Tu red provincial está en oferta · según ellos",
+    options: {
+      "integrar-partido-nacional-provincia": { label: "Subir la red al bus del partido limeño", hint: "Llegas al poder · Lima elige la ruta" },
+      "alianza-regiones-autonoma": { label: "Armar un bloque que no pida permiso a Lima", hint: "Identidad regional · menos plata y más coordinación" },
+    },
+  },
+  "provincia-legado-territorial": {
+    title: "¿Escuela de líderes o caudillo con heredero?",
+    kicker: "El territorio decide qué sobrevive a tu nombre",
+    options: {
+      "escuela-gestion-provincial": { label: "Enseñar el oficio y repartir el poder", hint: "Legado duradero · ya no das todas las órdenes" },
+      "designar-caudillo-provincial": { label: "Coronar al nuevo patrón de la red", hint: "Maquinaria intacta · el discípulo puede voltearse" },
+    },
+  },
+  "empresario-fideicomiso-politico": {
+    title: "El directorio grita: empresa o campaña, decide",
+    kicker: "Acciones, contratos y un candidato en la misma foto",
+    options: {
+      "fideicomiso-independiente-empresa": { label: "Soltar la empresa de verdad", hint: "Pierdes el timón · ganas recibos defendibles" },
+      "sociedad-familiar-control": { label: "Pasarle las llaves a la familia", hint: "Sigues mandando bajito · huele a testaferro" },
+    },
+  },
+  "empresario-contratos-auditoria": {
+    title: "Contraloría abre el Excel que nadie quería ver",
+    kicker: "Contrato por contrato · favor por favor",
+    options: {
+      "publicar-contratos-empresario": { label: "Abrir el Excel y devolver lo cuestionado", hint: "Duele al bolsillo · baja el riesgo" },
+      "presionar-auditoria-empresario": { label: "Llamar al amigo que sabe archivar informes", hint: "Salva patrimonio · fabrica testigos" },
+    },
+  },
+  "empresario-sucesion-patrimonial": {
+    title: "¿Quién hereda el imperio y quién hereda el partido?",
+    kicker: "Fortuna, apellido y maquinaria buscan dueño",
+    options: {
+      "directorio-profesional-legado": { label: "Dejar profesionales y cuentas abiertas", hint: "Menos control · empresa con futuro propio" },
+      "heredero-empresa-partido": { label: "Entregarle todo al mismo heredero", hint: "Poder completo · traición completa" },
+    },
+  },
+  "podcaster-medio-cubre-carrera": {
+    title: "Tu propio canal te pone la cámara en la cara",
+    kicker: "El entrevistador ahora también es el investigado",
+    options: {
+      "muro-editorial-podcaster": { label: "Dar libertad hasta para investigarte", hint: "Credibilidad premium · puede doler en vivo" },
+      "canal-maquinaria-podcaster": { label: "Convertir cada programa en mitin", hint: "Audiencia prendida · periodismo apagado" },
+    },
+  },
+  "podcaster-archivo-regresa": {
+    title: "La nube no olvida tus clips, pagos ni contradicciones",
+    kicker: "Diez años de archivo caen en una sola carpeta",
+    options: {
+      "abrir-archivo-podcaster": { label: "Subir contratos, clips completos y roche incluido", hint: "Contexto real · golpe controlado" },
+      "borrar-archivo-podcaster": { label: "Mandar al olvido lo más picante", hint: "Alivio corto · siempre existe una copia" },
+    },
+  },
+  "podcaster-sucesion-medio": {
+    title: "¿Quién se queda con el micrófono y los seguidores?",
+    kicker: "El canal sobrevive · tu control quizá no",
+    options: {
+      "cooperativa-medio-podcaster": { label: "Entregar el canal a periodistas y audiencia", hint: "Voz independiente · ya no eliges la portada" },
+      "heredero-mediatico-podcaster": { label: "Coronar al nuevo dueño del micrófono", hint: "Conserva la tribuna · puede cambiarte el libreto" },
+    },
+  },
+  "red-digital-pide-lugar": {
+    title: "Los admins del primer viral vienen por su tajada",
+    kicker: "Claves, padrones y capturas de pantalla",
+    options: {
+      "integrar-red-digital-antigua": { label: "Darles voto, voz y silla", hint: "Base real · el chat también fiscaliza" },
+      "comprar-red-digital-antigua": { label: "Comprar las claves y cerrar el grupo", hint: "Control rápido · recibo peligroso" },
+    },
+  },
+  "voluntariado-rinde-cuentas": {
+    title: "La ayuda con cámara regresa con factura",
+    kicker: "Damnificados, proveedores y fotos que no envejecieron",
+    options: {
+      "auditar-voluntariado-antiguo": { label: "Buscar factura por factura y familia por familia", hint: "Toma tiempo · deja pruebas" },
+      "usar-imagenes-voluntariado": { label: "Responder con el documental lacrimógeno", hint: "Golpe al corazón · cero respuesta contable" },
+    },
+  },
+  "protesta-cobra-acuerdo": {
+    title: "El acta que juraste cumplir vuelve con megáfono",
+    kicker: "La firma es tuya · el bloqueo también puede serlo",
+    options: {
+      "cumplir-acta-protesta": { label: "Poner fecha, plata y responsables", hint: "Caro pero claro · baja la protesta" },
+      "desconocer-acta-protesta": { label: "Decir que esa firma era de otro gobierno", hint: "Ahorras hoy · la plaza se acuerda" },
+    },
+  },
+  "debate-antiguo-regresa": {
+    title: "El debate viejo te cae como huayco en campaña",
+    kicker: "Tu frase de ayer pelea con tu voto de hoy",
+    options: {
+      "explicar-cambio-debate": { label: "Pasar el video completo y comerte el error", hint: "Duele un rato · la explicación aguanta" },
+      "recortar-debate-antiguo": { label: "Responder con un clip más mañoso", hint: "Viral primero · verificación después" },
+    },
+  },
+  "fondo-extranjero-auditoria": {
+    title: "El fondo extranjero llega con Excel y cero paciencia",
+    kicker: "Beneficiarios, operadores y gastos llamados formación",
+    options: {
+      "evaluacion-publica-fondo": { label: "Abrir cuentas aunque salpique al equipo", hint: "Informe incómodo · prestigio salvable" },
+      "negociar-informe-fondo": { label: "Pedir que borren la parte más sabrosa", hint: "Protege operadores · el borrador puede filtrarse" },
+    },
+  },
+  "pensiones-cobran-reforma": {
+    title: "Los jubilados llegan con recibos y poca paciencia",
+    kicker: "La reforma bonita por fin paga su primera pensión",
+    options: {
+      "corregir-reforma-pensiones": { label: "Poner plata y tapar el hueco", hint: "Cuesta al fisco · llega al bolsillo" },
+      "defender-reforma-pensiones": { label: "Decir que las reglas son las reglas", hint: "Caja ordenada · calle caliente" },
+    },
+  },
+  "presupuesto-participativo-balance": {
+    title: "Los barrios sacan las actas: ¿dónde está la obra?",
+    kicker: "Fotos, firmas y presupuesto que tomó otro camino",
+    options: {
+      "cerrar-obras-participativas": { label: "Terminar lo prometido y mostrar cada sol", hint: "Cuesta limpio · recupera el barrio" },
+      "reescribir-balance-participativo": { label: "Maquillar el informe y cruzar los dedos", hint: "Gestión bonita · actas feas" },
     },
   },
 };

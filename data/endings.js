@@ -8,7 +8,7 @@ export const ENDINGS = [
     label: "Legado tras las rejas",
     description: "El expediente terminó dominando la biografía. Tus cargos, alianzas y victorias ahora se leen desde una condena.",
     icon: "▦",
-    requirements: { all: [atRetirement, { any: [{ hasTag: "condena-final" }, { hasTag: "en-prision" }] }] },
+    requirements: { all: [atRetirement, { hasTag: "en-prision" }] },
   },
   {
     id: "presidencia-en-sombras",

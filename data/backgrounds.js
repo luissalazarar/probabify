@@ -26,7 +26,7 @@ export const BACKGROUNDS = [
   },
   {
     id: "dinastia-regional", originId: "dinastia", initialEvent: "herencia-regional", initialRole: "Heredera de un clan regional", shortName: "Clan regional", name: "La dinastía de gobernadores",
-    eyebrow: "Poder territorial", history: "Tres generaciones del clan Acuña del Norte controlaron alcaldías, universidad, gobierno regional y proveedores. Fuera de Lima el apellido moviliza votos; en la capital recuerda plagios, contratos y un partido construido como empresa familiar.",
+    eyebrow: "Poder territorial", history: "Tres generaciones del clan Añuña del Norte controlaron alcaldías, universidad, gobierno regional y proveedores. Fuera de Lima el apellido moviliza votos; en la capital recuerda plagios, contratos y un partido construido como empresa familiar.",
     impact: "Mayor aprobación rural y estructura territorial; más exposición a contratos regionales cuestionables.",
     effects: { approval: 7, influence: 5, cleanMoney: 24000, legalRisk: 8 }, hiddenEffects: { ruralApproval: 14, regionalSupport: 17, businessSupport: 8, urbanApproval: -6, leakExposure: 7 },
     tags: ["background-clan-regional", "base-territorial", "partido-formal"], relations: { "Néstor Valdivia": { role: "Operador regional de la familia", score: 74, loyalty: 66, knows: ["proveedores y alcaldes aliados"] } },
@@ -59,7 +59,7 @@ export const BACKGROUNDS = [
   },
   {
     id: "provincia-ambiental", originId: "provincia", initialEvent: "retorno-minera", initialRole: "Vocero de un frente ambiental", shortName: "Frente ambiental", name: "Vocero del frente contra la mina",
-    eyebrow: "Conflicto extractivo", history: "Te hiciste conocido al grito de «Conga Clara no va» y frenaste un proyecto que ofrecía reservorios a cambio de lagunas. Para la comunidad defendiste el agua; para la empresa bloqueaste empleo y canon.",
+    eyebrow: "Conflicto extractivo", history: "Te hiciste conocido al grito de «Ponga no va» y frenaste un proyecto que ofrecía reservorios a cambio de lagunas. Para la comunidad defendiste el agua; para la empresa bloqueaste empleo y canon.",
     impact: "Más respaldo rural y notoriedad; fuerte rechazo empresarial, polarización y riesgo en futuras protestas.",
     effects: { approval: 6, influence: 7, legalRisk: 7, ideology: -15 }, hiddenEffects: { ruralApproval: 15, regionalSupport: 13, businessSupport: -22, polarization: 11, mediaNotoriety: 8 },
     tags: ["background-ambiental", "defensa-del-agua"], relations: { "Micaela Suyo": { role: "Abogada ambiental", score: 71, loyalty: 67, knows: ["actas del conflicto minero"] } },
@@ -76,7 +76,7 @@ export const BACKGROUNDS = [
   },
   {
     id: "empresario-tecnologia", originId: "empresario", initialEvent: "datos-plataforma", initialRole: "Fundador tecnológico", shortName: "Tecnología", name: "Fundador de una plataforma tecnológica",
-    eyebrow: "Fortuna nueva", history: "Construiste Yapeando, una plataforma de pagos y servicios que creció antes que la regulación. El negocio te dejó prestigio urbano y una base de datos capaz de describir mejor a un votante que cualquier padrón partidario.",
+    eyebrow: "Fortuna nueva", history: "Construiste Pape, una plataforma de pagos y servicios que creció antes que la regulación. El negocio te dejó prestigio urbano y una base de datos capaz de describir mejor a un votante que cualquier padrón partidario.",
     impact: "Mayor aprobación urbana, credibilidad e imagen moderna; menos estructura territorial y conflictos regulatorios propios.",
     effects: { approval: 6, influence: 4, cleanMoney: 140000, ideology: 8 }, hiddenEffects: { urbanApproval: 15, mediaNotoriety: 12, credibility: 9, internationalReputation: 8, unionSupport: -8 },
     tags: ["background-tecnologia", "empresario-digital"], relations: { "Lucía Kohatsu": { role: "Cofundadora de la plataforma", score: 69, loyalty: 58, knows: ["inversionistas y datos de usuarios"] } },
@@ -93,7 +93,7 @@ export const BACKGROUNDS = [
 
   {
     id: "podcaster-investigacion", originId: "podcaster", initialEvent: "fuente-del-pasado", initialRole: "Reportero independiente", shortName: "Periodismo", name: "Reportero de investigación independiente",
-    eyebrow: "Documentos y fuentes", history: "Dejaste IDL-Reportajes cuando una investigación sobre los Cuellos Almidonados fue frenada. Llegas al canal con audios, fuentes fiscales y la obligación de no convertir una filtración en sentencia.",
+    eyebrow: "Documentos y fuentes", history: "Dejaste INL-Reporteros cuando una investigación sobre los Cuellos Almidonados fue frenada. Llegas al canal con audios, fuentes fiscales y la obligación de no convertir una filtración en sentencia.",
     impact: "Credibilidad y respaldo periodístico altos; más riesgo legal, costos y exposición de fuentes.",
     effects: { approval: 2, influence: 3, cleanMoney: -5000, legalRisk: 6 }, hiddenEffects: { credibility: 19, pressSupport: 15, leakExposure: 13, mediaNotoriety: 5 },
     tags: ["background-periodista", "periodismo-investigacion"], relations: { "Irene Campos": { role: "Editora de investigación", score: 72, loyalty: 63, knows: ["fuentes fiscales y archivos"] } },
@@ -109,7 +109,7 @@ export const BACKGROUNDS = [
   },
   {
     id: "podcaster-academico", originId: "podcaster", initialEvent: "debate-universitario", initialRole: "Profesor universitario", shortName: "Divulgación académica", name: "Profesor y divulgador de políticas públicas",
-    eyebrow: "Ideas antes que espectáculo", history: "Tus clases sobre economía y Estado alimentaron al partido Morado Claro, lleno de técnicos y corto de comités. Tienes especialistas, universidades y planes; todavía no tienes personeros en todo el país.",
+    eyebrow: "Ideas antes que espectáculo", history: "Tus clases sobre economía y Estado alimentaron al Partido Púrpura, lleno de técnicos y corto de comités. Tienes especialistas, universidades y planes; todavía no tienes personeros en todo el país.",
     impact: "Credibilidad e influencia técnica altas; crecimiento mediático lento, menor polarización y menos dinero inmediato.",
     effects: { approval: -2, influence: -3, cleanMoney: 9000, legalRisk: -2 }, statMultipliers: { ideology: 0.45 }, hiddenEffects: { credibility: 21, internationalReputation: 11, mediaNotoriety: -9, polarization: -12, pressSupport: 7 },
     tags: ["background-academico", "divulgador"], relations: { "Valeria Seminario": { role: "Investigadora universitaria", score: 69, loyalty: 70, knows: ["red académica y cooperación"] } },

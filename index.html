@@ -92,7 +92,7 @@
           </div>
           <label class="pace-option" for="express-mode">
             <input id="express-mode" name="express-mode" type="checkbox">
-            <span><b>03 · Partida express</b><small>Las decisiones ordinarias avanzan hasta dos años. Las elecciones y cadenas narrativas conservan su calendario.</small></span>
+            <span><b>03 · Partida express</b><small>Las decisiones ordinarias avanzan hasta cuatro años, frente a dos en la partida normal. Las elecciones y cadenas narrativas conservan su calendario.</small></span>
           </label>
           <div class="setup-submit">
             <p><strong>Obra ficticia.</strong> La violencia política forma parte del conflicto narrativo y no es justificada ni glorificada.</p>
@@ -134,6 +134,14 @@
         <div class="game-layout">
           <div class="decision-column">
             <div class="result-banner" id="result-banner" role="status" aria-live="polite" hidden></div>
+
+            <section class="case-files" id="case-files" aria-labelledby="case-files-title" hidden>
+              <header class="case-files__heading">
+                <div><small id="case-files-eyebrow">Historias en desarrollo</small><h2 id="case-files-title">Expedientes activos</h2></div>
+                <span aria-hidden="true">▤</span>
+              </header>
+              <div class="case-files__grid" id="case-files-list"></div>
+            </section>
 
             <article class="decision-card">
               <div class="decision-card__flag"><i></i><i></i><i></i></div>

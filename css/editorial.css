@@ -88,6 +88,127 @@
 .editorial-footer small a { color: var(--ink-soft); text-transform: none; }
 .editorial-footer small a:hover { color: var(--red); }
 
+/* Suplementos editoriales con lenguaje visual de portada chicha. */
+.editorial-header {
+  border-bottom: 3px solid var(--ink);
+  box-shadow: 0 5px 0 var(--sun);
+}
+
+.editorial-nav a.is-active::after { height: 4px; background: var(--red); }
+
+.editorial-hero {
+  border-bottom: 3px solid var(--ink);
+}
+
+.editorial-hero h1 {
+  text-shadow: 3px 3px 0 var(--sun), 6px 6px 0 var(--red);
+}
+
+.editorial-hero__summary {
+  padding: 18px 20px;
+  border: 2px solid var(--ink);
+  border-left: 8px solid var(--cyan);
+  background: var(--paper-light);
+  box-shadow: 5px 5px 0 var(--orange);
+}
+
+.editorial-hero__meta span {
+  --meta-accent: var(--sun);
+  transform: rotate(-0.7deg);
+  border: 2px solid var(--ink);
+  background: var(--meta-accent);
+  box-shadow: 2px 2px 0 var(--ink);
+  color: #17100e;
+}
+
+.editorial-hero__meta span:nth-child(2) { --meta-accent: var(--cyan); transform: rotate(0.8deg); }
+.editorial-hero__meta span:nth-child(3) { --meta-accent: var(--lime); }
+.editorial-hero__meta span:nth-child(4) { --meta-accent: var(--orange); transform: rotate(0.6deg); }
+
+.editorial-toc {
+  padding: 20px 16px;
+  border: 2px solid var(--ink);
+  border-top: 8px solid var(--red);
+  background: var(--paper-light);
+  box-shadow: 4px 4px 0 var(--cyan);
+}
+
+.article-content section + section { border-top: 3px solid var(--ink); }
+.article-content h2 { text-shadow: 2px 2px 0 var(--sun); }
+
+.step-grid,
+.metric-grid,
+.link-grid { gap: 14px; }
+
+.step-card,
+.metric-card,
+.link-card {
+  --editorial-accent: var(--red);
+  border: 2px solid var(--ink);
+  border-top: 7px solid var(--editorial-accent);
+  background: var(--paper-light);
+  box-shadow: 4px 4px 0 var(--editorial-accent);
+}
+
+.step-card:nth-child(4n + 2),
+.metric-card:nth-child(4n + 2),
+.link-card:nth-child(4n + 2) { --editorial-accent: var(--cyan); }
+.step-card:nth-child(4n + 3),
+.metric-card:nth-child(4n + 3),
+.link-card:nth-child(4n + 3) { --editorial-accent: var(--orange); }
+.step-card:nth-child(4n + 4),
+.metric-card:nth-child(4n + 4),
+.link-card:nth-child(4n + 4) { --editorial-accent: var(--lime); }
+
+.step-card small,
+.metric-card small,
+.link-card small { color: color-mix(in srgb, var(--editorial-accent) 70%, var(--ink)); }
+
+.metric-card__icon {
+  transform: rotate(-2deg);
+  border: 2px solid var(--ink);
+  background: var(--editorial-accent);
+  box-shadow: 3px 3px 0 var(--ink);
+  color: #17100e;
+}
+
+.editorial-note {
+  border: 2px solid var(--ink);
+  border-left: 8px solid var(--lime);
+  background: color-mix(in srgb, var(--lime) 18%, var(--paper-light));
+  box-shadow: 5px 5px 0 var(--lime);
+}
+
+.formula-strip {
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--purple);
+}
+
+.formula-strip span:nth-child(4n + 1) { background: color-mix(in srgb, var(--sun) 24%, var(--paper-light)); }
+.formula-strip span:nth-child(4n + 2) { background: color-mix(in srgb, var(--cyan) 13%, var(--paper-light)); }
+.formula-strip span:nth-child(4n + 3) { background: color-mix(in srgb, var(--red) 11%, var(--paper-light)); }
+.formula-strip span:nth-child(4n + 4) { background: color-mix(in srgb, var(--lime) 15%, var(--paper-light)); }
+
+.faq-list { border-top: 3px solid var(--ink); }
+.faq-list details { border-bottom: 2px solid var(--ink); }
+.faq-list summary::after { display: grid; width: 25px; height: 25px; top: 17px; right: 2px; border: 2px solid var(--ink); background: var(--sun); box-shadow: 2px 2px 0 var(--red); color: #17100e; line-height: 1; place-items: center; }
+
+.editorial-cta {
+  border: 3px solid var(--ink);
+  background: var(--sun);
+  box-shadow: 8px 8px 0 var(--red);
+  color: #17100e;
+}
+
+.editorial-cta p { color: #5b3c13; }
+.editorial-cta a { border: 2px solid var(--ink); background: var(--red); box-shadow: 4px 4px 0 var(--ink); color: var(--on-magenta); }
+.editorial-cta a:hover { transform: translate(2px, 2px); background: var(--orange); box-shadow: 2px 2px 0 var(--ink); color: #17100e; }
+
+.editorial-footer {
+  border-top: 3px solid var(--ink);
+  box-shadow: inset 0 5px 0 var(--sun);
+}
+
 @media (max-width: 840px) {
   .editorial-header { grid-template-columns: auto 1fr auto; }
   .editorial-nav { justify-content: end; overflow: auto; }

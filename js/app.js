@@ -1,5 +1,6 @@
 import { GAME_CONFIG } from "../data/config.js";
 import { GameEngine } from "./engine.js";
+import { buildEndingNarrative, collectNarrativeAllies, collectNarrativeEnemies } from "./narrativeSystem.js";
 
 const params = new URLSearchParams(window.location.search);
 const SAVE_KEY = "probabify-save-v2";
@@ -22,6 +23,8 @@ const elements = {
   eventKicker: document.querySelector("#event-kicker"), eventTitle: document.querySelector("#event-title"),
   eventDescription: document.querySelector("#event-description"), options: document.querySelector("#options"),
   history: document.querySelector("#history-list"), result: document.querySelector("#result-banner"),
+  caseFiles: document.querySelector("#case-files"), caseFilesList: document.querySelector("#case-files-list"),
+  caseFilesTitle: document.querySelector("#case-files-title"), caseFilesEyebrow: document.querySelector("#case-files-eyebrow"),
   ending: document.querySelector("#ending-card"),
   calendar: document.querySelector("#political-calendar"), saveStatus: document.querySelector("#save-status"), themeButton: document.querySelector("[data-theme-toggle]"),
   context: document.querySelector("#context-panel"), continuePanel: document.querySelector("#continue-panel"),
@@ -78,9 +81,10 @@ function deriveLegacyProfile(snapshot) {
   const declaredTotal = Math.max(0, snapshot.stats.cleanMoney) + Math.max(0, snapshot.stats.dirtyMoney);
   const transparentFunds = declaredTotal === 0 ? 100 : 100 - (Math.max(0, snapshot.stats.dirtyMoney) / declaredTotal) * 115;
   const recordPenalty = snapshot.memory.scandals.length * 5 + snapshot.memory.investigations.length * 3;
+  const elapsedYears = Math.max(0, Number(snapshot.year ?? GAME_CONFIG.startYear) - GAME_CONFIG.startYear);
   const impact = clampScore(snapshot.stats.approval * 0.4 + snapshot.stats.influence * 0.4 + visibleReach * 0.2);
   const integrity = clampScore(hidden.credibility * 0.3 + hidden.personalReputation * 0.25 + (100 - snapshot.stats.legalRisk) * 0.3 + transparentFunds * 0.15 - recordPenalty);
-  const service = clampScore(snapshot.yearsInPublicOffice * 4 + snapshot.elections.won * 10 + Math.min(20, snapshot.history.length * 0.35));
+  const service = clampScore(snapshot.yearsInPublicOffice * 4 + snapshot.elections.won * 10 + Math.min(20, elapsedYears * 0.45));
   const reach = clampScore(visibleReach * 0.75 + Math.max(hidden.partyCohesion, hidden.businessSupport, hidden.unionSupport) * 0.25);
   const score = clampScore(impact * 0.35 + integrity * 0.3 + service * 0.2 + reach * 0.15);
   return { score, impact, integrity, service, reach };
@@ -88,7 +92,7 @@ function deriveLegacyProfile(snapshot) {
 
 function deriveAchievements(snapshot) {
   const hidden = snapshot.hidden;
-  const allies = Object.values(snapshot.relations).filter((item) => item.score >= 60).length;
+  const allies = collectNarrativeAllies(snapshot).length;
   const definitions = [
     { icon: "★", title: "Llegó a Palacio", description: "Ganó una elección presidencial.", when: snapshot.elections.won > 0 || snapshot.tags.includes("fue-presidente") },
     { icon: "★", title: "Mandato renovado", description: "Alcanzó dos victorias presidenciales.", when: snapshot.elections.won >= 2 },
@@ -104,7 +108,12 @@ function deriveAchievements(snapshot) {
     { icon: "S/", title: "Autonomía financiera", description: "Terminó con más de un millón de soles declarados.", when: snapshot.stats.cleanMoney >= 1000000 },
     { icon: "◇", title: "Red de confianza", description: "Conservó al menos tres aliados sólidos.", when: allies >= 3 },
     { icon: "⚖", title: "Sobrevivió al expediente", description: "Atravesó varias investigaciones sin terminar en prisión.", when: snapshot.memory.investigations.length >= 2 && !snapshot.tags.includes("en-prision") },
-    { icon: "—", title: "Toda una trayectoria", description: "Tomó al menos treinta decisiones a lo largo de su vida política.", when: snapshot.history.length >= 30 },
+    { icon: "□", title: "Memoria enfrentada", description: "Llevó la ruta del reincorporado hasta una decisión final sobre verdad y legado.", when: snapshot.tags.some((tag) => ["legado-reinsercion-documentado", "legado-reinsercion-disputado"].includes(tag)) },
+    { icon: "♜", title: "El peso del apellido", description: "Definió quién conservaría el archivo y la herencia de la dinastía.", when: snapshot.tags.some((tag) => ["legado-dinastia-abierto", "legado-dinastia-curado"].includes(tag)) },
+    { icon: "▲", title: "La red de las provincias", description: "Convirtió su liderazgo territorial en institución o sucesión política.", when: snapshot.tags.some((tag) => ["legado-provincia-institucional", "legado-provincia-caudillo"].includes(tag)) },
+    { icon: "S/", title: "Empresa después del poder", description: "Resolvió la sucesión del patrimonio y su relación con la organización política.", when: snapshot.tags.some((tag) => ["legado-empresarial-institucional", "legado-empresarial-heredado"].includes(tag)) },
+    { icon: "◉", title: "La voz queda", description: "Decidió quién heredaría el canal, el archivo y su comunidad política.", when: snapshot.tags.some((tag) => ["legado-podcaster-cooperativo", "legado-podcaster-heredado"].includes(tag)) },
+    { icon: "—", title: "Décadas de trayectoria", description: "Mantuvo una vida política activa durante al menos treinta años.", when: Number(snapshot.year ?? GAME_CONFIG.startYear) - GAME_CONFIG.startYear >= 30 },
   ];
   return definitions.filter((achievement) => achievement.when);
 }
@@ -286,6 +295,105 @@ function renderContext(snapshot) {
   `;
 }
 
+function activeCaseFamily(kind) {
+  const families = {
+    trial: "legal", juicio: "legal", judicial: "legal", investigation: "legal", investigacion: "legal",
+    disaster: "crisis", crisis: "crisis", climate: "crisis", weather: "crisis", disaster_national: "crisis",
+    election: "election", campaign: "election", eleccion: "election",
+    vacancy: "vacancy", vacancia: "vacancy",
+    prison: "prison", prision: "prison", exile: "prison", exilio: "prison",
+    presidency: "government", government: "government", gobierno: "government",
+  };
+  return families[String(kind ?? "").toLowerCase()] ?? "general";
+}
+
+function activeCaseTone(tone) {
+  const normalized = String(tone ?? "").toLowerCase();
+  if (["positive", "success", "stable", "resolved", "favorable", "good"].includes(normalized)) return "positive";
+  if (["warning", "watch", "unstable", "alert"].includes(normalized)) return "warning";
+  if (["danger", "critical", "negative", "severe"].includes(normalized)) return "danger";
+  return "neutral";
+}
+
+function caseValue(value) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? Math.max(0, Math.min(100, Math.round(numeric))) : 0;
+}
+
+function sameCaseNews(left, right) {
+  if (!left || !right) return false;
+  if (left.id && right.id) return left.id === right.id;
+  return left.year === right.year && left.headline === right.headline && left.text === right.text;
+}
+
+function renderActiveCases(snapshot) {
+  const activeCases = Array.isArray(snapshot.activeCases) ? snapshot.activeCases.slice(0, 3) : [];
+  if (!activeCases.length) {
+    elements.caseFiles.hidden = true;
+    elements.caseFilesList.innerHTML = "";
+    return;
+  }
+
+  elements.caseFiles.hidden = false;
+  const allCasesResolved = activeCases.every((activeCase) => activeCase.status === "Resuelto");
+  elements.caseFilesTitle.textContent = snapshot.ending ? "Expedientes al cierre" : allCasesResolved ? "Expedientes resueltos" : "Expedientes activos";
+  elements.caseFilesEyebrow.textContent = snapshot.ending || allCasesResolved ? "Balance de trayectoria" : "Historias en desarrollo";
+  elements.caseFilesList.classList.toggle("case-files__grid--single", activeCases.length === 1);
+  elements.caseFilesList.classList.toggle("case-files__grid--triple", activeCases.length === 3);
+  elements.caseFilesList.innerHTML = activeCases.map((activeCase, caseIndex) => {
+    const family = activeCaseFamily(activeCase.kind);
+    const statusTone = activeCaseTone(activeCase.statusTone);
+    const metrics = Array.isArray(activeCase.metrics) ? activeCase.metrics : [];
+    const news = Array.isArray(activeCase.news) ? activeCase.news.filter((entry) => entry && typeof entry === "object") : [];
+    const latestNews = news.at(-1);
+    const timeline = Array.isArray(activeCase.timeline)
+      ? activeCase.timeline.filter((entry) => entry && typeof entry === "object" && !sameCaseNews(entry, latestNews)).slice(-3).reverse()
+      : [];
+    const stageCurrentRaw = Number(activeCase.stage?.current);
+    const stageTotalRaw = Number(activeCase.stage?.total);
+    const stageTotal = Number.isFinite(stageTotalRaw) && stageTotalRaw > 0 ? Math.round(stageTotalRaw) : 1;
+    const stageCurrent = Number.isFinite(stageCurrentRaw) ? Math.max(0, Math.min(stageTotal, Math.round(stageCurrentRaw))) : 0;
+    const stageProgress = Math.round((stageCurrent / stageTotal) * 100);
+    const titleId = `case-file-title-${caseIndex}`;
+
+    return `<article class="case-file case-file--${family}${caseIndex === 0 ? " case-file--primary" : " case-file--secondary"}" aria-labelledby="${titleId}">
+      <header class="case-file__header">
+        <div><small>${escapeHtml(activeCase.kicker ?? "Expediente especial")}</small><h3 id="${titleId}">${escapeHtml(activeCase.title)}</h3></div>
+        <span class="case-file__status case-file__status--${statusTone}">${escapeHtml(activeCase.status ?? "En curso")}</span>
+      </header>
+      <div class="case-file__stage">
+        <div><small>Etapa ${stageCurrent} de ${stageTotal}</small><strong>${escapeHtml(activeCase.stage?.label ?? "En desarrollo")}</strong></div>
+        <span class="case-file__stage-track" role="progressbar" aria-label="Avance de ${escapeHtml(activeCase.title)}" aria-valuemin="0" aria-valuemax="${stageTotal}" aria-valuenow="${stageCurrent}" aria-valuetext="Etapa ${stageCurrent} de ${stageTotal}"><i style="width:${stageProgress}%"></i></span>
+      </div>
+      ${latestNews ? `<article class="case-file__news case-file__news--${activeCaseTone(latestNews.tone)}" aria-label="Noticia más reciente">
+        <small>Último despacho${latestNews.year ? ` · ${escapeHtml(latestNews.year)}` : ""}</small>
+        <h4>${escapeHtml(latestNews.headline)}</h4>
+        ${latestNews.text ? `<p>${escapeHtml(latestNews.text)}</p>` : ""}
+        ${latestNews.causeLabel ? `<span>↳ ${escapeHtml(latestNews.causeLabel)}</span>` : ""}
+      </article>` : ""}
+      ${metrics.length ? `<dl class="case-file__metrics">${metrics.map((metric) => {
+        const value = caseValue(metric.value);
+        const metricTone = activeCaseTone(metric.tone);
+        const hasPrevious = metric.previousValue !== null && metric.previousValue !== undefined && Number.isFinite(Number(metric.previousValue));
+        const delta = hasPrevious ? value - caseValue(metric.previousValue) : 0;
+        const deltaIsPositive = metric.direction === "low" ? delta < 0 : delta > 0;
+        const deltaTone = delta === 0 ? "neutral" : deltaIsPositive ? "positive" : "danger";
+        const deltaLabel = !hasPrevious ? "Valor inicial" : delta === 0 ? "Sin cambio" : `${delta > 0 ? "+" : "−"}${Math.abs(delta)}`;
+        return `<div class="case-file__metric case-file__metric--${metricTone}">
+          <dt>${escapeHtml(metric.label)}</dt>
+          <dd>
+            <span class="case-file__metric-value"><strong>${value}</strong><span class="case-file__delta case-file__delta--${deltaTone}">${deltaLabel}</span></span>
+            <span class="case-file__metric-track" role="progressbar" aria-label="${escapeHtml(metric.label)}: ${value} de 100" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${value}"><i style="width:${value}%"></i></span>
+          </dd>
+        </div>`;
+      }).join("")}</dl>` : ""}
+      ${timeline.length ? `<div class="case-file__timeline"><small>Cronología reciente</small><ol>${timeline.map((entry) => `
+        <li><time>${escapeHtml(entry.year ?? "Ahora")}</time><div><strong>${escapeHtml(entry.headline ?? entry.label ?? entry.title)}</strong>${entry.text ?? entry.description ? `<p>${escapeHtml(entry.text ?? entry.description)}</p>` : ""}${entry.causeLabel ? `<span>↳ ${escapeHtml(entry.causeLabel)}</span>` : ""}</div></li>
+      `).join("")}</ol></div>` : ""}
+    </article>`;
+  }).join("");
+}
+
 function renderEvent(snapshot) {
   const event = snapshot.event;
   if (!event) return;
@@ -351,6 +459,18 @@ function renderChanges(changes, snapshot) {
   }) : [];
   if (changes.role) visible.unshift(`<span class="change-chip is-role">Nuevo cargo: ${changes.role.to}</span>`);
   for (const scandal of changes.newScandals) visible.push(`<span class="change-chip is-alert">Escándalo: ${scandal.label}</span>`);
+  const caseChanges = changes.cases ?? { opened: [], resolved: [] };
+  const resolvedCaseIds = new Set((caseChanges.resolved ?? []).map((entry) => entry.id));
+  const openedCaseIds = new Set((caseChanges.opened ?? []).map((entry) => entry.id));
+  for (const activeCase of caseChanges.opened ?? []) {
+    if (!resolvedCaseIds.has(activeCase.id)) visible.push(`<span class="change-chip is-context">Nuevo expediente: ${escapeHtml(activeCase.title)}</span>`);
+  }
+  for (const activeCase of caseChanges.updated ?? []) {
+    if (!openedCaseIds.has(activeCase.id) && !resolvedCaseIds.has(activeCase.id)) visible.push(`<span class="change-chip is-context">Expediente actualizado: ${escapeHtml(activeCase.title)}</span>`);
+  }
+  for (const activeCase of caseChanges.resolved ?? []) {
+    visible.push(`<span class="change-chip is-role">Expediente resuelto: ${escapeHtml(activeCase.resolution ?? activeCase.title)}</span>`);
+  }
   return [...visible, ...relevantHidden, ...relevantNational].join("");
 }
 
@@ -366,11 +486,8 @@ function showResult({ outcome, changes, headline, snapshot }) {
 }
 
 function endingNarrative(snapshot) {
-  const scandalCount = snapshot.memory.scandals.length;
-  const crisisCount = snapshot.memory.crises.length + snapshot.memory.wars.length;
   const profile = deriveLegacyProfile(snapshot);
-  const achievements = deriveAchievements(snapshot);
-  return `${snapshot.characterName}, desde ${snapshot.originName.toLowerCase()} y con el antecedente «${snapshot.backgroundName}», construyó una carrera de ${snapshot.history.length} decisiones. Su mayor cargo fue ${snapshot.highestRole.toLowerCase()} y cerró como ${snapshot.personality}, con un legado de ${profile.score}/100. En presidenciales obtuvo ${snapshot.elections.won} victoria${snapshot.elections.won === 1 ? "" : "s"} y ${snapshot.elections.lost} derrota${snapshot.elections.lost === 1 ? "" : "s"}; el archivo conserva ${scandalCount} escándalo${scandalCount === 1 ? "" : "s"} y ${crisisCount} crisis mayor${crisisCount === 1 ? "" : "es"}. Logros: ${achievements.map((item) => item.title).join(", ") || "ningún hito extraordinario"}.`;
+  return buildEndingNarrative(snapshot, profile);
 }
 
 function renderEnding(snapshot) {
@@ -381,8 +498,16 @@ function renderEnding(snapshot) {
   const ideology = ideologyLabel(snapshot.stats.ideology);
   const legacy = deriveLegacyProfile(snapshot);
   const achievements = deriveAchievements(snapshot);
-  const allies = Object.entries(snapshot.relations).filter(([, item]) => item.score >= 60).map(([name]) => name);
-  const enemies = [...snapshot.memory.enemies.map((item) => item.label), ...Object.entries(snapshot.relations).filter(([, item]) => item.score <= -20).map(([name]) => name)];
+  const allies = collectNarrativeAllies(snapshot);
+  const enemies = collectNarrativeEnemies(snapshot);
+  const casePriority = { prison: 100, trial: 95, exile: 90, vacancy: 85, disaster: 75, campaign: 65 };
+  const specialCases = [...(snapshot.caseArchive ?? []), ...(snapshot.activeCases ?? [])]
+    .sort((left, right) => Number(casePriority[right.kind] ?? 0) - Number(casePriority[left.kind] ?? 0)
+      || Number(right.resolvedYear ?? right.updatedYear ?? 0) - Number(left.resolvedYear ?? left.updatedYear ?? 0));
+  const specialCaseSummary = specialCases.slice(0, 4).map((activeCase) => {
+    const cause = activeCase.originDecision ? `, tras «${activeCase.originDecision}»` : "";
+    return `${activeCase.title}: ${activeCase.resolution ?? activeCase.status}${cause}`;
+  }).join(" · ");
   elements.ending.hidden = false;
   elements.ending.innerHTML = `
     <div class="ending-card__icon">${ending.icon}</div><p class="section-label">Final de trayectoria · ${characterName}</p>
@@ -393,15 +518,15 @@ function renderEnding(snapshot) {
       <div class="legacy-index__parts"><span><small>Impacto</small><b>${legacy.impact}</b></span><span><small>Integridad</small><b>${legacy.integrity}</b></span><span><small>Servicio</small><b>${legacy.service}</b></span><span><small>Alcance</small><b>${legacy.reach}</b></span></div>
     </div>
     <section class="achievement-section" aria-label="Logros desbloqueados"><div class="achievement-section__heading"><div><small>Archivo de hitos</small><h3>Logros desbloqueados</h3></div><strong>${achievements.length}</strong></div>
-      <div class="achievement-grid">${achievements.length ? achievements.map((achievement) => `<article><i aria-hidden="true">${achievement.icon}</i><div><b>${escapeHtml(achievement.title)}</b><small>${escapeHtml(achievement.description)}</small></div></article>`).join("") : `<p>No desbloqueaste un hito extraordinario; el arquetipo de legado resume igualmente tu trayectoria completa.</p>`}</div>
+      <div class="achievement-grid">${achievements.length ? achievements.map((achievement) => `<article><i aria-hidden="true">${achievement.icon}</i><div><b>${escapeHtml(achievement.title)}</b><small>${escapeHtml(achievement.description)}</small></div></article>`).join("") : `<p>La trayectoria no dejó un hito excepcional, pero sí un balance completo de decisiones y consecuencias.</p>`}</div>
     </section>
     <div class="ending-card__score ending-card__score--wide">
       <span><small>Mayor cargo</small><b>${snapshot.highestRole}</b></span><span><small>Años en cargos</small><b>${snapshot.yearsInPublicOffice}</b></span>
-      <span><small>Presidenciales</small><b>${snapshot.elections.won}G · ${snapshot.elections.lost}P</b></span><span><small>Personalidad</small><b>${snapshot.personality}</b></span>
+      <span><small>Presidenciales</small><b>${snapshot.presidentialRuns > 0 || snapshot.elections.won + snapshot.elections.lost > 0 ? `${snapshot.elections.won}G · ${snapshot.elections.lost}P` : "No postuló"}</b></span><span><small>Personalidad</small><b>${snapshot.personality}</b></span>
       <span><small>Dinero limpio</small><b>${formatMoney(snapshot.stats.cleanMoney)}</b></span><span><small>Dinero sucio</small><b>${formatMoney(snapshot.stats.dirtyMoney)}</b></span>
       <span><small>Aceptación</small><b>${snapshot.stats.approval}%</b></span><span><small>Tendencia</small><b>${ideology}</b></span>
     </div>
-    <div class="legacy-list"><p><b>Aliados:</b> ${allies.join(", ") || "ninguno estable"}</p><p><b>Enemigos:</b> ${enemies.slice(0, 4).join(", ") || "ninguno declarado"}</p><p><b>Expediente:</b> ${snapshot.memory.scandals.length} escándalos · ${snapshot.memory.investigations.length} investigaciones · ${snapshot.memory.wars.length} conflictos</p></div>
+    <div class="legacy-list"><p><b>Aliados registrados:</b> ${allies.slice(0, 4).map(escapeHtml).join(", ") || "ninguno estable"}</p><p><b>Enemigos registrados:</b> ${enemies.slice(0, 4).map(escapeHtml).join(", ") || "ninguno declarado"}</p><p><b>Expediente:</b> ${snapshot.memory.scandals.length} escándalos · ${snapshot.memory.investigations.length} investigaciones · ${snapshot.memory.wars.length} conflictos</p><p><b>Historias especiales:</b> ${specialCases.length ? escapeHtml(specialCaseSummary) : "ningún expediente especial registrado"}</p></div>
     <div class="ending-actions"><button class="primary-button" type="button" data-share-ending>Copiar resumen <span>⧉</span></button><button class="secondary-button" type="button" data-replay-origin="${snapshot.originId}">Repetir origen</button><button class="secondary-button" type="button" data-new-life>Jugar otra vida</button></div>
   `;
 }
@@ -426,7 +551,7 @@ function render(snapshot) {
   elements.name.textContent = snapshot.characterName;
   const yearsToElection = Math.max(0, snapshot.nextElectionYear - snapshot.year);
   elements.calendar.textContent = `${snapshot.year} · ${yearsToElection === 0 ? "Elecciones este año" : `Elecciones en ${yearsToElection} ${yearsToElection === 1 ? "año" : "años"}`} · ${snapshot.presidentialRuns} ${snapshot.presidentialRuns === 1 ? "postulación" : "postulaciones"}${snapshot.gameMode === "express" ? " · Express" : ""}`;
-  renderStats(snapshot); renderAllStats(snapshot); renderContext(snapshot); renderHistory(snapshot); renderEnding(snapshot); renderDebug(snapshot);
+  renderStats(snapshot); renderAllStats(snapshot); renderContext(snapshot); renderActiveCases(snapshot); renderHistory(snapshot); renderEnding(snapshot); renderDebug(snapshot);
   if (!snapshot.ending) renderEvent(snapshot);
   document.body.classList.toggle("has-ending", Boolean(snapshot.ending));
 }
@@ -551,7 +676,7 @@ document.addEventListener("click", (event) => {
     });
   }
   if (event.target.closest("[data-debug-force]")) { render(engine.forceEvent(document.querySelector("#debug-event-select").value)); }
-  if (event.target.closest("[data-debug-year]")) { engine.advanceYear(); engine.state.currentEventId = engine.findNextEventId(); const snapshot = engine.getSnapshot(); render(snapshot); persist(snapshot); }
+  if (event.target.closest("[data-debug-year]")) { engine.advanceYear(); engine.state.currentEventId = engine.findNextEventId(); const snapshot = engine.syncCurrentCases(); render(snapshot); persist(snapshot); }
   if (event.target.closest("[data-debug-election]")) { engine.state.nextElectionYear = engine.state.year; render(engine.forceEvent("eleccion-nacional")); }
   if (event.target.closest("[data-debug-vacancy]")) { if (!engine.state.tags.includes("presidente-actual")) engine.state.tags.push("presidente-actual"); engine.state.hidden.vacancyRisk = 90; render(engine.forceEvent("mocion-vacancia")); }
   if (event.target.closest("[data-debug-crisis]")) { engine.state.contexts = ["crisis-institucional", ...engine.state.contexts].slice(0, 3); engine.state.national.socialConflict = Math.min(100, engine.state.national.socialConflict + 25); render(engine.getSnapshot()); }
