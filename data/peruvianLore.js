@@ -77,6 +77,7 @@ const THEME_EVENTS = {
   ],
   vida_privada: [
     "pareja-militante", "credito-vivienda", "familiar-contratado", "emprendimiento-familiar", "separacion-equipo", "escandalo-pareja", "relojes-wayki", "cirugia-secreta-palacio", "audio-amor-premier",
+    "podcaster-relacion-influencer", "podcaster-infidelidad-influencer",
   ],
   prision_exilio: [
     "vida-exilio", "prision-decision", "vida-prision", "indulto-antiguo-aliado", "taller-penitenciario", "visita-politica-prision",
