@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://probabify.com/sitemap.xml

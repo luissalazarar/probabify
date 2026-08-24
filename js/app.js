@@ -5,7 +5,6 @@ import { buildEndingNarrative, collectNarrativeAllies, collectNarrativeEnemies }
 const params = new URLSearchParams(window.location.search);
 const SAVE_KEY = "probabify-save-v2";
 const THEME_KEY = "probabify-theme";
-const REPLAY_COUNT_KEY = "probabify-replay-count-v1";
 const BIDVERTISER_REPLAY_URL = "https://cdn.hyperpromote.com/bidvertiser/tags/active/bvpprtr.html?pid=942997&bid=2106483&subid=replay&kw=politica+peru&url=https%3A%2F%2Fprobabify.com%2F";
 const DEBUG_MODE = GAME_CONFIG.debug || params.get("debug") === "1";
 const createSeed = () => globalThis.crypto?.randomUUID?.().slice(0, 8) ?? Math.random().toString(36).slice(2, 10);
@@ -50,21 +49,7 @@ function storageRemove(key) {
   try { localStorage.removeItem(key); } catch { /* Sin almacenamiento persistente. */ }
 }
 
-function registerReplay() {
-  let count = 0;
-  try { count = Number.parseInt(sessionStorage.getItem(REPLAY_COUNT_KEY) ?? "0", 10) || 0; }
-  catch { /* La partida sigue funcionando sin almacenamiento de sesión. */ }
-  count += 1;
-  try { sessionStorage.setItem(REPLAY_COUNT_KEY, String(count)); }
-  catch { /* La partida sigue funcionando sin almacenamiento de sesión. */ }
-  return count;
-}
-
-function runReplay(action) {
-  if (registerReplay() === 1) {
-    action();
-    return;
-  }
+function runReplay() {
   window.open(BIDVERTISER_REPLAY_URL, "_blank", "noopener,noreferrer");
   storageRemove(SAVE_KEY);
   const cleanUrl = new URL(window.location.href);
@@ -704,17 +689,12 @@ document.addEventListener("click", (event) => {
     const hasProgress = Boolean(engine.state || readSavedGame());
     if (!hasProgress || window.confirm("¿Reiniciar esta trayectoria? Se reemplazará la partida guardada.")) showOriginScreen({ newSeed: true });
   }
-  if (event.target.closest("[data-new-life]")) runReplay(() => showOriginScreen({ newSeed: true }));
+  if (event.target.closest("[data-new-life]")) runReplay();
   if (event.target.closest("[data-back-origins]")) { elements.setupView.hidden = true; elements.originView.hidden = false; window.scrollTo({ top: 0, behavior: "smooth" }); }
   const backgroundButton = event.target.closest("[data-background]");
   if (backgroundButton) { selectedBackgroundId = backgroundButton.dataset.background; renderBackgrounds(selectedOriginId); updateSetupValidity(); }
   const replay = event.target.closest("[data-replay-origin]");
-  if (replay) {
-    runReplay(() => {
-      const snapshot = engine.getSnapshot();
-      startGame(replay.dataset.replayOrigin, { seed: activeSeed, characterName: snapshot.characterName, backgroundId: snapshot.backgroundId, gameMode: snapshot.gameMode });
-    });
-  }
+  if (replay) runReplay();
   const shareButton = event.target.closest("[data-share-ending]");
   if (shareButton) {
     copyText(endingNarrative(engine.getSnapshot())).then((copied) => {
